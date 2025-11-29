@@ -9,46 +9,24 @@ class Dashboard extends StatelessWidget {
       backgroundColor: Colors.green,
       appBar: AppBar(
         title: Text(
-          'Welcome to Pet Care',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
+          "PawCare",
+          style: TextStyle(fontSize: 20, color: Colors.black),
         ),
-        backgroundColor: Colors.green[900],
-        titleSpacing: 90,
       ),
-
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SizedBox(
-              width: 500,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Navigate to Pet Profiles Screen
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'login Profile',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+      body: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Container(
+                height: 500,
+                width: 500,
+                decoration: BoxDecoration(shape: BoxShape.circle),
+                child: Image.asset('assets/images/logo.png'),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

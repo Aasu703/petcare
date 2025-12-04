@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Dashboard.dart';
+import 'package:petcare/Screens/login.dart';
 import 'package:petcare/Screens/signup.dart';
 
 class Splashscreen extends StatelessWidget {
@@ -13,14 +14,20 @@ class Splashscreen extends StatelessWidget {
         backgroundColor: Colors.green[900],
         centerTitle: true,
         title: const Text(
-          'Welcome to Pet Care',
+          'Welcome to Paw Care',
+
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Image.asset('assets/images/pawcare.png'),
+        ),
       ),
+
       body: Stack(
         children: [
           Positioned.fill(
@@ -75,7 +82,7 @@ class Splashscreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             backgroundColor: Colors.green,
-                            content: const Text('Welcome to Pet Care'),
+                            content: const Text('Login'),
                             duration: const Duration(seconds: 2),
                             behavior: SnackBarBehavior.floating,
                             margin: const EdgeInsets.all(16),

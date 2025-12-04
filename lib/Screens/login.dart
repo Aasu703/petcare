@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:petcare/Screens/Dashboard.dart';
+import 'package:petcare/Screens/signup.dart';
 import 'package:petcare/widget/mytextformfield.dart';
 
 class Login extends StatefulWidget {
@@ -67,7 +69,7 @@ class _LoginState extends State<Login> {
 
           Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(8),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -78,7 +80,7 @@ class _LoginState extends State<Login> {
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black26,
+                            color: Colors.black,
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -90,7 +92,7 @@ class _LoginState extends State<Login> {
                         labelText: "email",
                         errorMessage: "incorrect email",
                         prefixIcon: const Icon(
-                          Icons.email_sharp,
+                          Icons.email_rounded,
                           color: Colors.black,
                         ),
                         focusNode: _emailFocusNode,
@@ -114,11 +116,11 @@ class _LoginState extends State<Login> {
                       ),
                       child: MyTextformfield(
                         controller: _passwordController,
-                        hintText: "*****",
+                        hintText: "*********",
                         labelText: "Enter Your Password",
                         errorMessage: "Incorrect Password",
                         prefixIcon: const Icon(
-                          Icons.password,
+                          Icons.lock_rounded,
                           color: Colors.black,
                         ),
                         focusNode: _passwordFocusNode,
@@ -134,7 +136,14 @@ class _LoginState extends State<Login> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Dashboard(),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           shape: RoundedRectangleBorder(
@@ -148,6 +157,24 @@ class _LoginState extends State<Login> {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 28),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Signup()),
+                        );
+                      },
+                      child: const Text(
+                        "Don't have an Account?",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black,
                         ),
                       ),
                     ),

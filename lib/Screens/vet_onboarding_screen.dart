@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-// import 'package:petcare/Screens/Dashboard.dart';
 import 'package:petcare/Screens/login.dart';
-import 'package:petcare/Screens/vet_onboarding_screen.dart';
-// import 'package:petcare/Screens/signup.dart';
 
-class Splashscreen extends StatelessWidget {
-  const Splashscreen({super.key});
+class VetonboardingScreen extends StatelessWidget {
+  const VetonboardingScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +29,7 @@ class Splashscreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/cat.jpg', fit: BoxFit.cover),
+            child: Image.asset('assets/images/vet2.jpg', fit: BoxFit.cover),
           ), // to fix the image to the container
 
           Align(
@@ -98,7 +96,7 @@ class Splashscreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const VetonboardingScreen(),
+                            builder: (context) => const Login(),
                           ),
                         );
                       },

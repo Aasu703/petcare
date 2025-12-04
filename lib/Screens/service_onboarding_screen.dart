@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/login.dart';
-import 'package:petcare/Screens/service_onboarding_screen.dart';
+import 'package:petcare/Screens/vet_onboarding_screen.dart';
 
-class VetonboardingScreen extends StatelessWidget {
-  const VetonboardingScreen({super.key});
+class ServiceOnboardingScreen extends StatelessWidget {
+  const ServiceOnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class VetonboardingScreen extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/vet2.jpg', fit: BoxFit.cover),
+            child: Image.asset('assets/images/pets.jpg', fit: BoxFit.cover),
           ), // to fix the image to the container
 
           Align(
@@ -81,8 +81,7 @@ class VetonboardingScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const ServiceOnboardingScreen(),
+                            builder: (context) => const Login(),
                           ),
                         );
                       },

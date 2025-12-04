@@ -79,22 +79,6 @@ class Splashscreen extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.green,
-                            content: const Text('Login'),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
-                            margin: const EdgeInsets.all(16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(
-                                color: Colors.green,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(

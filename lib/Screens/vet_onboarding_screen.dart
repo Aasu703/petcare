@@ -55,7 +55,7 @@ class VetonboardingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    "Hey! Welcome",
+                    "Care with Compassion",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class VetonboardingScreen extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   const Text(
-                    "While you sit and stay – we’ll go out and play!",
+                    "vet's you can trust and rely on for your pet's health and well-being.",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),

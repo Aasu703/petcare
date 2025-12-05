@@ -55,7 +55,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    "Hey! Welcome",
+                    "Trusted Services",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -66,7 +66,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   const Text(
-                    "While you sit and stay – we’ll go out and play!",
+                    "Discover trusted pet sitters and walkers to care for your furry friends.",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),

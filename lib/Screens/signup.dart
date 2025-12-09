@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Dashboard.dart';
 import 'dart:ui';
 
+import 'package:petcare/Screens/login.dart';
+
 class Signup extends StatefulWidget {
   const Signup({super.key});
 
@@ -260,7 +262,7 @@ class _SignupState extends State<Signup> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => Dashboard(),
+                                  builder: (context) => const Login(),
                                 ),
                               );
                             }

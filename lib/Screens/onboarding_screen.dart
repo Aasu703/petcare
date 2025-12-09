@@ -11,7 +11,7 @@ class Onbording extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFFFF9D34),
         centerTitle: true,
         title: const Text(
           'Welcome to Paw Care',
@@ -87,7 +87,7 @@ class Onbording extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Color(0xFFFF9D34),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),

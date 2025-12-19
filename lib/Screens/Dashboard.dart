@@ -24,8 +24,9 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("This is the Dashborad"),
-        backgroundColor: Color(0xff),
+        title: Text("PawCare"),
+        centerTitle: true,
+        backgroundColor: Color(0xFFFF9D34),
       ),
       body: lstBottomScreen[_selectedIndex],
 

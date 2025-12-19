@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Splash_screen.dart';
-import 'package:petcare/Screens/onboarding_screen.dart';
-import 'package:petcare/screens/dashboard.dart';
+// import 'package:petcare/Screens/onboarding_screen.dart';
+// import 'package:petcare/screens/dashboard.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

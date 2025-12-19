@@ -45,7 +45,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withOpacity(0.45),
                     blurRadius: 8,
                     spreadRadius: 1,
                   ),

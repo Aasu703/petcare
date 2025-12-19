@@ -1,8 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Dashboard.dart';
 import 'package:petcare/Screens/signup.dart';
 import 'package:petcare/widget/mytextformfield.dart';
+import 'package:petcare/theme/app_colors.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -20,21 +20,9 @@ class _LoginState extends State<Login> {
 
   final _formKey = GlobalKey<FormState>();
 
-  double blurValue = 0; // default blur
-
   @override
   void initState() {
     super.initState();
-    _emailFocusNode.addListener(_onFocusChanged);
-    _passwordFocusNode.addListener(_onFocusChanged);
-  }
-
-  void _onFocusChanged() {
-    setState(() {
-      blurValue = (_emailFocusNode.hasFocus || _passwordFocusNode.hasFocus)
-          ? 5
-          : 0;
-    });
   }
 
   @override
@@ -68,144 +56,171 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background (you can remove this if you want a flat color)
-          Positioned.fill(
-            child: Transform.scale(
-              scale: 1.3,
-              child: Image.asset('assets/images/cat.jpg', fit: BoxFit.cover),
-            ),
-          ),
-
-          // Dynamic blur based on focus
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: blurValue, sigmaY: blurValue),
-              child:
-                  Container(), // transparent overlay required by BackdropFilter
-            ),
-          ),
-
-          // Form contents
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Form(
-                key: _formKey,
-                // This line makes the error messages appear automatically
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Email field
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: MyTextformfield(
-                        controller: _emailController,
-                        hintText: "example@gmail.com",
-                        labelText: "Email",
-                        errorMessage: "Incorrect email", // shows when empty
-                        prefixIcon: const Icon(
-                          Icons.email_rounded,
-                          color: Colors.black,
-                        ),
-                        focusNode: _emailFocusNode,
-                        filled: true,
-                        fillcolor: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Password field
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: MyTextformfield(
-                        controller: _passwordController,
-                        hintText: "*********",
-                        labelText: "Enter Your Password",
-                        errorMessage: "Incorrect Password", // shows when empty
-                        prefixIcon: const Icon(
-                          Icons.lock_rounded,
-                          color: Colors.black,
-                        ),
-                        focusNode: _passwordFocusNode,
-                        filled: true,
-                        fillcolor: Colors.white,
-                        obscureText: true,
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // Login button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed:
-                            _tryLogin, // <-- validate first, then navigate if OK
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // Signup link
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Signup()),
-                        );
-                      },
-                      child: const Text(
-                        "Don't have an Account?",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      backgroundColor: AppColors.backgroundColor,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              right: -40,
+              top: 140,
+              child: Opacity(
+                opacity: 0.12,
+                child: Icon(Icons.pets, size: 180, color: AppColors.accentColor),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              left: -30,
+              bottom: 160,
+              child: Opacity(
+                opacity: 0.12,
+                child: Icon(Icons.pets, size: 220, color: AppColors.accentColor),
+              ),
+            ),
+
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Log in to your account',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceColor,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: MyTextformfield(
+                              controller: _emailController,
+                              hintText: "example@gmail.com",
+                              labelText: "Email",
+                              errorMessage: "Incorrect email",
+                              prefixIcon: Icon(
+                                Icons.email_rounded,
+                                color: AppColors.iconPrimaryColor,
+                              ),
+                              focusNode: _emailFocusNode,
+                              filled: true,
+                              fillcolor: AppColors.surfaceColor,
+                            ),
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: MyTextformfield(
+                              controller: _passwordController,
+                              hintText: "*********",
+                              labelText: "Enter Your Password",
+                              errorMessage: "Incorrect Password",
+                              prefixIcon: Icon(
+                                Icons.lock_rounded,
+                                color: AppColors.iconPrimaryColor,
+                              ),
+                              focusNode: _passwordFocusNode,
+                              filled: true,
+                              fillcolor: AppColors.surfaceColor,
+                              obscureText: true,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _tryLogin,
+                              child: const Text('Login'),
+                            ),
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const Signup(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Sign Up',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

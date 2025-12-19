@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/onboarding_screen.dart';
-// import 'package:your_app/onboarding_screen.dart'; // <-- replace with your path
+import 'package:petcare/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -69,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
-      backgroundColor: Color(0xFFFF9D34),
+      backgroundColor: AppColors.secondaryColor,
       body: Center(
         child: FadeTransition(
           opacity: _fade,
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
                   'PawCare',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimaryColor,
                   ),
                 ),
               ],

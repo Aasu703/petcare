@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Splash_screen.dart';
-// import 'package:petcare/Screens/onboarding_screen.dart';
-// import 'package:petcare/screens/dashboard.dart';
+import 'package:petcare/theme/theme_data.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -11,7 +10,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PawCare',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.teal),
+      theme: getApplicationTheme(),
       home: const SplashScreen(),
     );
   }

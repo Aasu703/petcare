@@ -12,6 +12,8 @@ class MyTextformfield extends StatelessWidget {
     this.fillcolor,
     this.focusNode,
     this.obscureText,
+    this.keyboardType,
+    this.validator,
   });
 
   final TextEditingController controller;
@@ -23,6 +25,8 @@ class MyTextformfield extends StatelessWidget {
   final Color? fillcolor;
   final FocusNode? focusNode;
   final bool? obscureText;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -30,6 +34,7 @@ class MyTextformfield extends StatelessWidget {
       focusNode: focusNode,
 
       obscureText: obscureText ?? false,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hintText,
         labelText: labelText,
@@ -39,12 +44,14 @@ class MyTextformfield extends StatelessWidget {
         fillColor: fillcolor,
       ),
 
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return errorMessage;
-        }
-        return null;
-      },
+      validator:
+          validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return errorMessage;
+            }
+            return null;
+          },
     );
   }
 }

@@ -85,7 +85,13 @@ flutter:
   fonts:
     - family: Open Sans
       fonts:
-        - asset: assets/fonts/OpenSans-Bold.tff
+        - asset: assets/fonts/OpenSans-Bold.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-Bold.ttf
+        
+      
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

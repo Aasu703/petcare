@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/theme/app_colors.dart';
+import 'package:petcare/app/theme/app_colors.dart';
 
 ThemeData getApplicationTheme() {
   return ThemeData(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/Splash_screen.dart';
-import 'package:petcare/theme/theme_data.dart';
+import 'package:petcare/app/theme/theme_data.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

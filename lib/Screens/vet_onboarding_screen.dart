@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/service_onboarding_screen.dart';
-import 'package:petcare/theme/app_colors.dart';
+import 'package:petcare/app/theme/app_colors.dart';
 
 class VetOnboardingScreen extends StatelessWidget {
   const VetOnboardingScreen({super.key});

@@ -3,6 +3,7 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/discover_sc
 import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
+import 'package:petcare/app/theme/app_colors.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -20,16 +21,16 @@ class _DashboardState extends State<Dashboard> {
     ExploreScreen(),
     DiscoverScreen(),
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("PawCare"),
+        title: const Text("PawCare"),
         centerTitle: true,
-        backgroundColor: Color(0xFFFF9D34),
+        backgroundColor: AppColors.iconPrimaryColor,
       ),
       body: lstBottomScreen[_selectedIndex],
-
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,

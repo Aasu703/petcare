@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/auth/presentation/pages/login.dart';
-import 'package:petcare/core/widget/mytextformfield.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// Removed shared UI widgets per request; using inline fields
+import 'package:petcare/features/auth/di/auth_providers.dart';
+import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
+import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_setup_screen.dart';
-// import 'package:petcare/Screens/Dashboard.dart'; // Uncomment if you plan to navigate there.
 
-class Signup extends StatefulWidget {
+class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
 
   @override
-  State<Signup> createState() => _SignupState();
+  ConsumerState<Signup> createState() => _SignupState();
 }
 
-class _SignupState extends State<Signup> {
+class _SignupState extends ConsumerState<Signup>
+    with SingleTickerProviderStateMixin {
   // Controllers
   final _newEmailController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -31,26 +34,32 @@ class _SignupState extends State<Signup> {
   final _formKey = GlobalKey<FormState>();
 
   bool _isProvider = false;
+  bool _isSubmitting = false;
+
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Optional: listen to focus changes to update UI (e.g., highlight field)
-    _newEmailFocusNode.addListener(_onFocusChanged);
-    _newPasswordFocusNode.addListener(_onFocusChanged);
-    _confirmPasswordFocusNode.addListener(_onFocusChanged);
-    _fnameFocusNode.addListener(_onFocusChanged);
-    _lnameFocusNode.addListener(_onFocusChanged);
-  }
-
-  void _onFocusChanged() {
-    // If you want to react to focus changes (e.g., set state to change shadow),
-    // do it here. For now, just calling setState() to trigger rebuild.
-    setState(() {});
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+    _animationController.forward();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     // Dispose controllers
     _newEmailController.dispose();
     _newPasswordController.dispose();
@@ -75,256 +84,389 @@ class _SignupState extends State<Signup> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Gradient background at top
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 280,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.accentColor.withOpacity(0.15),
+                      AppColors.backgroundColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
             // Decorative background icons
             Positioned(
-              right: -40,
-              top: 140,
+              right: -50,
+              top: 80,
               child: Opacity(
-                opacity: 0.12,
+                opacity: 0.08,
                 child: Icon(
                   Icons.pets,
-                  size: 180,
+                  size: 200,
                   color: AppColors.accentColor,
                 ),
               ),
             ),
             Positioned(
-              left: -30,
-              bottom: 160,
+              left: -40,
+              bottom: 120,
               child: Opacity(
-                opacity: 0.12,
+                opacity: 0.06,
                 child: Icon(
-                  Icons.pets,
-                  size: 220,
+                  Icons.favorite,
+                  size: 180,
                   color: AppColors.accentColor,
                 ),
               ),
             ),
 
             // Content
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Create account',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Join our pet-loving community',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 28),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceColor,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 16,
-                          offset: const Offset(0, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with icon
+                      Center(
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.accentColor,
+                                AppColors.accentColor.withOpacity(0.7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accentColor.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.pets,
+                            size: 40,
+                            color: Colors.white,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          _field(
-                            controller: _newEmailController,
-                            focusNode: _newEmailFocusNode,
-                            hint: 'example12@email.com',
-                            label: 'Enter your email',
-                            icon: Icons.email_rounded,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Email is empty';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          _field(
-                            controller: _newPasswordController,
-                            focusNode: _newPasswordFocusNode,
-                            hint: 'Enter password',
-                            label: 'Password',
-                            icon: Icons.lock_rounded,
-                            obscure: true,
-                            keyboardType: TextInputType.text,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Password is empty';
-                              }
-                              if (value.length < 6) {
-                                return 'Minimum 6 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          _field(
-                            controller: _confirmPasswordController,
-                            focusNode: _confirmPasswordFocusNode,
-                            hint: '*******',
-                            label: 'Confirm Password',
-                            icon: Icons.lock_rounded,
-                            obscure: true,
-                            keyboardType: TextInputType.text,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Confirm password is empty';
-                              }
-                              if (value != _newPasswordController.text) {
-                                return 'Passwords do not match';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          _field(
-                            controller: _fnameController,
-                            focusNode: _fnameFocusNode,
-                            hint: 'Enter first name',
-                            label: 'First Name',
-                            icon: Icons.person_rounded,
-                            keyboardType: TextInputType.name,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'First name is empty';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          _field(
-                            controller: _lnameController,
-                            focusNode: _lnameFocusNode,
-                            hint: 'Enter last name',
-                            label: 'Last Name',
-                            icon: Icons.person_rounded,
-                            keyboardType: TextInputType.name,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Last name is empty';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Account type',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _roleChip(
-                                  label: 'Pet owner',
-                                  selected: !_isProvider,
-                                  onTap: () {
-                                    setState(() {
-                                      _isProvider = false;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _roleChip(
-                                  label: 'Provider',
-                                  selected: _isProvider,
-                                  onTap: () {
-                                    setState(() {
-                                      _isProvider = true;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  if (_isProvider) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ProviderSetupScreen(),
-                                      ),
-                                    );
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const Login(),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              child: const Text('Sign Up'),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Already have an account? ',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const Login(),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Login',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
-                    ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Text(
+                          'Create Account',
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Text(
+                          'Join our pet-loving community 🐾',
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Form card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceColor,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Name row
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _field(
+                                      controller: _fnameController,
+                                      focusNode: _fnameFocusNode,
+                                      hint: 'First',
+                                      label: 'First Name',
+                                      icon: Icons.person_outline_rounded,
+                                      keyboardType: TextInputType.name,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Required';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _field(
+                                      controller: _lnameController,
+                                      focusNode: _lnameFocusNode,
+                                      hint: 'Last',
+                                      label: 'Last Name',
+                                      icon: Icons.person_outline_rounded,
+                                      keyboardType: TextInputType.name,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Required';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              _field(
+                                controller: _newEmailController,
+                                focusNode: _newEmailFocusNode,
+                                hint: 'example@email.com',
+                                label: 'Email Address',
+                                icon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Email is required';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Enter a valid email';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              _field(
+                                controller: _newPasswordController,
+                                focusNode: _newPasswordFocusNode,
+                                hint: '••••••••',
+                                label: 'Password',
+                                icon: Icons.lock_outline_rounded,
+                                obscure: true,
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Password is required';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Min 6 characters';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              _field(
+                                controller: _confirmPasswordController,
+                                focusNode: _confirmPasswordFocusNode,
+                                hint: '••••••••',
+                                label: 'Confirm Password',
+                                icon: Icons.lock_outline_rounded,
+                                obscure: true,
+                                keyboardType: TextInputType.text,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Confirm your password';
+                                  }
+                                  if (value != _newPasswordController.text) {
+                                    return 'Passwords don\'t match';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Account type section
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.backgroundColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.badge_outlined,
+                                          size: 20,
+                                          color: AppColors.iconPrimaryColor,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'I am a...',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _roleChip(
+                                            label: 'Pet Owner',
+                                            icon: Icons.pets,
+                                            selected: !_isProvider,
+                                            onTap: () {
+                                              setState(() {
+                                                _isProvider = false;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: _roleChip(
+                                            label: 'Provider',
+                                            icon: Icons.store_rounded,
+                                            selected: _isProvider,
+                                            onTap: () {
+                                              setState(() {
+                                                _isProvider = true;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Sign up button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: ElevatedButton(
+                                  onPressed: _isSubmitting
+                                      ? null
+                                      : _onSignupPressed,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.accentColor,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  child: _isSubmitting
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Text(
+                                              'Create Account',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Icon(
+                                              Icons.arrow_forward_rounded,
+                                              size: 20,
+                                              color: Colors.white.withOpacity(
+                                                0.9,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Login link
+                      Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Already have an account? ',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.black54),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Login(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Sign In',
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.accentColor,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -335,29 +477,62 @@ class _SignupState extends State<Signup> {
 
   Widget _roleChip({
     required String label,
+    required IconData icon,
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: selected ? AppColors.iconPrimaryColor : AppColors.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          gradient: selected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.accentColor,
+                    AppColors.accentColor.withOpacity(0.8),
+                  ],
+                )
+              : null,
+          color: selected ? null : AppColors.surfaceColor,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? AppColors.iconPrimaryColor : Colors.black12,
+            color: selected
+                ? Colors.transparent
+                : Colors.black.withOpacity(0.08),
+            width: 1.5,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: AppColors.accentColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected ? Colors.white : Colors.black54,
             ),
-          ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -374,33 +549,88 @@ class _SignupState extends State<Signup> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
-    // Optional visual tweak when focused
-    final isFocused = focusNode.hasFocus;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isFocused ? 0.10 : 0.06),
-            blurRadius: isFocused ? 14 : 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: MyTextformfield(
-        controller: controller,
-        focusNode: focusNode,
-        hintText: hint,
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: keyboardType,
+      obscureText: obscure,
+      decoration: InputDecoration(
         labelText: label,
-        errorMessage: '$label is empty',
-        prefixIcon: Icon(icon, color: AppColors.iconPrimaryColor),
+        hintText: hint,
+        prefixIcon: Icon(icon, color: AppColors.iconPrimaryColor, size: 22),
         filled: true,
-        fillcolor: AppColors.surfaceColor,
-        obscureText: obscure,
-        keyboardType: keyboardType,
-        validator: validator,
+        fillColor: AppColors.backgroundColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      validator:
+          validator ??
+          (value) {
+            if (value == null || value.trim().isEmpty) {
+              return '$label is empty';
+            }
+            return null;
+          },
     );
+  }
+
+  Future<void> _onSignupPressed() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      if (_isProvider) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProviderSetupScreen()),
+        );
+      } else {
+        final usecase = ref.read(registerUsecaseProvider);
+
+        final email = _newEmailController.text.trim();
+        final password = _newPasswordController.text;
+        final firstName = _fnameController.text.trim();
+        final lastName = _lnameController.text.trim();
+
+        final result = await usecase(
+          RegisterUsecaseParams(
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            password: password,
+          ),
+        );
+
+        if (!mounted) return;
+
+        result.fold(
+          (failure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(failure.message)));
+          },
+          (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Account created successfully. Please log in.'),
+              ),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Login()),
+            );
+          },
+        );
+      }
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
   }
 }

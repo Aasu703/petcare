@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:petcare/features/onboarding/presentation/pages/onboarding_screen.dart';
+import 'package:petcare/core/services/session/session_service.dart';
+import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -42,21 +44,35 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate when animation finishes
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        _goToOnboarding();
+        _goToNext();
       }
     });
 
     // Safety timeout in case of edge cases (optional)
     Timer(const Duration(seconds: 4), () {
-      if (mounted) _goToOnboarding();
+      if (mounted) _goToNext();
     });
   }
 
-  void _goToOnboarding() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const Onbording()),
-    );
+  Future<void> _goToNext() async {
+    final session = SessionService();
+    final loggedIn = await session.isLoggedIn();
+    if (!mounted) return;
+    if (loggedIn) {
+      final firstName = await session.getFirstName() ?? 'User';
+      final email = await session.getEmail() ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => Dashboard(firstName: firstName, email: email),
+        ),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Onbording()),
+      );
+    }
   }
 
   @override

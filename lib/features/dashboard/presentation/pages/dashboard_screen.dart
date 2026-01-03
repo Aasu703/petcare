@@ -6,7 +6,10 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/profile_scr
 import 'package:petcare/app/theme/app_colors.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  final String firstName;
+  final String email;
+
+  const Dashboard({super.key, this.firstName = 'User', this.email = ''});
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -15,43 +18,120 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
 
-  List<Widget> lstBottomScreen = [
-    HomeScreen(),
-    ProfileScreen(),
-    ExploreScreen(),
-    DiscoverScreen(),
+  List<Widget> get _screens => [
+    HomeScreen(firstName: widget.firstName),
+    const ExploreScreen(),
+    const DiscoverScreen(),
+    ProfileScreen(firstName: widget.firstName, email: widget.email),
+  ];
+
+  final List<_NavItem> _navItems = const [
+    _NavItem(
+      icon: Icons.home_rounded,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
+    ),
+    _NavItem(
+      icon: Icons.explore_outlined,
+      activeIcon: Icons.explore_rounded,
+      label: 'Explore',
+    ),
+    _NavItem(
+      icon: Icons.search_rounded,
+      activeIcon: Icons.search_rounded,
+      label: 'Discover',
+    ),
+    _NavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("PawCare"),
-        centerTitle: true,
-        backgroundColor: AppColors.iconPrimaryColor,
-      ),
-      body: lstBottomScreen[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_rounded),
-            label: "Explore",
+      backgroundColor: AppColors.backgroundColor,
+      body: IndexedStack(index: _selectedIndex, children: _screens),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(
+                _navItems.length,
+                (index) => _buildNavItem(index),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_rounded),
-            label: "Discover",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person_4), label: "Profile"),
-        ],
+        ),
       ),
     );
   }
+
+  Widget _buildNavItem(int index) {
+    final isSelected = _selectedIndex == index;
+    final item = _navItems[index];
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.iconPrimaryColor.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? item.activeIcon : item.icon,
+              color: isSelected
+                  ? AppColors.iconPrimaryColor
+                  : AppColors.iconSecondaryColor,
+              size: 24,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                item.label,
+                style: TextStyle(
+                  color: AppColors.iconPrimaryColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
 }

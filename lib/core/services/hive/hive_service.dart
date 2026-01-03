@@ -5,6 +5,12 @@ import 'package:petcare/features/auth/data/models/auth_hive_model.dart';
 import 'package:petcare/features/provider/data/model/provider_hive_model.dart';
 
 class HiveService {
+  HiveService._internal();
+
+  static final HiveService _instance = HiveService._internal();
+
+  factory HiveService() => _instance;
+
   // init
   Future<void> init() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -21,7 +27,7 @@ class HiveService {
 
     // Register
     if (!Hive.isAdapterRegistered(HiveTableConstant.userTypeId)) {
-      Hive.registerAdapter(ProviderHiveModelAdapter());
+      Hive.registerAdapter(AuthHiveModelAdapter());
     }
   }
 

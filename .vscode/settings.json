@@ -60,5 +60,6 @@
   "[dart]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "Dart-Code.dart-code"
-  }
+  },
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

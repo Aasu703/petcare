@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-// TODO: Replace the following import with the actual path to your ItemViewModel provider file
-// import 'package:petcare/features/pet/presentation/providers/item_view_model_provider.dart';
+import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
+import 'package:petcare/features/pet/presentation/providers/pet_providers.dart';
 
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
@@ -15,6 +15,10 @@ class AddPet extends ConsumerStatefulWidget {
 }
 
 class _AddPetState extends ConsumerState<AddPet> {
+  final TextEditingController _nameController = TextEditingController();
+  String _selectedGender = '';
+  String? _imagePath;
+
   IconData _getIconForGender(String gender) {
     switch (gender.toLowerCase()) {
       case 'male':
@@ -83,6 +87,7 @@ class _AddPetState extends ConsumerState<AddPet> {
               const SizedBox(height: 32),
               // Pet Name Field
               TextField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Pet Name',
                   border: OutlineInputBorder(),
@@ -112,14 +117,23 @@ class _AddPetState extends ConsumerState<AddPet> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          _selectedGender = 'male';
+                        });
+                      },
                       icon: Icon(
                         Icons.male,
                         color: AppColors.iconSecondaryColor,
                       ),
                       label: const Text('Male'),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: _selectedGender == 'male'
+                            ? AppColors.iconSecondaryColor
+                            : Colors.white,
+                        foregroundColor: _selectedGender == 'male'
+                            ? Colors.white
+                            : AppColors.iconSecondaryColor,
                         side: BorderSide(color: AppColors.iconSecondaryColor),
                       ),
                     ),
@@ -127,14 +141,23 @@ class _AddPetState extends ConsumerState<AddPet> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          _selectedGender = 'female';
+                        });
+                      },
                       icon: Icon(
                         Icons.female,
                         color: AppColors.iconSecondaryColor,
                       ),
                       label: const Text('Female'),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: _selectedGender == 'female'
+                            ? AppColors.iconSecondaryColor
+                            : Colors.white,
+                        foregroundColor: _selectedGender == 'female'
+                            ? Colors.white
+                            : AppColors.iconSecondaryColor,
                         side: BorderSide(color: AppColors.iconSecondaryColor),
                       ),
                     ),
@@ -144,7 +167,31 @@ class _AddPetState extends ConsumerState<AddPet> {
               const SizedBox(height: 32),
               // Add Pet Button
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  final name = _nameController.text.trim();
+                  if (name.isEmpty || _selectedGender.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter all fields.')),
+                    );
+                    return;
+                  }
+                  final pet = PetEntity(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    name: name,
+                    gender: _selectedGender,
+                    imagePath: _imagePath,
+                  );
+                  // Add pet using use case/provider
+                  ref.read(petListProvider.notifier).addPet(pet);
+                  // Optionally, clear fields or navigate
+                  _nameController.clear();
+                  setState(() {
+                    _selectedGender = '';
+                  });
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Pet added!')));
+                },
                 child: const Text('Add Pet'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.iconSecondaryColor,
@@ -160,48 +207,48 @@ class _AddPetState extends ConsumerState<AddPet> {
     );
   }
 
-  // void _showPermissionDeniedDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Permission Denied'),
-  //       content: const Text(
-  //           'Media access permission was denied. Please enable it in settings to select a photo.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.of(context).pop(),
-  //           child: const Text('OK'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () => Navigator.of(context).pop(),
-  //           child: const Text('Settings'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Permission Denied'),
+        content: const Text(
+          'Media access permission was denied. Please enable it in settings to select a photo.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Settings'),
+          ),
+        ],
+      ),
+    );
+  }
 
-  // Future<void> _pickFromCamera() async{
-  //   final hasPermission = await _requestCameraPermission(Permission.camera);
-  //   if (!hasPermission) return;
+  Future<void> _pickFromCamera() async {
+    final hasPermission = await _requestCameraPermission(Permission.camera);
+    if (!hasPermission) return;
 
-  //   final XFile? photo = await _imagePicker.pickImage(
-  //     source: ImageSource.camera,
-  //     imageQuality: 80,
-  //   );
+    final XFile? photo = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+    );
 
-  //   if(photo != null){
-  //     // Handle the selected photo
-  //     setState(() {
-  //       _selectedMedia.clear();
-  //       _selectedMedia.add(photo);
-  //       _selectedMediaType = 'photo';
-  //     });
-  //     // Upload photo or perform further actions to server
-  //     await ref.read(itemViewModelProvider.notifier).uploadPhoto(File(photo.path));
-  //   }
-
-  // }
-  
- 
+    if (photo != null) {
+      // Handle the selected photo
+      setState(() {
+        _selectedMedia.clear();
+        _selectedMedia.add(photo);
+        _selectedMediaType = 'photo';
+      });
+      // Upload photo or perform further actions to server
+      await ref
+          .read(PetViewModelProvider.notifier)
+          .uploadPhoto(File(photo.path));
+    }
+  }
 }

@@ -16,10 +16,10 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
   List<Widget> get _screens => [
-    HomeScreen(firstName: widget.firstName),
+    const HomeScreen(),
     const ExploreScreen(),
     const DiscoverScreen(),
-    ProfileScreen(firstName: widget.firstName, email: widget.email),
+    const ProfileScreen(),
   ];
   final List<_NavItem> _navItems = const [
     _NavItem(

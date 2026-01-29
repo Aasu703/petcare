@@ -368,11 +368,11 @@ class _LoginState extends ConsumerState<Login>
                                         ),
                                       ).copyWith(
                                         elevation:
-                                            MaterialStateProperty.resolveWith((
+                                            WidgetStateProperty.resolveWith((
                                               states,
                                             ) {
                                               if (states.contains(
-                                                MaterialState.pressed,
+                                                WidgetState.pressed,
                                               )) {
                                                 return 0;
                                               }

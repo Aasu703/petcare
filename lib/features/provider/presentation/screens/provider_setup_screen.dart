@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
@@ -15,6 +17,9 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   final FocusNode _businessNameFocusNode = FocusNode();
   final FocusNode _addressFocusNode = FocusNode();
@@ -33,6 +38,24 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
     _phoneFocusNode.dispose();
     _emailFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+    }
   }
 
   void _completeSetup() {
@@ -94,6 +117,27 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 28),
+                  // Profile Image Picker
+                  Center(
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 48,
+                        backgroundColor: AppColors.accentColor.withOpacity(0.2),
+                        backgroundImage: _selectedImage != null
+                            ? FileImage(_selectedImage!)
+                            : null,
+                        child: _selectedImage == null
+                            ? const Icon(
+                                Icons.camera_alt,
+                                size: 40,
+                                color: Colors.grey,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),

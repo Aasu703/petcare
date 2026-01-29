@@ -8,7 +8,7 @@ class ProviderEntity extends Equatable {
   final String phone;
   final int rating;
 
-  ProviderEntity({
+  const ProviderEntity({
     required this.providerId,
     required this.userId,
     required this.businessName,
@@ -18,7 +18,6 @@ class ProviderEntity extends Equatable {
   });
 
   @override
-  // TODO: implement props
   List<Object?> get props => [
     providerId,
     userId,

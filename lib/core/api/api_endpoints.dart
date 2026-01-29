@@ -43,4 +43,12 @@ class ApiEndpoints {
   static const String providerCreate = '/providers';
   static const String providerUpdate = '/providers';
   static const String providerDelete = '/providers';
+
+  // -------- ------------------------ PET -----------------------
+  static const String pet = 'pet';
+  static const String petGetAll = '/pets';
+  static const String petById = '/pets';
+  static const String petCreate = '/pets';
+  static const String petUpdate = '/pets';
+  static const String petDelete = '/pets';
 }

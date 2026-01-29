@@ -506,11 +506,11 @@ class _SignupState extends ConsumerState<Signup>
                                         ),
                                       ).copyWith(
                                         elevation:
-                                            MaterialStateProperty.resolveWith((
+                                            WidgetStateProperty.resolveWith((
                                               states,
                                             ) {
                                               if (states.contains(
-                                                MaterialState.pressed,
+                                                WidgetState.pressed,
                                               )) {
                                                 return 0;
                                               }

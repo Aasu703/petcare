@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/providers/session_providers.dart';
+import 'package:petcare/core/providers/session_provider.dart';
+
 import 'package:petcare/features/auth/domain/usecases/login_usecase.dart';
 import 'package:petcare/features/auth/presentation/pages/signup.dart';
 import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';

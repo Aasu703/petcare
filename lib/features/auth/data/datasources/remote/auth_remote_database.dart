@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/providers/session_providers.dart';
+import 'package:petcare/core/providers/session_provider.dart';
+
 import 'package:petcare/core/services/session/session_service.dart';
 import 'package:petcare/features/auth/data/datasources/auth_datasource.dart';
 import 'package:petcare/features/auth/data/models/auth_api_model.dart';

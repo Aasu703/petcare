@@ -1,313 +1,585 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
-import 'package:mime/mime.dart';
-import 'package:http_parser/http_parser.dart';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/core/providers/theme_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/core/providers/session_provider.dart';
+
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+class ProfileScreen extends StatelessWidget {
+  final String firstName;
+  final String email;
 
-  @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  Map<String, dynamic>? user;
-  bool isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUserProfile();
-  }
-
-  Future<void> fetchUserProfile() async {
-    setState(() => isLoading = true);
-    try {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:5050/api/auth/whoami'),
-        headers: {
-          // 'Authorization': 'Bearer $token', // Add if needed
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          user = data['data'];
-        });
-      } else {
-        print('Failed to load profile: ${response.body}');
-        setState(() => user = null);
-      }
-    } catch (e) {
-      print('Error fetching profile: $e');
-      setState(() => user = null);
-    }
-    setState(() => isLoading = false);
-  }
-
-  Future<void> pickImage() async {
-    final status = await Permission.photos.request();
-    if (status.isGranted) {
-      final picker = ImagePicker();
-      final image = await picker.pickImage(source: ImageSource.gallery);
-
-      if (image != null) {
-        await uploadProfileImage(File(image.path));
-      }
-    } else if (status.isDenied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permission denied to access gallery.')),
-      );
-    } else if (status.isPermanentlyDenied) {
-      openAppSettings();
-    }
-  }
-
-  Future<void> uploadProfileImage(File imageFile) async {
-    const String uploadUrl = 'http://10.0.2.2:5050/api/auth/update-profile';
-    try {
-      final mimeType =
-          lookupMimeType(imageFile.path) ?? 'application/octet-stream';
-      final request = http.MultipartRequest('PUT', Uri.parse(uploadUrl));
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          imageFile.path,
-          contentType: MediaType.parse(mimeType),
-        ),
-      );
-      // Add headers or authentication if needed
-      // request.headers['Authorization'] = 'Bearer <token>';
-
-      final response = await request.send();
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile image uploaded successfully.')),
-        );
-        await fetchUserProfile(); // Refresh user data
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload image. (${response.statusCode})'),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error uploading image: $e')));
-    }
-  }
-
-  void _toggleTheme() {
-    final themeMode = ref.read(themeModeProvider);
-    ref
-        .read(themeModeProvider.notifier)
-        .setTheme(
-          themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light,
-        );
-  }
-
-  void editName() {
-    final controller = TextEditingController(text: user?['Firstname'] ?? '');
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit Name'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter your name'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await updateName(controller.text.trim());
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> updateName(String newName) async {
-    const String updateUrl = 'http://10.0.2.2:5050/api/auth/update-profile';
-    try {
-      final response = await http.put(
-        Uri.parse(updateUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          // Add auth header if needed
-        },
-        body: jsonEncode({'Firstname': newName}),
-      );
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Name updated successfully.')),
-        );
-        await fetchUserProfile();
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update name.')));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error updating name: $e')));
-    }
-  }
+  const ProfileScreen({super.key, this.firstName = 'User', this.email = ''});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              ref.watch(themeModeProvider) == ThemeMode.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            tooltip: ref.watch(themeModeProvider) == ThemeMode.light
-                ? 'Switch to Dark Mode'
-                : 'Switch to Light Mode',
-            onPressed: _toggleTheme,
-          ),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : user == null
-          ? const Center(child: Text('Failed to load user profile.'))
-          : Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Profile Image
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: user!['imageUrl'] != null
-                            ? NetworkImage(
-                                'http://10.0.2.2:5050${user!['imageUrl']}',
-                              )
-                            : null,
-                        child: user!['imageUrl'] == null
-                            ? const Icon(Icons.person, size: 50)
-                            : null,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Profile',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.iconPrimaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: pickImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.iconPrimaryColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                      child: Icon(
+                        Icons.settings_outlined,
+                        color: AppColors.iconPrimaryColor,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Profile Card
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.iconPrimaryColor,
+                      AppColors.iconPrimaryColor.withOpacity(0.8),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // Name
-                  Text(
-                    user!['Firstname'] ?? 'User',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // Email
-                  Text(
-                    user!['email'] ?? 'No email',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 12),
-                  // Edit Button
-                  TextButton(
-                    onPressed: editName,
-                    child: const Text('Edit Profile'),
-                  ),
-                  const SizedBox(height: 30),
-                  // Simple Menu
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: const [
-                        ListTile(
-                          leading: Icon(Icons.pets),
-                          title: Text('My Pets'),
-                          trailing: Icon(Icons.chevron_right),
-                        ),
-                        Divider(height: 1),
-                        ListTile(
-                          leading: Icon(Icons.calendar_today),
-                          title: Text('Appointments'),
-                          trailing: Icon(Icons.chevron_right),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  // Logout
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Log Out'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
                       ),
-                      onPressed: () async {
-                        await ref
-                            .read(sessionStateProvider.notifier)
-                            .clearSession();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Login()),
-                          (_) => false,
+                      child: const Icon(
+                        Icons.person,
+                        size: 36,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            firstName,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email.isNotEmpty ? email : 'No email',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.white70),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Edit Profile',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Menu Section
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Account Section
+                    Text(
+                      'Account',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.pets_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'My Pets',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.calendar_today_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Appointments',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.favorite_outline,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Favorites',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Preferences Section
+                    Text(
+                      'Preferences',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.notifications_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Notifications',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.language_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Language',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.dark_mode_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Theme',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Support Section
+                    Text(
+                      'Support',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.help_outline,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Help Center',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.privacy_tip_outlined,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'Privacy Policy',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            indent: 70,
+                            endIndent: 16,
+                            color: Colors.grey.shade200,
+                          ),
+                          ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.iconPrimaryColor.withOpacity(
+                                  0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.info_outline,
+                                color: AppColors.iconPrimaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            title: const Text(
+                              'About',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Logout Button
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: const Text(
+                              'Log Out',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            content: const Text(
+                              'Are you sure you want to log out?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  Navigator.pop(ctx);
+                                  // Use Riverpod to clear session
+                                  final container = ProviderScope.containerOf(
+                                    context,
+                                  );
+                                  await container
+                                      .read(sessionStateProvider.notifier)
+                                      .clearSession();
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const Login(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                },
+                                child: Text(
+                                  'Log Out',
+                                  style: TextStyle(
+                                    color: Colors.red.shade600,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                       },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.red.shade200),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.red.shade600,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Log Out',
+                              style: TextStyle(
+                                color: Colors.red.shade600,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

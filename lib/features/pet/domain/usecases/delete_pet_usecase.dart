@@ -1,11 +1,31 @@
-import '../repositories/pet_repository.dart';
+import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
+import 'package:petcare/core/error/failures.dart';
+import 'package:petcare/core/usecases/app_usecase.dart';
+import 'package:petcare/features/pet/domain/repositories/pet_repository.dart';
 
-class DeletePetUseCase {
-  final PetRepository repository;
+class DeletePetParams extends Equatable {
+  final String petId;
 
-  DeletePetUseCase(this.repository);
+  const DeletePetParams({required this.petId});
 
-  Future<void> call(String token, String petId) {
-    return repository.deletePet(token, petId);
+  @override
+  List<Object?> get props => [petId];
+}
+
+class DeletePetUsecase implements UsecaseWithParams<bool, DeletePetParams> {
+  final IPetRepository _repository;
+
+  DeletePetUsecase({required IPetRepository repository})
+    : _repository = repository;
+
+  @override
+  Future<Either<Failure, bool>> call(DeletePetParams params) async {
+    try {
+      final result = await _repository.deletePet(params.petId);
+      return Right(result);
+    } catch (error) {
+      return Left(ServerFailure(message: error.toString()));
+    }
   }
 }

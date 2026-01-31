@@ -1,26 +1,18 @@
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 
-abstract class PetRepository {
-  Future<List<PetEntity>> getPets(String token);
-  Future<PetEntity> getPetById(String token, String petId);
-  Future<PetEntity> addPet({
-    required String token,
-    required String name,
-    required String species,
-    required String breed,
-    required String age,
-    required String weight,
-    String? imagePath,
-  });
-  Future<PetEntity> updatePet({
-    required String token,
-    required String petId,
-    String? name,
-    String? species,
-    String? breed,
-    String? age,
-    String? weight,
-    String? imagePath,
-  });
-  Future<void> deletePet(String token, String petId);
+abstract interface class IPetRepository {
+  /// Create a new pet and return the created pet with generated ID
+  Future<PetEntity> addPet(PetEntity pet);
+
+  /// Get a pet by its ID
+  Future<PetEntity?> getPetById(String petId);
+
+  /// Get all pets for the current user
+  Future<List<PetEntity>> getAllUserPets();
+
+  /// Update a pet
+  Future<PetEntity> updatePet(String petId, PetEntity pet);
+
+  /// Delete a pet
+  Future<bool> deletePet(String petId);
 }

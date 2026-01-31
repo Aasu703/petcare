@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:petcare/core/providers/shared_prefs_provider.dart';
 import 'package:petcare/core/services/session/session_service.dart';
 
 class SessionState {
@@ -33,7 +34,8 @@ class SessionState {
 }
 
 final sessionServiceProvider = Provider<SessionService>((ref) {
-  return SessionService();
+  final prefs = ref.read(sharedPrefsProvider);
+  return SessionService(prefs);
 });
 
 final sessionStateProvider =
@@ -47,14 +49,16 @@ class SessionController extends StateNotifier<SessionState> {
   SessionController(this._service) : super(SessionState.initial);
 
   Future<void> load() async {
-    final logged = await _service.isLoggedIn();
+    final logged = _service.isLoggedIn(); // Remove await
     if (!logged) {
       state = SessionState.initial;
       return;
     }
-    final userId = await _service.getUserId();
-    final firstName = await _service.getFirstName();
-    final email = await _service.getEmail();
+
+    final userId = _service.getUserId(); // Remove await
+    final firstName = _service.getFirstName(); // Remove await
+    final email = _service.getEmail(); // Remove await
+
     state = SessionState(
       isLoggedIn: true,
       userId: userId,

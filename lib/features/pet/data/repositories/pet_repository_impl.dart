@@ -1,92 +1,95 @@
+import 'package:petcare/core/services/connectivity/network_info.dart';
+import 'package:petcare/features/pet/data/datasource/pet_datasource.dart';
+import 'package:petcare/features/pet/data/models/pet_api_model.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
-import 'package:petcare/features/pet/domain/repositories/pet_repository.dart';
-import 'package:petcare/features/pet/data/datasource/remote/pet_remote_datasource.dart';
+import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
 
-class PetRepositoryImpl implements PetRepository {
-  final PetRemoteDataSource remoteDataSource;
+class PetRepositoryImpl implements IPetRepository {
+  final INetworkInfo _networkInfo;
+  final IPetRemoteDataSource _remoteDataSource;
 
-  PetRepositoryImpl({required this.remoteDataSource});
-
-  @override
-  Future<List<PetEntity>> getPets(String token) async {
-    try {
-      final petModels = await remoteDataSource.getAllPets(token);
-      return petModels.map((model) => model.toEntity()).toList();
-    } catch (e) {
-      throw Exception('Failed to get pets: $e');
-    }
-  }
+  PetRepositoryImpl({
+    required INetworkInfo networkInfo,
+    required IPetRemoteDataSource remoteDataSource,
+  }) : _networkInfo = networkInfo,
+       _remoteDataSource = remoteDataSource;
 
   @override
-  Future<PetEntity> getPetById(String token, String petId) async {
-    try {
-      final petModel = await remoteDataSource.getPetById(token, petId);
-      return petModel.toEntity();
-    } catch (e) {
-      throw Exception('Failed to get pet: $e');
-    }
-  }
+  Future<PetEntity> addPet(PetEntity pet) async {
+    if (await _networkInfo.isConnected) {
+      // Convert entity to API model
+      final apiModel = PetApiModel.fromEntity(pet);
 
-  @override
-  Future<PetEntity> addPet({
-    required String token,
-    required String name,
-    required String species,
-    required String breed,
-    required String age,
-    required String weight,
-    String? imagePath,
-  }) async {
-    try {
-      final petModel = await remoteDataSource.createPet(
-        token: token,
-        name: name,
-        species: species,
-        breed: breed,
-        age: age,
-        weight: weight,
+      // Call remote data source (image path is in imageUrl if local)
+      final String? imagePath =
+          (pet.imageUrl != null &&
+              pet.imageUrl!.startsWith('/') &&
+              !pet.imageUrl!.startsWith('/uploads'))
+          ? pet.imageUrl
+          : null;
+
+      final createdPet = await _remoteDataSource.addPet(
+        apiModel,
         imagePath: imagePath,
       );
-      return petModel.toEntity();
-    } catch (e) {
-      throw Exception('Failed to add pet: $e');
+
+      // Return the created pet as entity with generated ID
+      return createdPet.toEntity();
+    } else {
+      throw Exception('No internet connection');
     }
   }
 
   @override
-  Future<PetEntity> updatePet({
-    required String token,
-    required String petId,
-    String? name,
-    String? species,
-    String? breed,
-    String? age,
-    String? weight,
-    String? imagePath,
-  }) async {
-    try {
-      final petModel = await remoteDataSource.updatePet(
-        token: token,
-        petId: petId,
-        name: name,
-        species: species,
-        breed: breed,
-        age: age,
-        weight: weight,
+  Future<PetEntity?> getPetById(String petId) async {
+    if (await _networkInfo.isConnected) {
+      final apiModel = await _remoteDataSource.getPetById(petId);
+      return apiModel?.toEntity();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<List<PetEntity>> getAllUserPets() async {
+    if (await _networkInfo.isConnected) {
+      final apiModels = await _remoteDataSource.getAllUserPets();
+      return apiModels.map((model) => model.toEntity()).toList();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<PetEntity> updatePet(String petId, PetEntity pet) async {
+    if (await _networkInfo.isConnected) {
+      final apiModel = PetApiModel.fromEntity(pet);
+
+      final String? imagePath =
+          (pet.imageUrl != null &&
+              pet.imageUrl!.startsWith('/') &&
+              !pet.imageUrl!.startsWith('/uploads'))
+          ? pet.imageUrl
+          : null;
+
+      final updatedPet = await _remoteDataSource.updatePet(
+        petId,
+        apiModel,
         imagePath: imagePath,
       );
-      return petModel.toEntity();
-    } catch (e) {
-      throw Exception('Failed to update pet: $e');
+
+      return updatedPet.toEntity();
+    } else {
+      throw Exception('No internet connection');
     }
   }
 
   @override
-  Future<void> deletePet(String token, String petId) async {
-    try {
-      await remoteDataSource.deletePet(token, petId);
-    } catch (e) {
-      throw Exception('Failed to delete pet: $e');
+  Future<bool> deletePet(String petId) async {
+    if (await _networkInfo.isConnected) {
+      return await _remoteDataSource.deletePet(petId);
+    } else {
+      throw Exception('No internet connection');
     }
   }
 }

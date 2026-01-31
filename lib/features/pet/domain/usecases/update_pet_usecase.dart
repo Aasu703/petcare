@@ -3,17 +3,19 @@ import 'package:equatable/equatable.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/usecases/app_usecase.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
-import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
+import 'package:petcare/features/pet/domain/repositories/pet_repository.dart';
 
-class AddPetUsecaseParams extends Equatable {
+class UpdatePetParams extends Equatable {
+  final String petId;
   final String name;
   final String species;
   final String? breed;
   final int? age;
   final double? weight;
-  final String? imageUrl; // Local file path before upload
+  final String? imageUrl;
 
-  const AddPetUsecaseParams({
+  const UpdatePetParams({
+    required this.petId,
     required this.name,
     required this.species,
     this.breed,
@@ -23,33 +25,39 @@ class AddPetUsecaseParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, species, breed, age, weight, imageUrl];
+  List<Object?> get props => [
+    petId,
+    name,
+    species,
+    breed,
+    age,
+    weight,
+    imageUrl,
+  ];
 }
 
-class AddPetUsecase
-    implements UsecaseWithParams<PetEntity, AddPetUsecaseParams> {
+class UpdatePetUsecase
+    implements UsecaseWithParams<PetEntity, UpdatePetParams> {
   final IPetRepository _repository;
 
-  AddPetUsecase({required IPetRepository repository})
+  UpdatePetUsecase({required IPetRepository repository})
     : _repository = repository;
 
   @override
-  Future<Either<Failure, PetEntity>> call(AddPetUsecaseParams params) async {
+  Future<Either<Failure, PetEntity>> call(UpdatePetParams params) async {
     try {
-      // Create entity from params (no petId yet - backend generates it)
-      final petEntity = PetEntity(
+      final entity = PetEntity(
+        petId: params.petId,
         name: params.name,
         species: params.species,
         breed: params.breed,
         age: params.age,
         weight: params.weight,
-        imageUrl: params.imageUrl, // Local path or null
+        imageUrl: params.imageUrl,
       );
 
-      // Call repository and get back the created pet WITH the generated ID
-      final createdPet = await _repository.addPet(petEntity);
-
-      return Right(createdPet);
+      final updated = await _repository.updatePet(params.petId, entity);
+      return Right(updated);
     } catch (error) {
       return Left(ServerFailure(message: error.toString()));
     }

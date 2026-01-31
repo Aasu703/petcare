@@ -1,48 +1,67 @@
 import 'package:equatable/equatable.dart';
 
 class PetEntity extends Equatable {
-  final String? id; // Made nullable since new pets won't have ID yet
+  final String? petId;
   final String name;
   final String species;
-  final String breed;
-  final String age;
-  final String weight;
-  final String? imagePath;
+  final String? breed;
+  final int? age; // Changed from String to int
+  final double? weight; // Changed from String to double
+  final String? ownerId;
+  final String? imageUrl;
+  final String? createdAt;
+  final String? updatedAt;
 
   const PetEntity({
-    this.id, // Made optional
+    this.petId,
     required this.name,
     required this.species,
-    required this.breed,
-    required this.age,
-    required this.weight,
-    this.imagePath,
+    this.breed,
+    this.age,
+    this.weight,
+    this.ownerId,
+    this.imageUrl,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  // CopyWith method for easy updates
+  @override
+  List<Object?> get props => [
+    petId,
+    name,
+    species,
+    breed,
+    age,
+    weight,
+    ownerId,
+    imageUrl,
+    createdAt,
+    updatedAt,
+  ];
+
   PetEntity copyWith({
-    String? id,
+    String? petId,
     String? name,
     String? species,
     String? breed,
-    String? age,
-    String? weight,
-    String? imagePath,
+    int? age,
+    double? weight,
+    String? ownerId,
+    String? imageUrl,
+    String? createdAt,
+    String? updatedAt,
   }) {
     return PetEntity(
-      id: id ?? this.id,
+      petId: petId ?? this.petId,
       name: name ?? this.name,
       species: species ?? this.species,
       breed: breed ?? this.breed,
       age: age ?? this.age,
       weight: weight ?? this.weight,
-      imagePath: imagePath ?? this.imagePath,
+      ownerId: ownerId ?? this.ownerId,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-
-  @override
-  List<Object?> get props => [id, name, species, breed, age, weight, imagePath];
-
-  @override
-  bool get stringify => true; // For better debugging
 }

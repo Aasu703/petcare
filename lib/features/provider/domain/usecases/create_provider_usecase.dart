@@ -28,7 +28,14 @@ class CreateProviderUsecase
 
   @override
   Future<Either<Failure, bool>> call(CreateProviderUsecaseParams params) {
-    final providerEntity = ProviderEntity(business_Name: params.providerName);
+    final providerEntity = ProviderEntity(
+      businessName: params.providerName,
+      providerId: '',
+      userId: '',
+      address: '',
+      phone: '',
+      rating: 0,
+    );
 
     return _repository.createProvider(providerEntity);
   }

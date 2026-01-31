@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:petcare/core/services/hive/hive_service.dart';
 import 'package:petcare/features/auth/data/datasources/auth_datasource.dart';
 import 'package:petcare/features/auth/data/models/auth_hive_model.dart';
@@ -31,5 +33,11 @@ class AuthLocalDatasource implements IAuthDataSource {
     } catch (_) {
       return false;
     }
+  }
+
+  @override
+  Future<String> uploadPhoto(File photo) {
+    // TODO: implement uploadPhoto
+    throw UnimplementedError();
   }
 }

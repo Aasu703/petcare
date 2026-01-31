@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'package:petcare/core/services/session/session_service.dart';
 import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
@@ -55,8 +57,10 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _goToNext() async {
-    final session = SessionService();
-    final loggedIn = await session.isLoggedIn();
+    final container = ProviderScope.containerOf(context);
+    final session = container.read(sessionServiceProvider);
+
+    final loggedIn = session.isLoggedIn();
     if (!mounted) return;
     if (loggedIn) {
       final firstName = await session.getFirstName() ?? 'User';

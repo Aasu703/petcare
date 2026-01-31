@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Removed shared UI widgets per request; using inline fields
 import 'package:petcare/features/auth/di/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
-import 'package:petcare/features/auth/domain/usecases/login_usecase.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_setup_screen.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
 
 class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
@@ -40,47 +36,58 @@ class _SignupState extends ConsumerState<Signup>
 
   bool _isProvider = false;
   bool _isSubmitting = false;
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
     );
     _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
-          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
+          ),
         );
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
+      ),
+    );
     _animationController.forward();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    // Dispose controllers
     _newEmailController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     _fnameController.dispose();
     _lnameController.dispose();
     _phoneController.dispose();
-
-    // Dispose focus nodes
     _newEmailFocusNode.dispose();
     _newPasswordFocusNode.dispose();
     _confirmPasswordFocusNode.dispose();
     _fnameFocusNode.dispose();
     _lnameFocusNode.dispose();
     _phoneFocusNode.dispose();
-
     super.dispose();
   }
 
@@ -91,47 +98,55 @@ class _SignupState extends ConsumerState<Signup>
       body: SafeArea(
         child: Stack(
           children: [
-            // Gradient background at top
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 280,
+            // Animated gradient background
+            Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
-                      AppColors.accentColor.withOpacity(0.15),
+                      AppColors.accentColor.withOpacity(0.08),
                       AppColors.backgroundColor,
+                      AppColors.accentColor.withOpacity(0.05),
                     ],
                   ),
                 ),
               ),
             ),
-            // Decorative background icons
+
+            // Floating orbs with blur effect
             Positioned(
-              right: -50,
-              top: 80,
-              child: Opacity(
-                opacity: 0.08,
-                child: Icon(
-                  Icons.pets,
-                  size: 200,
-                  color: AppColors.accentColor,
+              right: -80,
+              top: 100,
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accentColor.withOpacity(0.15),
+                      AppColors.accentColor.withOpacity(0.0),
+                    ],
+                  ),
                 ),
               ),
             ),
             Positioned(
-              left: -40,
-              bottom: 120,
-              child: Opacity(
-                opacity: 0.06,
-                child: Icon(
-                  Icons.favorite,
-                  size: 180,
-                  color: AppColors.accentColor,
+              left: -60,
+              bottom: 150,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accentColor.withOpacity(0.12),
+                      AppColors.accentColor.withOpacity(0.0),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -149,72 +164,88 @@ class _SignupState extends ConsumerState<Signup>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header with icon
+                      const SizedBox(height: 20),
+
+                      // Animated header icon
                       Center(
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.accentColor,
-                                AppColors.accentColor.withOpacity(0.7),
+                        child: ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.accentColor,
+                                  AppColors.accentColor.withOpacity(0.7),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.accentColor.withOpacity(0.4),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 15),
+                                  spreadRadius: -5,
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accentColor.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                            child: const Icon(
+                              Icons.pets,
+                              size: 45,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.pets,
-                            size: 40,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Center(
-                        child: Text(
-                          'Create Account',
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                              ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text(
-                          'Join our pet-loving community 🐾',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
                         ),
                       ),
                       const SizedBox(height: 32),
 
-                      // Form card
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Create Account',
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -1,
+                                    fontSize: 32,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Join our pet-loving community 🐾',
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.black.withOpacity(0.6),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+
+                      // Glass morphism form card
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceColor,
-                          borderRadius: BorderRadius.circular(28),
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 24,
-                              offset: const Offset(0, 12),
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
+                              spreadRadius: -10,
                             ),
                           ],
                         ),
@@ -226,7 +257,7 @@ class _SignupState extends ConsumerState<Signup>
                               Row(
                                 children: [
                                   Expanded(
-                                    child: _field(
+                                    child: _modernField(
                                       controller: _fnameController,
                                       focusNode: _fnameFocusNode,
                                       hint: 'First',
@@ -241,9 +272,9 @@ class _SignupState extends ConsumerState<Signup>
                                       },
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 14),
                                   Expanded(
-                                    child: _field(
+                                    child: _modernField(
                                       controller: _lnameController,
                                       focusNode: _lnameFocusNode,
                                       hint: 'Last',
@@ -260,8 +291,8 @@ class _SignupState extends ConsumerState<Signup>
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                              _field(
+                              const SizedBox(height: 18),
+                              _modernField(
                                 controller: _newEmailController,
                                 focusNode: _newEmailFocusNode,
                                 hint: 'example@email.com',
@@ -278,8 +309,8 @@ class _SignupState extends ConsumerState<Signup>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              _field(
+                              const SizedBox(height: 18),
+                              _modernField(
                                 controller: _phoneController,
                                 focusNode: _phoneFocusNode,
                                 hint: '+1234567890',
@@ -296,15 +327,28 @@ class _SignupState extends ConsumerState<Signup>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              _field(
+                              const SizedBox(height: 18),
+                              _modernField(
                                 controller: _newPasswordController,
                                 focusNode: _newPasswordFocusNode,
                                 hint: '••••••••',
                                 label: 'Password',
                                 icon: Icons.lock_outline_rounded,
-                                obscure: true,
+                                obscure: !_showPassword,
                                 keyboardType: TextInputType.text,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _showPassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _showPassword = !_showPassword;
+                                    });
+                                  },
+                                ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Password is required';
@@ -315,15 +359,29 @@ class _SignupState extends ConsumerState<Signup>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              _field(
+                              const SizedBox(height: 18),
+                              _modernField(
                                 controller: _confirmPasswordController,
                                 focusNode: _confirmPasswordFocusNode,
                                 hint: '••••••••',
                                 label: 'Confirm Password',
                                 icon: Icons.lock_outline_rounded,
-                                obscure: true,
+                                obscure: !_showConfirmPassword,
                                 keyboardType: TextInputType.text,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _showConfirmPassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _showConfirmPassword =
+                                          !_showConfirmPassword;
+                                    });
+                                  },
+                                ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Confirm your password';
@@ -335,42 +393,66 @@ class _SignupState extends ConsumerState<Signup>
                                 },
                               ),
 
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 28),
 
-                              // Account type section
+                              // Modern account type section
                               Container(
-                                padding: const EdgeInsets.all(16),
+                                padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
-                                  color: AppColors.backgroundColor,
-                                  borderRadius: BorderRadius.circular(16),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      AppColors.accentColor.withOpacity(0.08),
+                                      AppColors.accentColor.withOpacity(0.04),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: AppColors.accentColor.withOpacity(
+                                      0.15,
+                                    ),
+                                    width: 1,
+                                  ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(
-                                          Icons.badge_outlined,
-                                          size: 20,
-                                          color: AppColors.iconPrimaryColor,
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.accentColor
+                                                .withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.badge_outlined,
+                                            size: 20,
+                                            color: AppColors.accentColor,
+                                          ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 12),
                                         Text(
-                                          'I am a...',
+                                          'Account Type',
                                           style: Theme.of(context)
                                               .textTheme
-                                              .titleSmall
+                                              .titleMedium
                                               ?.copyWith(
                                                 fontWeight: FontWeight.w700,
+                                                fontSize: 16,
                                               ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 16),
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: _roleChip(
+                                          child: _modernRoleChip(
                                             label: 'Pet Owner',
                                             icon: Icons.pets,
                                             selected: !_isProvider,
@@ -383,7 +465,7 @@ class _SignupState extends ConsumerState<Signup>
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
-                                          child: _roleChip(
+                                          child: _modernRoleChip(
                                             label: 'Provider',
                                             icon: Icons.store_rounded,
                                             selected: _isProvider,
@@ -400,24 +482,41 @@ class _SignupState extends ConsumerState<Signup>
                                 ),
                               ),
 
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 28),
 
-                              // Sign up button
+                              // Modern sign up button
                               SizedBox(
                                 width: double.infinity,
-                                height: 56,
+                                height: 60,
                                 child: ElevatedButton(
                                   onPressed: _isSubmitting
                                       ? null
                                       : _onSignupPressed,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.accentColor,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
+                                  style:
+                                      ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.accentColor,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        shadowColor: AppColors.accentColor
+                                            .withOpacity(0.4),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            18,
+                                          ),
+                                        ),
+                                      ).copyWith(
+                                        elevation:
+                                            MaterialStateProperty.resolveWith((
+                                              states,
+                                            ) {
+                                              if (states.contains(
+                                                MaterialState.pressed,
+                                              )) {
+                                                return 0;
+                                              }
+                                              return 8;
+                                            }),
+                                      ),
                                   child: _isSubmitting
                                       ? const SizedBox(
                                           width: 24,
@@ -434,16 +533,17 @@ class _SignupState extends ConsumerState<Signup>
                                             const Text(
                                               'Create Account',
                                               style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 17,
                                                 fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.3,
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: 10),
                                             Icon(
                                               Icons.arrow_forward_rounded,
-                                              size: 20,
+                                              size: 22,
                                               color: Colors.white.withOpacity(
-                                                0.9,
+                                                0.95,
                                               ),
                                             ),
                                           ],
@@ -455,7 +555,7 @@ class _SignupState extends ConsumerState<Signup>
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
                       // Login link
                       Center(
@@ -465,7 +565,10 @@ class _SignupState extends ConsumerState<Signup>
                             Text(
                               'Already have an account? ',
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.black54),
+                                  ?.copyWith(
+                                    color: Colors.black.withOpacity(0.6),
+                                    fontSize: 15,
+                                  ),
                             ),
                             GestureDetector(
                               onTap: () {
@@ -476,19 +579,34 @@ class _SignupState extends ConsumerState<Signup>
                                   ),
                                 );
                               },
-                              child: Text(
-                                'Sign In',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w800,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
                                       color: AppColors.accentColor,
+                                      width: 2,
                                     ),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Sign In',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.accentColor,
+                                        fontSize: 15,
+                                      ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -500,7 +618,7 @@ class _SignupState extends ConsumerState<Signup>
     );
   }
 
-  Widget _roleChip({
+  Widget _modernRoleChip({
     required String label,
     required IconData icon,
     required bool selected,
@@ -509,8 +627,9 @@ class _SignupState extends ConsumerState<Signup>
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
           gradient: selected
               ? LinearGradient(
@@ -518,24 +637,25 @@ class _SignupState extends ConsumerState<Signup>
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.accentColor,
-                    AppColors.accentColor.withOpacity(0.8),
+                    AppColors.accentColor.withOpacity(0.85),
                   ],
                 )
               : null,
-          color: selected ? null : AppColors.surfaceColor,
-          borderRadius: BorderRadius.circular(14),
+          color: selected ? null : Colors.white.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected
-                ? Colors.transparent
-                : Colors.black.withOpacity(0.08),
-            width: 1.5,
+                ? AppColors.accentColor.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+            width: selected ? 2 : 1.5,
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: AppColors.accentColor.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: AppColors.accentColor.withOpacity(0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                    spreadRadius: -4,
                   ),
                 ]
               : null,
@@ -545,15 +665,15 @@ class _SignupState extends ConsumerState<Signup>
           children: [
             Icon(
               icon,
-              size: 20,
-              color: selected ? Colors.white : Colors.black54,
+              size: 22,
+              color: selected ? Colors.white : Colors.black.withOpacity(0.6),
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 color: selected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
             ),
@@ -563,8 +683,7 @@ class _SignupState extends ConsumerState<Signup>
     );
   }
 
-  /// Reusable text field widget
-  Widget _field({
+  Widget _modernField({
     required TextEditingController controller,
     required FocusNode focusNode,
     required String hint,
@@ -572,6 +691,7 @@ class _SignupState extends ConsumerState<Signup>
     required IconData icon,
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
+    Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -579,13 +699,60 @@ class _SignupState extends ConsumerState<Signup>
       focusNode: focusNode,
       keyboardType: keyboardType,
       obscureText: obscure,
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.iconPrimaryColor, size: 22),
+        hintStyle: TextStyle(
+          color: Colors.black.withOpacity(0.35),
+          fontWeight: FontWeight.w400,
+        ),
+        labelStyle: TextStyle(
+          color: Colors.black.withOpacity(0.6),
+          fontWeight: FontWeight.w600,
+        ),
+        floatingLabelStyle: TextStyle(
+          color: AppColors.accentColor,
+          fontWeight: FontWeight.w700,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: AppColors.iconPrimaryColor.withOpacity(0.7),
+          size: 22,
+        ),
+        suffixIcon: suffixIcon,
         filled: true,
-        fillColor: AppColors.backgroundColor,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: Colors.white.withOpacity(0.5),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.black.withOpacity(0.08),
+            width: 1.5,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.black.withOpacity(0.08),
+            width: 1.5,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: AppColors.accentColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
       ),
       validator:
           validator ??
@@ -638,14 +805,28 @@ class _SignupState extends ConsumerState<Signup>
 
         result.fold(
           (failure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(failure.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: Colors.red.shade400,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            );
           },
           (_) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully. Please log in.'),
+              SnackBar(
+                content: const Text(
+                  'Account created successfully. Please log in.',
+                ),
+                backgroundColor: Colors.green.shade400,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             );
             Navigator.pushReplacement(

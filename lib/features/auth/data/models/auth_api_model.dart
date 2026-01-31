@@ -33,7 +33,7 @@ class AuthApiModel {
       "username": username,
       "password": password,
       "confirmPassword": confirmPassword,
-      "avatar": avatar,
+      "imageUrl": avatar,
     };
   }
 
@@ -47,7 +47,8 @@ class AuthApiModel {
       email: emailValue,
       phoneNumber: (json["phoneNumber"] ?? json["phone"])?.toString(),
       username: (json["username"] ?? emailValue).toString(),
-      avatar: (json["avatar"] ?? json["profilePicture"])?.toString(),
+      avatar: (json["imageUrl"] ?? json["avatar"] ?? json["profilePicture"])
+          ?.toString(),
     );
   }
 

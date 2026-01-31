@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
@@ -90,16 +92,18 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, AuthEntity>> getCurrentUser() async {
     try {
-      if (_currentUserId == null) {
-        return const Left(LocalDatabaseFailure(message: 'No current user'));
-      }
       if (await _networkInfo.isConnected) {
-        final apiModel = await _remoteDataSource.getUserById(_currentUserId!);
+        final apiModel = await _remoteDataSource.getUserById(
+          _currentUserId ?? '',
+        );
         if (apiModel == null) {
           return const Left(LocalDatabaseFailure(message: 'User not found'));
         }
         return Right(apiModel.toEntity());
       } else {
+        if (_currentUserId == null) {
+          return const Left(LocalDatabaseFailure(message: 'No current user'));
+        }
         final model = await _localDataSource.getCurrentUser(_currentUserId!);
         if (model == null) {
           return const Left(LocalDatabaseFailure(message: 'User not found'));
@@ -130,6 +134,46 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadPhoto(File photo) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final url = await _remoteDataSource.uploadPhoto(photo);
+        return Right(url);
+      } catch (e) {
+        return Left(ServerFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AuthEntity>> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phoneNumber,
+    File? imageFile,
+  }) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final updated = await _remoteDataSource.updateProfile(
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phoneNumber,
+          imageFile: imageFile,
+        );
+        return Right(updated.toEntity());
+      } catch (e) {
+        return Left(ServerFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
     }
   }
 }

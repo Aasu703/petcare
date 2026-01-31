@@ -1,21 +1,30 @@
 import 'package:equatable/equatable.dart';
 
 class ProviderEntity extends Equatable {
-  final String? providerId;
-  final String business_Name;
-  final String? address;
-  final String? phone;
-  final String? rating;
+  final String providerId;
+  final String userId; // FK → User
+  final String businessName;
+  final String address;
+  final String phone;
+  final int rating;
 
-  const ProviderEntity({
-    this.providerId,
-    required this.business_Name,
-    this.address,
-    this.phone,
-    this.rating,
+  ProviderEntity({
+    required this.providerId,
+    required this.userId,
+    required this.businessName,
+    required this.address,
+    required this.phone,
+    required this.rating,
   });
 
   @override
   // TODO: implement props
-  List<Object?> get props => [providerId, business_Name, rating];
+  List<Object?> get props => [
+    providerId,
+    userId,
+    businessName,
+    address,
+    phone,
+    rating,
+  ];
 }

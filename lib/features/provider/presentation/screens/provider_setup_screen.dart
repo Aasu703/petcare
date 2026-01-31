@@ -14,10 +14,12 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
   final _businessNameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
 
   final FocusNode _businessNameFocusNode = FocusNode();
   final FocusNode _addressFocusNode = FocusNode();
   final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -29,6 +31,7 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
     _businessNameFocusNode.dispose();
     _addressFocusNode.dispose();
     _phoneFocusNode.dispose();
+    _emailFocusNode.dispose();
     super.dispose();
   }
 
@@ -132,6 +135,15 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
                             label: 'Phone number',
                             icon: Icons.phone_rounded,
                             keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 18),
+                          _field(
+                            controller: _emailController,
+                            focusNode: _emailFocusNode,
+                            hint: 'email@example.com',
+                            label: 'Email',
+                            icon: Icons.email_rounded,
+                            keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 24),
                           SizedBox(

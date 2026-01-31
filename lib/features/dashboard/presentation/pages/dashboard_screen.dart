@@ -8,23 +8,19 @@ import 'package:petcare/app/theme/app_colors.dart';
 class Dashboard extends StatefulWidget {
   final String firstName;
   final String email;
-
   const Dashboard({super.key, this.firstName = 'User', this.email = ''});
-
   @override
   State<Dashboard> createState() => _DashboardState();
 }
 
 class _DashboardState extends State<Dashboard> {
   int _selectedIndex = 0;
-
   List<Widget> get _screens => [
     HomeScreen(firstName: widget.firstName),
     const ExploreScreen(),
     const DiscoverScreen(),
     ProfileScreen(firstName: widget.firstName, email: widget.email),
   ];
-
   final List<_NavItem> _navItems = const [
     _NavItem(
       icon: Icons.home_rounded,
@@ -47,7 +43,6 @@ class _DashboardState extends State<Dashboard> {
       label: 'Profile',
     ),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,7 +78,6 @@ class _DashboardState extends State<Dashboard> {
   Widget _buildNavItem(int index) {
     final isSelected = _selectedIndex == index;
     final item = _navItems[index];
-
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
@@ -128,7 +122,6 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-
   const _NavItem({
     required this.icon,
     required this.activeIcon,

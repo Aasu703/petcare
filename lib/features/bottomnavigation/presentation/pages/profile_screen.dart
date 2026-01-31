@@ -1,17 +1,44 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
+import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
+import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
+import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   final String firstName;
   final String email;
 
   const ProfileScreen({super.key, this.firstName = 'User', this.email = ''});
 
   @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(profileViewModelProvider.notifier).loadProfile(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final session = ref.watch(sessionStateProvider);
+    final profileState = ref.watch(profileViewModelProvider);
+    final avatar = profileState.user?.avatar;
+    final displayName = session.firstName?.isNotEmpty == true
+        ? session.firstName!
+        : (widget.firstName.isNotEmpty ? widget.firstName : 'User');
+    final displayEmail = session.email?.isNotEmpty == true
+        ? session.email!
+        : (widget.email.isNotEmpty ? widget.email : 'No email');
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
@@ -62,18 +89,21 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 36,
-                        color: Colors.white,
-                      ),
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundImage: (avatar != null && avatar.isNotEmpty)
+                          ? CachedNetworkImageProvider(
+                              '${ApiEndpoints.mediaServerUrl}$avatar',
+                            )
+                          : null,
+                      child: (avatar == null || avatar.isEmpty)
+                          ? const Icon(
+                              Icons.person,
+                              size: 36,
+                              color: Colors.white,
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -81,7 +111,7 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            firstName,
+                            displayName,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: Colors.white,
@@ -90,26 +120,42 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            email.isNotEmpty ? email : 'No email',
+                            displayEmail,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Edit Profile',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                          InkWell(
+                            onTap: () async {
+                              final updated = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const EditProfileScreen(),
+                                ),
+                              );
+                              if (updated == true) {
+                                await ref
+                                    .read(sessionStateProvider.notifier)
+                                    .load();
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Edit Profile',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
@@ -173,6 +219,14 @@ class ProfileScreen extends StatelessWidget {
                               Icons.chevron_right,
                               color: Colors.grey.shade400,
                             ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyPet(),
+                                ),
+                              );
+                            },
                           ),
                           Divider(
                             height: 1,

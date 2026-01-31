@@ -66,6 +66,14 @@ class HiveService {
   }
 
   // delete
+  Future<void> deleteProvider(String providerId) async {
+    await _providerBox.delete(providerId);
+  }
+
+  // get by id
+  ProviderHiveModel? getProviderById(String providerId) {
+    return _providerBox.get(providerId);
+  }
 
   // _____________________________________- Queries Auth ____________________________________________
 

@@ -33,18 +33,25 @@ class ProviderHiveModel extends HiveObject {
   // ToEntity this meaning to get request form
   ProviderEntity toEntity() {
     return ProviderEntity(
-      providerId: providerId,
-      business_Name: business_Name,
-      address: address,
-      phone: phone,
-      rating: rating,
+      providerId: providerId ?? '',
+      userId: '',
+      businessName: business_Name,
+      address: address ?? '',
+      phone: phone ?? '',
+      rating: int.tryParse(rating ?? '0') ?? 0,
     );
   }
 
   // FromEntity
 
   factory ProviderHiveModel.fromEntity(ProviderEntity entity) {
-    return ProviderHiveModel(business_Name: entity.business_Name);
+    return ProviderHiveModel(
+      providerId: entity.providerId.isNotEmpty ? entity.providerId : null,
+      business_Name: entity.businessName,
+      address: entity.address,
+      phone: entity.phone,
+      rating: entity.rating.toString(),
+    );
   }
 
   // ToEntityList

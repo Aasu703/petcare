@@ -19,9 +19,13 @@ class ProviderLocalDatasource implements IProviderDatasource {
   }
 
   @override
-  Future<bool> deleteProvider(String providerId) {
-    // TODO: implement deleteProvider
-    throw UnimplementedError();
+  Future<bool> deleteProvider(String providerId) async {
+    try {
+      await _hiveService.deleteProvider(providerId);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -34,14 +38,21 @@ class ProviderLocalDatasource implements IProviderDatasource {
   }
 
   @override
-  Future<ProviderHiveModel?> getProviderById(String providerId) {
-    // TODO: implement getProviderById
-    throw UnimplementedError();
+  Future<ProviderHiveModel?> getProviderById(String providerId) async {
+    try {
+      return _hiveService.getProviderById(providerId);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
-  Future<bool> updateProvider(ProviderHiveModel entity) {
-    // TODO: implement updateProvider
-    throw UnimplementedError();
+  Future<bool> updateProvider(ProviderHiveModel entity) async {
+    try {
+      await _hiveService.updateProvider(entity);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

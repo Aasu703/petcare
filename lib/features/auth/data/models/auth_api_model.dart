@@ -37,16 +37,24 @@ class AuthApiModel {
     };
   }
 
-  // FromJSON
+  // FromJSON - FIXED VERSION
   factory AuthApiModel.fromJSON(Map<String, dynamic> json) {
+    print('🔍 Parsing JSON: $json'); // Debug log
+
     final emailValue = json["email"]?.toString() ?? '';
+
     return AuthApiModel(
       id: (json["_id"] ?? json["id"])?.toString(),
-      Firstname: (json["Firstname"] ?? json["name"])?.toString(),
-      Lastname: json["Lastname"]?.toString(),
+      // Try multiple possible field names for first name
+      Firstname: (json["Firstname"] ?? json["firstName"] ?? json["name"])
+          ?.toString(),
+      // Try multiple possible field names for last name
+      Lastname: (json["Lastname"] ?? json["lastName"])?.toString(),
       email: emailValue,
-      phoneNumber: (json["phoneNumber"] ?? json["phone"])?.toString(),
+      // FIXED: Check 'phone' first since that's what backend returns
+      phoneNumber: (json["phone"] ?? json["phoneNumber"])?.toString(),
       username: (json["username"] ?? emailValue).toString(),
+      // Try multiple possible field names for avatar
       avatar: (json["imageUrl"] ?? json["avatar"] ?? json["profilePicture"])
           ?.toString(),
     );
@@ -79,6 +87,7 @@ class AuthApiModel {
       avatar: entity.avatar,
     );
   }
+
   // toEntityList
   static List<AuthEntity> toEntityList(List<AuthApiModel> models) {
     return models.map((model) => model.toEntity()).toList();

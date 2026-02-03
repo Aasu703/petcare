@@ -160,8 +160,6 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     if (await _networkInfo.isConnected) {
       try {
-        print('🔄 Repository: Calling remote data source updateProfile');
-
         final updated = await _remoteDataSource.updateProfile(
           firstName: firstName,
           lastName: lastName,
@@ -170,14 +168,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           imageFile: imageFile,
         );
 
-        print('✅ Repository: Update successful');
-        print(
-          '✅ Updated user: ${updated.email}, ${updated.Firstname} ${updated.Lastname}',
-        );
-
         return Right(updated.toEntity());
       } catch (e) {
-        print('❌ Repository: Update error: $e');
         return Left(ServerFailure(message: e.toString()));
       }
     } else {

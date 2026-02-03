@@ -3,7 +3,7 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/discover_sc
 import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
-import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/app_colors.dart' as theme_colors;
 
 class Dashboard extends StatefulWidget {
   final String firstName;
@@ -46,11 +46,11 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: theme_colors.AppColors.backgroundColor,
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceColor,
+          color: theme_colors.AppColors.surfaceColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -86,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.iconPrimaryColor.withOpacity(0.1)
+              ? theme_colors.AppColors.iconPrimaryColor.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -96,8 +96,8 @@ class _DashboardState extends State<Dashboard> {
             Icon(
               isSelected ? item.activeIcon : item.icon,
               color: isSelected
-                  ? AppColors.iconPrimaryColor
-                  : AppColors.iconSecondaryColor,
+                  ? theme_colors.AppColors.iconPrimaryColor
+                  : theme_colors.AppColors.iconSecondaryColor,
               size: 24,
             ),
             if (isSelected) ...[
@@ -105,7 +105,7 @@ class _DashboardState extends State<Dashboard> {
               Text(
                 item.label,
                 style: TextStyle(
-                  color: AppColors.iconPrimaryColor,
+                  color: theme_colors.AppColors.iconPrimaryColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),

@@ -8,12 +8,14 @@ class SessionState {
   final String? userId;
   final String? firstName;
   final String? email;
+  final String? Lastname;
 
   const SessionState({
     required this.isLoggedIn,
     this.userId,
     this.firstName,
     this.email,
+    this.Lastname,
   });
 
   SessionState copyWith({

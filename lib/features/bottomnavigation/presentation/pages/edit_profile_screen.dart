@@ -136,118 +136,255 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _existingImageUrl = user.avatar;
       _didPrefill = true;
     }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Edit Profile',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         backgroundColor: AppColors.backgroundColor,
         elevation: 0,
+        centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _showImagePicker,
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 48,
-                      backgroundColor: AppColors.iconPrimaryColor.withOpacity(
-                        0.1,
-                      ),
-                      backgroundImage: _localImage != null
-                          ? FileImage(_localImage!)
-                          : (_existingImageUrl != null &&
-                                _existingImageUrl!.isNotEmpty)
-                          ? CachedNetworkImageProvider(
-                              '${ApiEndpoints.mediaServerUrl}${_existingImageUrl!}',
-                            )
-                          : null,
-                      child:
-                          (_localImage == null &&
-                              (_existingImageUrl == null ||
-                                  _existingImageUrl!.isEmpty))
-                          ? const Icon(Icons.person, size: 36)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.edit, size: 18),
-                      ),
-                    ),
-                  ],
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _firstNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'First name',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'First name is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _lastNameController,
-                      decoration: const InputDecoration(labelText: 'Last name'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: profileState.isLoading ? null : _submit,
-                        child: profileState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                    // Profile Image
+                    GestureDetector(
+                      onTap: _showImagePicker,
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.borderColor.withOpacity(0.3),
+                                width: 3,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 48,
+                              backgroundColor: AppColors.surfaceColor,
+                              backgroundImage: _localImage != null
+                                  ? FileImage(_localImage!)
+                                  : (_existingImageUrl != null &&
+                                        _existingImageUrl!.isNotEmpty)
+                                  ? CachedNetworkImageProvider(
+                                      '${ApiEndpoints.mediaServerUrl}$_existingImageUrl',
+                                    )
+                                  : null,
+                              child:
+                                  (_localImage == null &&
+                                      (_existingImageUrl == null ||
+                                          _existingImageUrl!.isEmpty))
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 40,
+                                      color: AppColors.iconSecondaryColor,
+                                    )
+                                  : null,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.backgroundColor,
+                                  width: 2,
                                 ),
-                              )
-                            : const Text('Save changes'),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: AppColors.buttonTextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Form
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // First Name
+                          _buildLabel('First Name'),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            controller: _firstNameController,
+                            hintText: 'Enter your first name',
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'First name is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Last Name
+                          _buildLabel('Last Name'),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            controller: _lastNameController,
+                            hintText: 'Enter your last name',
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Email
+                          _buildLabel('Email'),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            controller: _emailController,
+                            hintText: 'Enter your email',
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Email is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Phone
+                          _buildLabel('Phone'),
+                          const SizedBox(height: 8),
+                          _buildTextField(
+                            controller: _phoneController,
+                            hintText: 'Enter your phone number',
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Save Button
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: profileState.isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.buttonPrimaryColor,
+                    foregroundColor: AppColors.buttonTextColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    disabledBackgroundColor: AppColors.disabledColor
+                        .withOpacity(0.5),
+                  ),
+                  child: profileState.isLoading
+                      ? SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.buttonTextColor,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'SAVE CHANGES',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textSecondaryColor,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: TextStyle(fontSize: 15, color: AppColors.textPrimaryColor),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(fontSize: 15, color: AppColors.textHintColor),
+        filled: true,
+        fillColor: AppColors.surfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: AppColors.borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: AppColors.borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: AppColors.errorColor),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
         ),
       ),
     );

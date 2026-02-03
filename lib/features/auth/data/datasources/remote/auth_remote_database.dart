@@ -159,11 +159,20 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     String? phoneNumber,
     File? imageFile,
   }) async {
+    // Get token from token service
+    final token = await _tokenService.getToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Missing authentication token. Please login again.');
+    }
+
     final formData = FormData.fromMap({
-      if (firstName != null && firstName.isNotEmpty) 'Firstname': firstName,
-      if (lastName != null && lastName.isNotEmpty) 'Lastname': lastName,
-      if (email != null && email.isNotEmpty) 'email': email,
-      if (phoneNumber != null && phoneNumber.isNotEmpty) 'phone': phoneNumber,
+      if (firstName != null && firstName.trim().isNotEmpty)
+        'Firstname': firstName.trim(),
+      if (lastName != null && lastName.trim().isNotEmpty)
+        'Lastname': lastName.trim(),
+      if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+      if (phoneNumber != null && phoneNumber.trim().isNotEmpty)
+        'phone': phoneNumber.trim(),
       if (imageFile != null)
         'image': await MultipartFile.fromFile(
           imageFile.path,
@@ -174,6 +183,10 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     final response = await _apiClient.put(
       ApiEndpoints.userUploadPhoto,
       data: formData,
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+        contentType: 'multipart/form-data',
+      ),
     );
 
     if (response.data['success'] == true) {

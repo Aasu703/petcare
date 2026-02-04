@@ -15,4 +15,6 @@ abstract interface class IProviderRemoteDataSource {
   Future<ProviderApiModel> createProvider(ProviderApiModel provider);
   Future<bool> updateProvider(ProviderApiModel provider);
   Future<bool> deleteProvider(String providerId);
+  Future<ProviderApiModel?> login(String email, String password);
+  Future<ProviderApiModel> register(ProviderApiModel provider);
 }

@@ -9,7 +9,7 @@ class ApiEndpoints {
 
   static const String compIpAddress = "192.168.1.2";
 
-  static String get serverUrl => 'http://localhost:5050';
+  static String get serverUrl => 'http://$compIpAddress:5050';
 
   static String get mediaServerUrl {
     if (isPhysicalDevice) {

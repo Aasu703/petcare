@@ -133,4 +133,62 @@ class ProviderRepositoryImpl implements IProviderRepository {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, ProviderEntity>> login(
+    String email,
+    String password,
+  ) async {
+    try {
+      if (await _networkInfo.isConnected) {
+        // Online: use remote API
+        final apiModel = await _remoteDataSource.login(email, password);
+        if (apiModel != null) {
+          return Right(apiModel.toEntity());
+        }
+        return Left(ServerFailure(message: 'Invalid email or password'));
+      } else {
+        // Offline: fallback to local Hive - not implemented for auth
+        return Left(
+          LocalDatabaseFailure(message: 'Offline login not supported'),
+        );
+      }
+    } catch (e) {
+      return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> register(
+    ProviderEntity entity,
+    String confirmPassword,
+  ) async {
+    try {
+      if (await _networkInfo.isConnected) {
+        // Online: use remote API
+        final apiModel = ProviderApiModel.fromEntity(entity);
+        // Add confirmPassword to the model for API
+        final apiModelWithConfirm = ProviderApiModel(
+          providerId: apiModel.providerId,
+          businessName: apiModel.businessName,
+          userId: apiModel.userId,
+          address: apiModel.address,
+          phone: apiModel.phone,
+          rating: apiModel.rating,
+          email: apiModel.email ?? '',
+          password: apiModel.password ?? '',
+          confirmPassword: confirmPassword,
+        );
+        await _remoteDataSource.register(apiModelWithConfirm);
+        return const Right(true);
+      } else {
+        // Offline: fallback to local Hive - not implemented for auth
+        return Left(
+          LocalDatabaseFailure(message: 'Offline register not supported'),
+        );
+      }
+    } catch (e) {
+      return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
 }

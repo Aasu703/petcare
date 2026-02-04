@@ -7,6 +7,9 @@ class ProviderApiModel {
   final String address;
   final String phone;
   final int rating;
+  final String? email;
+  final String? password;
+  final String? confirmPassword;
 
   ProviderApiModel({
     this.providerId,
@@ -15,40 +18,49 @@ class ProviderApiModel {
     required this.address,
     required this.phone,
     required this.rating,
+    this.email,
+    this.password,
+    this.confirmPassword,
   });
 
   // TO JSON (Send to API)
   Map<String, dynamic> toJson() {
-    return {
-      "user_id": userId,
-      "business_name": businessName,
+    final json = <String, dynamic>{
+      "businessName": businessName,
       "address": address,
       "phone": phone,
-      "rating": rating,
     };
+    if (email != null) json["email"] = email;
+    if (password != null) json["password"] = password;
+    if (confirmPassword != null) json["confirmPassword"] = confirmPassword;
+    return json;
   }
 
   // FROM JSON (From API)
   factory ProviderApiModel.fromJson(Map<String, dynamic> json) {
     return ProviderApiModel(
       providerId: (json["_id"] ?? json["provider_id"])?.toString(),
-      userId: json["user_id"].toString(),
-      businessName: json["business_name"],
-      address: json["address"],
-      phone: json["phone"],
+      userId: json["user_id"]?.toString() ?? '',
+      businessName: json["business_name"]?.toString() ?? '',
+      address: json["address"]?.toString() ?? '',
+      phone: json["phone"]?.toString() ?? '',
       rating: json["rating"] ?? 0,
+      email: json["email"]?.toString(),
+      password: json["password"]?.toString(),
     );
   }
 
   // TO ENTITY
   ProviderEntity toEntity() {
     return ProviderEntity(
-      providerId: providerId ?? '',
+      providerId: providerId,
       userId: userId,
       businessName: businessName,
       address: address,
       phone: phone,
       rating: rating,
+      email: email,
+      password: password,
     );
   }
 
@@ -56,11 +68,13 @@ class ProviderApiModel {
   factory ProviderApiModel.fromEntity(ProviderEntity entity) {
     return ProviderApiModel(
       providerId: entity.providerId,
-      userId: entity.userId,
+      userId: entity.userId ?? '',
       businessName: entity.businessName,
       address: entity.address,
       phone: entity.phone,
       rating: entity.rating,
+      email: entity.email,
+      password: entity.password,
     );
   }
 

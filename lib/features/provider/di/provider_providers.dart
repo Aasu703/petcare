@@ -11,6 +11,8 @@ import 'package:petcare/features/provider/domain/usecases/delete_provider_usecas
 import 'package:petcare/features/provider/domain/usecases/get_all_provider_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/get_provider_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/update_provider_usercase.dart';
+import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
+import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
 
 // Core
 final hiveServiceProviderDI = Provider<HiveService>((ref) => HiveService());
@@ -67,4 +69,16 @@ final getProviderUsecaseProvider = Provider<GetProviderUsecase>((ref) {
 final updateProviderUsecaseProvider = Provider<UpdateProviderUsecase>((ref) {
   final repo = ref.read(providerRepositoryProvider);
   return UpdateProviderUsecase(repository: repo);
+});
+
+final providerLoginUsecaseProvider = Provider<ProviderLoginUsecase>((ref) {
+  final repo = ref.read(providerRepositoryProvider);
+  return ProviderLoginUsecase(repository: repo);
+});
+
+final providerRegisterUsecaseProvider = Provider<ProviderRegisterUsecase>((
+  ref,
+) {
+  final repo = ref.read(providerRepositoryProvider);
+  return ProviderRegisterUsecase(repository: repo);
 });

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/auth/di/auth_providers.dart';

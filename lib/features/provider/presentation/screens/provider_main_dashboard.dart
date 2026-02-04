@@ -1,41 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/discover_screen.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
-import 'package:petcare/app/theme/app_colors.dart' as theme_colors;
+import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
+import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
+import 'package:petcare/features/provider/presentation/screens/provider_services_screen.dart';
 
-class Dashboard extends StatefulWidget {
-  final String firstName;
-  final String email;
-  const Dashboard({super.key, this.firstName = 'User', this.email = ''});
-  @override
-  State<Dashboard> createState() => _DashboardState();
+// Modern color palette for Provider Dashboard
+class ProviderDashboardColors {
+  static const Color primary = Color(0xFF6366F1);
+  static const Color primaryLight = Color(0xFF8B5CF6);
+  static const Color primaryDark = Color(0xFF4F46E5);
+  static const Color accent = Color(0xFFF59E0B);
+  static const Color background = Color(0xFFF8F9FE);
+  static const Color surface = Colors.white;
+  static const Color textPrimary = Color(0xFF1F2937);
+  static const Color textSecondary = Color(0xFF6B7280);
 }
 
-class _DashboardState extends State<Dashboard> {
+class ProviderDashboard extends StatefulWidget {
+  const ProviderDashboard({super.key});
+
+  @override
+  State<ProviderDashboard> createState() => _ProviderDashboardState();
+}
+
+class _ProviderDashboardState extends State<ProviderDashboard> {
   int _selectedIndex = 0;
+
   List<Widget> get _screens => [
-    HomeScreen(firstName: widget.firstName),
-    const ExploreScreen(),
-    const DiscoverScreen(),
-    const ProfileScreen(),
+    const ProviderDashboardScreen(),
+    const ProviderServicesScreen(),
+    const ProviderProfileScreen(),
   ];
+
   final List<_NavItem> _navItems = const [
     _NavItem(
-      icon: Icons.home_rounded,
-      activeIcon: Icons.home_rounded,
-      label: 'Home',
+      icon: Icons.dashboard_rounded,
+      activeIcon: Icons.dashboard_rounded,
+      label: 'Dashboard',
     ),
     _NavItem(
-      icon: Icons.explore_outlined,
-      activeIcon: Icons.explore_rounded,
-      label: 'Explore',
-    ),
-    _NavItem(
-      icon: Icons.search_rounded,
-      activeIcon: Icons.search_rounded,
-      label: 'Discover',
+      icon: Icons.medical_services_outlined,
+      activeIcon: Icons.medical_services_rounded,
+      label: 'Services',
     ),
     _NavItem(
       icon: Icons.person_outline_rounded,
@@ -43,17 +48,18 @@ class _DashboardState extends State<Dashboard> {
       label: 'Profile',
     ),
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: theme_colors.AppColors.backgroundColor,
+      backgroundColor: ProviderDashboardColors.background,
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: theme_colors.AppColors.surfaceColor,
+          color: ProviderDashboardColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: const Color(0xFF6366F1).withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -86,7 +92,7 @@ class _DashboardState extends State<Dashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme_colors.AppColors.iconPrimaryColor.withOpacity(0.1)
+              ? ProviderDashboardColors.primary.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -96,18 +102,18 @@ class _DashboardState extends State<Dashboard> {
             Icon(
               isSelected ? item.activeIcon : item.icon,
               color: isSelected
-                  ? theme_colors.AppColors.iconPrimaryColor
-                  : theme_colors.AppColors.iconSecondaryColor,
-              size: 24,
+                  ? ProviderDashboardColors.primary
+                  : ProviderDashboardColors.textSecondary,
+              size: 20,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 item.label,
                 style: TextStyle(
-                  color: theme_colors.AppColors.iconPrimaryColor,
+                  color: ProviderDashboardColors.primary,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
                 ),
               ),
             ],
@@ -119,12 +125,13 @@ class _DashboardState extends State<Dashboard> {
 }
 
 class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
   const _NavItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
   });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
 }

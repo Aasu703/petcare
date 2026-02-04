@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/widget/mytextformfield.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/features/provider/di/provider_providers.dart';
+import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
+import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
+import 'package:petcare/core/widget/mytextformfield.dart';
 
-class ProviderSetupScreen extends StatefulWidget {
-  const ProviderSetupScreen({super.key});
+class ProviderSetupScreen extends ConsumerStatefulWidget {
+  final String email;
+  final String password;
+  final String confirmPassword;
+
+  const ProviderSetupScreen({
+    super.key,
+    required this.email,
+    required this.password,
+    required this.confirmPassword,
+  });
 
   @override
-  State<ProviderSetupScreen> createState() => _ProviderSetupScreenState();
+  ConsumerState<ProviderSetupScreen> createState() =>
+      _ProviderSetupScreenState();
 }
 
-class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
+class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
   final _businessNameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -35,14 +49,45 @@ class _ProviderSetupScreenState extends State<ProviderSetupScreen> {
     super.dispose();
   }
 
-  void _completeSetup() {
+  void _completeSetup() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const ProviderDashboardScreen()),
-      (route) => false,
+    final usecase = ref.read(providerRegisterUsecaseProvider);
+    final result = await usecase(
+      ProviderRegisterUsecaseParams(
+        email: widget.email,
+        password: widget.password,
+        confirmPassword: widget.confirmPassword,
+        businessName: _businessNameController.text.trim(),
+        address: _addressController.text.trim(),
+        phone: _phoneController.text.trim(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      },
+      (_) {
+        // Save session or something? For now, just navigate
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const ProviderDashboardScreen()),
+          (route) => false,
+        );
+      },
     );
   }
 

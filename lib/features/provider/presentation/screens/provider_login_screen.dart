@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
+import 'package:petcare/features/provider/di/provider_providers.dart';
+import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
+import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
 
-class ProviderLoginScreen extends StatefulWidget {
+class ProviderLoginScreen extends ConsumerStatefulWidget {
   const ProviderLoginScreen({super.key});
 
   @override
-  State<ProviderLoginScreen> createState() => _ProviderLoginScreenState();
+  ConsumerState<ProviderLoginScreen> createState() =>
+      _ProviderLoginScreenState();
 }
 
-class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
+class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -18,6 +23,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
   final FocusNode _passwordFocusNode = FocusNode();
 
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,14 +34,47 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     super.dispose();
   }
 
-  void _tryLogin() {
+  Future<void> _tryLogin() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const ProviderDashboardScreen()),
+    setState(() => _isLoading = true);
+
+    final usecase = ref.read(providerLoginUsecaseProvider);
+    final result = await usecase(
+      ProviderLoginUsecaseParams(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
     );
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      },
+      (provider) async {
+        // Session is already saved in the datasource
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ProviderDashboard()),
+        );
+      },
+    );
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
@@ -112,6 +151,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                             hint: 'provider@email.com',
                             label: 'Email',
                             icon: Icons.email_rounded,
+                            keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 18),
                           _field(
@@ -127,8 +167,20 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
-                              onPressed: _tryLogin,
-                              child: const Text('Login as provider'),
+                              onPressed: _isLoading ? null : _tryLogin,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                  : const Text('Login as provider'),
                             ),
                           ),
                         ],
@@ -151,6 +203,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     required String label,
     required IconData icon,
     bool obscure = false,
+    TextInputType? keyboardType,
   }) {
     final isFocused = focusNode.hasFocus;
 
@@ -175,6 +228,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
         filled: true,
         fillcolor: AppColors.surfaceColor,
         obscureText: obscure,
+        keyboardType: keyboardType,
       ),
     );
   }

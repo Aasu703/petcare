@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
 
 abstract interface class IPetRemoteDataSource {

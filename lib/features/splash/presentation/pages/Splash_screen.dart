@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/onboarding/presentation/pages/onboarding_screen.dart';
-import 'package:petcare/core/services/session/session_service.dart';
 import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -63,14 +63,23 @@ class _SplashScreenState extends State<SplashScreen>
     final loggedIn = session.isLoggedIn();
     if (!mounted) return;
     if (loggedIn) {
-      final firstName = await session.getFirstName() ?? 'User';
-      final email = await session.getEmail() ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => Dashboard(firstName: firstName, email: email),
-        ),
-      );
+      final firstName = session.getFirstName() ?? 'User';
+      final email = session.getEmail() ?? '';
+      final role = session.getRole() ?? '';
+
+      if (role.toLowerCase() == 'provider') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ProviderDashboard()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Dashboard(firstName: firstName, email: email),
+          ),
+        );
+      }
     } else {
       Navigator.pushReplacement(
         context,

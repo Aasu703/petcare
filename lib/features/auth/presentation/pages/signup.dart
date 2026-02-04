@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/auth/di/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_setup_screen.dart';
+import 'package:petcare/features/auth/presentation/pages/provider_signup.dart';
 
 class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
@@ -253,45 +253,46 @@ class _SignupState extends ConsumerState<Signup>
                           key: _formKey,
                           child: Column(
                             children: [
-                              // Name row
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _modernField(
-                                      controller: _fnameController,
-                                      focusNode: _fnameFocusNode,
-                                      hint: 'First',
-                                      label: 'First Name',
-                                      icon: Icons.person_outline_rounded,
-                                      keyboardType: TextInputType.name,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Required';
-                                        }
-                                        return null;
-                                      },
+                              // Name row - only show for users
+                              if (!_isProvider)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _modernField(
+                                        controller: _fnameController,
+                                        focusNode: _fnameFocusNode,
+                                        hint: 'First',
+                                        label: 'First Name',
+                                        icon: Icons.person_outline_rounded,
+                                        keyboardType: TextInputType.name,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Required';
+                                          }
+                                          return null;
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: _modernField(
-                                      controller: _lnameController,
-                                      focusNode: _lnameFocusNode,
-                                      hint: 'Last',
-                                      label: 'Last Name',
-                                      icon: Icons.person_outline_rounded,
-                                      keyboardType: TextInputType.name,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Required';
-                                        }
-                                        return null;
-                                      },
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: _modernField(
+                                        controller: _lnameController,
+                                        focusNode: _lnameFocusNode,
+                                        hint: 'Last',
+                                        label: 'Last Name',
+                                        icon: Icons.person_outline_rounded,
+                                        keyboardType: TextInputType.name,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Required';
+                                          }
+                                          return null;
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 18),
+                                  ],
+                                ),
+                              if (!_isProvider) const SizedBox(height: 18),
                               _modernField(
                                 controller: _newEmailController,
                                 focusNode: _newEmailFocusNode,
@@ -530,9 +531,11 @@ class _SignupState extends ConsumerState<Signup>
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            const Text(
-                                              'Create Account',
-                                              style: TextStyle(
+                                            Text(
+                                              _isProvider
+                                                  ? 'Continue to Provider Signup'
+                                                  : 'Create Account',
+                                              style: const TextStyle(
                                                 fontSize: 17,
                                                 fontWeight: FontWeight.w700,
                                                 letterSpacing: 0.3,
@@ -778,7 +781,7 @@ class _SignupState extends ConsumerState<Signup>
       if (_isProvider) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ProviderSetupScreen()),
+          MaterialPageRoute(builder: (context) => const ProviderSignupScreen()),
         );
       } else {
         final usecase = ref.read(registerUsecaseProvider);

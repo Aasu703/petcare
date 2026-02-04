@@ -9,6 +9,7 @@ class SessionState {
   final String? firstName;
   final String? email;
   final String? Lastname;
+  final String? role;
 
   const SessionState({
     required this.isLoggedIn,
@@ -16,6 +17,7 @@ class SessionState {
     this.firstName,
     this.email,
     this.Lastname,
+    this.role,
   });
 
   SessionState copyWith({
@@ -23,12 +25,14 @@ class SessionState {
     String? userId,
     String? firstName,
     String? email,
+    String? role,
   }) {
     return SessionState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
       userId: userId ?? this.userId,
       firstName: firstName ?? this.firstName,
       email: email ?? this.email,
+      role: role ?? this.role,
     );
   }
 
@@ -60,12 +64,14 @@ class SessionController extends StateNotifier<SessionState> {
     final userId = _service.getUserId(); // Remove await
     final firstName = _service.getFirstName(); // Remove await
     final email = _service.getEmail(); // Remove await
+    final role = _service.getRole(); // Remove await
 
     state = SessionState(
       isLoggedIn: true,
       userId: userId,
       firstName: firstName,
       email: email,
+      role: role,
     );
   }
 
@@ -73,17 +79,20 @@ class SessionController extends StateNotifier<SessionState> {
     required String userId,
     required String firstName,
     required String email,
+    String? role,
   }) async {
     await _service.saveSession(
       userId: userId,
       firstName: firstName,
       email: email,
+      role: role,
     );
     state = SessionState(
       isLoggedIn: true,
       userId: userId,
       firstName: firstName,
       email: email,
+      role: role,
     );
   }
 

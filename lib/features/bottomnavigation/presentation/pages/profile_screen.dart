@@ -4,27 +4,62 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/providers/session_providers.dart';
+import 'package:petcare/core/providers/theme_provider.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 
-// Modern color palette
+// Modern color palette - Theme Aware
 class ProfileColors {
   static const Color primary = Color(0xFF6C63FF);
   static const Color primaryLight = Color(0xFF8B85FF);
   static const Color primaryDark = Color(0xFF5046E5);
   static const Color accent = Color(0xFFFF6584);
-  static const Color background = Color(0xFFF8F9FE);
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF2D3142);
-  static const Color textSecondary = Color(0xFF9CA3AF);
+
+  // Light theme colors
+  static const Color backgroundLight = Color(0xFFF8F9FE);
+  static const Color surfaceLight = Colors.white;
+  static const Color textPrimaryLight = Color(0xFF2D3142);
+  static const Color textSecondaryLight = Color(0xFF9CA3AF);
+
+  // Dark theme colors
+  static const Color backgroundDark = Color(0xFF121212);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
+  static const Color textPrimaryDark = Colors.white;
+  static const Color textSecondaryDark = Colors.white70;
+
   static const Color editProfile = Color(0xFF4ECFFF);
   static const Color myPets = Color(0xFFFF6B9D);
   static const Color notifications = Color(0xFF9D6BFF);
   static const Color theme = Color(0xFFFFB84D);
   static const Color help = Color(0xFF00D4FF);
   static const Color logout = Color(0xFFFF4757);
+
+  // Theme-aware getters
+  static Color background(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? backgroundDark
+        : backgroundLight;
+  }
+
+  static Color surface(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? surfaceDark
+        : surfaceLight;
+  }
+
+  static Color textPrimary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textPrimaryDark
+        : textPrimaryLight;
+  }
+
+  static Color textSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textSecondaryDark
+        : textSecondaryLight;
+  }
 }
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -101,13 +136,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final session = ref.watch(sessionStateProvider);
     final profileState = ref.watch(profileViewModelProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     final avatar = profileState.user?.avatar;
     final displayName = session.firstName ?? 'User';
     final displayEmail = session.email ?? '';
 
     return Scaffold(
-      backgroundColor: ProfileColors.background,
+      backgroundColor: ProfileColors.background(context),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -346,8 +382,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         title: 'Dark Mode',
                         subtitle: 'Switch app appearance',
                         color: ProfileColors.theme,
-                        trailing: _buildToggleSwitch(false),
-                        onTap: () {},
+                        trailing: _buildToggleSwitch(
+                          themeMode == ThemeMode.dark,
+                        ),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ref.read(themeModeProvider.notifier).toggleTheme();
+                        },
                       ),
                     ], delay: 100),
 
@@ -493,10 +534,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   const SizedBox(height: 12),
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: ProfileColors.textPrimary,
+                      color: ProfileColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -505,7 +546,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: ProfileColors.textSecondary,
+                      color: ProfileColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -554,10 +595,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     const SizedBox(width: 10),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: ProfileColors.textSecondary,
+                        color: ProfileColors.textSecondary(context),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -637,10 +678,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     Text(
                       item.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: ProfileColors.textPrimary,
+                        color: ProfileColors.textPrimary(context),
                       ),
                     ),
                     if (item.subtitle != null) const SizedBox(height: 3),
@@ -650,7 +691,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: ProfileColors.textSecondary,
+                          color: ProfileColors.textSecondary(context),
                         ),
                       ),
                   ],
@@ -806,12 +847,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Log Out?',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: ProfileColors.textPrimary,
+                  color: ProfileColors.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 10),
@@ -820,7 +861,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: ProfileColors.textSecondary,
+                  color: ProfileColors.textSecondary(context),
                   height: 1.5,
                 ),
               ),
@@ -836,12 +877,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: ProfileColors.textSecondary,
+                          color: ProfileColors.textSecondary(context),
                         ),
                       ),
                     ),

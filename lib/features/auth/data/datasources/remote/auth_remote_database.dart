@@ -54,71 +54,33 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
 
   @override
   Future<AuthApiModel?> login(String email, String password) async {
-    print('🔐 LOGIN ATTEMPT: Starting login process for email: $email');
-
     // Validate input parameters
-    if (email == null || email.trim().isEmpty) {
-      print('❌ LOGIN VALIDATION: Email is null or empty');
-      throw Exception('Email is required');
-    }
+    if (email == null || email.trim().isEmpty) {}
 
-    if (password == null || password.trim().isEmpty) {
-      print('❌ LOGIN VALIDATION: Password is null or empty');
-      throw Exception('Password is required');
-    }
-
-    print('✅ LOGIN VALIDATION: Email and password are valid');
+    if (password == null || password.trim().isEmpty) {}
 
     try {
       final requestData = {'email': email.trim(), 'password': password.trim()};
-      print(
-        '📤 LOGIN REQUEST: Sending login request to ${ApiEndpoints.userLogin}',
-      );
-      print(
-        '📦 LOGIN DATA: {email: "${requestData['email']}", password: "***${requestData['password']!.length} chars***"}',
-      );
 
       // Explicitly encode as JSON to ensure proper serialization
       final jsonData = jsonEncode(requestData);
-      print('📦 LOGIN JSON: $jsonData');
 
       final response = await _apiClient.post(
         ApiEndpoints.userLogin,
         data: jsonData, // Send as JSON string instead of Map
       );
 
-      print(
-        '✅ LOGIN RESPONSE: Received response with status: ${response.statusCode}',
-      );
-      print('📥 LOGIN RAW RESPONSE: ${response.data}');
-
       if (response.data['success'] == true) {
         final data = response.data['data'];
         final token = response.data['token'];
 
-        print('✅ LOGIN SUCCESS: success=true in response');
-        print('📊 LOGIN DATA: $data');
-        print(
-          '🔑 LOGIN TOKEN: ${token != null ? 'Present (${token.length} chars)' : 'Missing'}',
-        );
+        if (data is! Map<String, dynamic>) {}
 
-        if (data is! Map<String, dynamic>) {
-          print('❌ LOGIN ERROR: Invalid user data type: ${data.runtimeType}');
-          throw Exception('Invalid user data received from server');
-        }
-
-        if (token == null || token is! String || token.isEmpty) {
-          print('❌ LOGIN ERROR: Missing or invalid authentication token');
-          throw Exception('No authentication token received from server');
-        }
+        if (token == null || token is! String || token.isEmpty) {}
 
         final user = AuthApiModel.fromJSON(data);
-        print(
-          '👤 LOGIN USER: Parsed user - ID: ${user.id}, Email: ${user.email}, Name: ${user.Firstname}',
-        );
 
         if (user.id == null || user.id!.isEmpty) {
-          print('❌ LOGIN ERROR: Invalid user ID received');
           throw Exception('Invalid user ID received from server');
         }
 
@@ -128,38 +90,23 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
             ? user.username!
             : user.email.split('@').first;
 
-        print('💾 LOGIN SESSION: Saving token...');
         await _tokenService.saveToken(token);
-        print('✅ LOGIN TOKEN: Token saved successfully');
 
-        print('💾 LOGIN SESSION: Saving session data...');
         await _sessionService.saveSession(
           userId: user.id!,
           firstName: safeFirstName,
           email: user.email,
           token: token,
         );
-        print('✅ LOGIN SESSION: Session saved successfully');
-
-        print(
-          '🎉 LOGIN SUCCESS: Login completed successfully for user: ${user.email}',
-        );
         return user;
       } else {
         final errorMessage = response.data['message'] ?? 'Login failed';
-        print('❌ LOGIN FAILED: success=false, message: $errorMessage');
         throw Exception(errorMessage);
       }
     } catch (e) {
-      print(
-        '💥 LOGIN EXCEPTION: Caught exception during login: ${e.toString()}',
-      );
-      print('🔍 LOGIN EXCEPTION TYPE: ${e.runtimeType}');
-
       if (e is Exception) {
         rethrow;
       }
-      print('❌ LOGIN ERROR: Non-Exception error: ${e.toString()}');
       throw Exception('Login failed: ${e.toString()}');
     }
   }

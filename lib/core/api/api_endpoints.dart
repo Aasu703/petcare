@@ -1,28 +1,19 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const bool isPhysicalDevice =
-      false; // Set to true when running on a physical device
-
-  static const String compIpAddress = "192.168.1.6";
-
-  static String get baseUrl => 'http://$compIpAddress:5050/';
+  static String get baseUrl {
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:5050/';
+    } else {
+      return 'http://localhost:5050/';
+    }
+  }
 
   static String get mediaServerUrl {
-    if (isPhysicalDevice) {
-      return 'http://$compIpAddress:5050';
-    }
-
-    if (kIsWeb) {
-      return 'http://localhost:5050/';
-    } else if (Platform.isAndroid) {
+    if (Platform.isAndroid) {
       return 'http://10.0.2.2:5050/';
-    } else if (Platform.isIOS) {
-      return 'http://localhost:5050/';
     } else {
       return 'http://localhost:5050/';
     }
@@ -56,4 +47,28 @@ class ApiEndpoints {
   static const String petCreate = 'pet';
   static const String petUpdate = 'pet';
   static const String petDelete = 'pet';
+
+  // ----------------------- BOOKING -------------------------
+  static const String bookingCreate = 'api/booking';
+  static const String bookingList = 'api/booking';
+  static const String bookingById = 'api/booking';
+  static const String bookingUpdate = 'api/booking';
+  static const String bookingDelete = 'api/booking';
+  static const String bookingByUser = 'api/booking/user';
+  static const String providerBookings = 'api/provider/booking/my';
+  static const String providerBookingStatus = 'api/provider/booking';
+
+  // ---------------------- INVENTORY ------------------------
+  static const String inventoryByProvider = 'api/provider/inventory';
+  static const String inventoryCreate = 'api/provider/inventory';
+  static const String inventoryUpdate = 'api/provider/inventory';
+  static const String inventoryDelete = 'api/provider/inventory';
+  static const String inventoryById = 'api/provider/inventory';
+
+  // ----------------------- ORDER ---------------------------
+  static const String orderCreate = 'api/order';
+  static const String orderMy = 'api/order/my';
+  static const String orderById = 'api/order';
+  static const String orderUpdate = 'api/order';
+  static const String orderDelete = 'api/order';
 }

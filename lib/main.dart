@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/app.dart';
 import 'package:petcare/core/providers/shared_prefs_provider.dart';
 import 'package:petcare/core/services/hive/hive_service.dart';
+import 'package:petcare/core/services/notification/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
@@ -11,6 +12,11 @@ Future<void> main() async {
   await hiveService.init();
   await hiveService.openBoxes();
   final prefs = await SharedPreferences.getInstance();
+
+  // Initialize local push notifications
+  final notificationService = NotificationService();
+  await notificationService.init();
+
   runApp(
     ProviderScope(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)],

@@ -6,6 +6,7 @@ import 'package:petcare/features/onboarding/presentation/pages/onboarding_screen
 import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,12 +28,12 @@ class _SplashScreenState extends State<SplashScreen>
     // 3-second animation
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: Duration(seconds: 3),
     );
 
     _fade = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 1.0, curve: Curves.easeInOut),
+      curve: Interval(0.0, 1.0, curve: Curves.easeInOut),
     );
 
     _scale = Tween<double>(
@@ -51,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     // Safety timeout in case of edge cases (optional)
-    Timer(const Duration(seconds: 4), () {
+    Timer(Duration(seconds: 4), () {
       if (mounted) _goToNext();
     });
   }
@@ -70,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (role.toLowerCase() == 'provider') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const ProviderDashboard()),
+          MaterialPageRoute(builder: (_) => ProviderDashboard()),
         );
       } else {
         Navigator.pushReplacement(
@@ -83,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const Onbording()),
+        MaterialPageRoute(builder: (_) => Onbording()),
       );
     }
   }
@@ -98,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 248, 240, 126),
+      backgroundColor: Color.fromARGB(255, 248, 240, 126),
       body: Center(
         child: FadeTransition(
           opacity: _fade,
@@ -113,12 +114,12 @@ class _SplashScreenState extends State<SplashScreen>
                   width: size.width * 0.45,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   'PawCare',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimaryColor,
+                    color: context.textPrimary,
                   ),
                 ),
               ],

@@ -145,7 +145,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final displayEmail = session.getEmail() ?? '';
 
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -355,7 +355,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             HapticFeedback.lightImpact();
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const MyPet()),
+                              MaterialPageRoute(builder: (_) => MyPet()),
                             );
                           },
                         ),
@@ -385,7 +385,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                         onTap: () {
                           HapticFeedback.lightImpact();
-                          ref.toggleTheme();
+                          ref
+                              .read(themeModeProvider.notifier)
+                              .state = themeMode == ThemeMode.dark
+                              ? ThemeMode.light
+                              : ThemeMode.dark;
                         },
                       ),
                     ], delay: 100),
@@ -896,7 +900,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         if (!context.mounted) return;
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (_) => const Login()),
+                          MaterialPageRoute(builder: (_) => Login()),
                           (_) => false,
                         );
                       },

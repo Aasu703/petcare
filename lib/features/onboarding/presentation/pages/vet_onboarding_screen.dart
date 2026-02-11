@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/features/onboarding/presentation/pages/service_onboarding_screen.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class VetOnboardingScreen extends StatelessWidget {
   const VetOnboardingScreen({super.key});
@@ -8,7 +10,7 @@ class VetOnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: Stack(
           children: [
             Positioned(
@@ -118,7 +120,7 @@ class VetOnboardingScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: context.textPrimary.withOpacity(0.1),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -168,7 +170,7 @@ class VetOnboardingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(22),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: context.textPrimary.withOpacity(0.08),
                                 blurRadius: 12,
                                 offset: const Offset(0, 8),
                               ),
@@ -198,8 +200,7 @@ class VetOnboardingScreen extends StatelessWidget {
                                       },
                                       icon: CircleAvatar(
                                         radius: 16,
-                                        backgroundColor:
-                                            AppColors.textPrimaryColor,
+                                        backgroundColor: context.textPrimary,
                                         child: Icon(
                                           Icons.pets,
                                           color: AppColors.buttonTextColor,

@@ -5,6 +5,7 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Dashboard extends StatefulWidget {
   final String firstName;
@@ -96,7 +97,9 @@ class _DashboardState extends State<Dashboard> {
           children: [
             Icon(
               isSelected ? item.activeIcon : item.icon,
-              color: isSelected ? context.primaryColor : context.iconSecondaryColor,
+              color: isSelected
+                  ? context.primaryColor
+                  : context.iconSecondaryColor,
               size: 24,
             ),
             if (isSelected) ...[

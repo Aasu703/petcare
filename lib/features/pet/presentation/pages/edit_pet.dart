@@ -9,6 +9,7 @@ import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class EditPetScreen extends ConsumerStatefulWidget {
   final PetEntity pet;
@@ -74,7 +75,10 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.photo_library, color: AppColors.primaryColor),
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Choose from gallery'),
               onTap: () {
                 Navigator.pop(context);
@@ -82,7 +86,10 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt, color: AppColors.primaryColor),
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Take a photo'),
               onTap: () {
                 Navigator.pop(context);
@@ -126,8 +133,8 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Pet updated successfully'),
+        const SnackBar(
+          content: Text('Pet updated successfully'),
           backgroundColor: AppColors.successColor,
         ),
       );
@@ -149,13 +156,13 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
     final imageUrl = widget.pet.imageUrl;
 
     return Scaffold(
-            appBar: AppBar(
+      appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Edit Pet', style: Theme.of(context).textTheme.titleLarge),
-                elevation: 0,
+        elevation: 0,
         centerTitle: true,
       ),
       body: SafeArea(
@@ -207,7 +214,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                               child:
                                   (_imageFile == null &&
                                       (imageUrl == null || imageUrl.isEmpty))
-                                  ? Icon(
+                                  ? const Icon(
                                       Icons.pets,
                                       size: 48,
                                       color: AppColors.primaryColor,
@@ -243,7 +250,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                       'Change pet photo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondaryColor,
+                        color: context.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -350,7 +357,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                         .withOpacity(0.5),
                   ),
                   child: petState.isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 24,
                           width: 24,
                           child: CircularProgressIndicator(
@@ -383,7 +390,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
       style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimaryColor,
+        color: context.textPrimary,
       ),
     );
   }
@@ -399,10 +406,13 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: TextStyle(fontSize: 15, color: AppColors.textPrimaryColor),
+      style: TextStyle(fontSize: 15, color: context.textPrimary),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(fontSize: 15, color: AppColors.textHintColor),
+        hintStyle: const TextStyle(
+          fontSize: 15,
+          color: AppColors.textHintColor,
+        ),
         prefixIcon: prefixIcon != null
             ? Icon(prefixIcon, color: AppColors.iconSecondaryColor, size: 22)
             : null,
@@ -418,15 +428,15 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.errorColor),
+          borderSide: const BorderSide(color: AppColors.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.errorColor, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -482,7 +492,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                           : FontWeight.w500,
                       color: isSelected
                           ? AppColors.primaryColor
-                          : AppColors.textSecondaryColor,
+                          : context.textSecondary,
                     ),
                   ),
                 ],

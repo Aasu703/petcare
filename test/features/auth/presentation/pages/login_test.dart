@@ -7,9 +7,7 @@ void main() {
   group('Login Page Widget Tests', () {
     // Helper function to pump the Login widget
     Future<void> _buildLoginPage(WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(child: MaterialApp(home: const Login())),
-      );
+      await tester.pumpWidget(ProviderScope(child: MaterialApp(home: Login())));
       await tester.pumpAndSettle();
     }
 

@@ -10,7 +10,7 @@ import 'package:petcare/features/auth/di/auth_providers.dart';
 import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 
 class Login extends ConsumerStatefulWidget {
-  const Login({super.key});
+  Login({super.key});
 
   @override
   ConsumerState<Login> createState() => _LoginState();
@@ -35,25 +35,25 @@ class _LoginState extends ConsumerState<Login>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: Duration(milliseconds: 1200),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+        curve: Interval(0.0, 0.6, curve: Curves.easeOut),
       ),
     );
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+    _slideAnimation = Tween<Offset>(begin: Offset(0, 0.15), end: Offset.zero)
+        .animate(
           CurvedAnimation(
             parent: _animationController,
-            curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
+            curve: Interval(0.2, 0.8, curve: Curves.easeOutCubic),
           ),
         );
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack),
+        curve: Interval(0.0, 0.5, curve: Curves.easeOutBack),
       ),
     );
     _animationController.forward();
@@ -214,14 +214,11 @@ class _LoginState extends ConsumerState<Login>
               child: SlideTransition(
                 position: _slideAnimation,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 20,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 60),
+                      SizedBox(height: 60),
 
                       // Animated header icon
                       Center(
@@ -244,12 +241,12 @@ class _LoginState extends ConsumerState<Login>
                                 BoxShadow(
                                   color: context.primaryColor.withOpacity(0.4),
                                   blurRadius: 30,
-                                  offset: const Offset(0, 15),
+                                  offset: Offset(0, 15),
                                   spreadRadius: -5,
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.pets,
                               size: 50,
                               color: Colors.white,
@@ -257,7 +254,7 @@ class _LoginState extends ConsumerState<Login>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40),
 
                       Center(
                         child: Column(
@@ -271,7 +268,7 @@ class _LoginState extends ConsumerState<Login>
                                     fontSize: 34,
                                   ),
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10),
                             Text(
                               'Sign in to continue to PawCare',
                               style: Theme.of(context).textTheme.bodyLarge
@@ -284,11 +281,11 @@ class _LoginState extends ConsumerState<Login>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 50),
+                      SizedBox(height: 50),
 
                       // Glass morphism form card
                       Container(
-                        padding: const EdgeInsets.all(28),
+                        padding: EdgeInsets.all(28),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(32),
@@ -300,7 +297,7 @@ class _LoginState extends ConsumerState<Login>
                             BoxShadow(
                               color: context.textPrimary.withOpacity(0.08),
                               blurRadius: 40,
-                              offset: const Offset(0, 20),
+                              offset: Offset(0, 20),
                               spreadRadius: -10,
                             ),
                           ],
@@ -325,7 +322,7 @@ class _LoginState extends ConsumerState<Login>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20),
                               _modernField(
                                 controller: _passwordController,
                                 label: 'Password',
@@ -352,7 +349,7 @@ class _LoginState extends ConsumerState<Login>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
@@ -360,7 +357,7 @@ class _LoginState extends ConsumerState<Login>
                                     // TODO: Navigate to forgot password
                                   },
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 8,
                                       vertical: 4,
                                     ),
@@ -375,7 +372,7 @@ class _LoginState extends ConsumerState<Login>
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24),
 
                               // Modern sign in button
                               SizedBox(
@@ -385,11 +382,10 @@ class _LoginState extends ConsumerState<Login>
                                   onPressed: _isLoading ? null : _tryLogin,
                                   style:
                                       ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            AppColors.iconPrimaryColor,
+                                        backgroundColor: context.primaryColor,
                                         foregroundColor: Colors.white,
                                         elevation: 0,
-                                        shadowColor: AppColors.iconPrimaryColor
+                                        shadowColor: context.primaryColor
                                             .withOpacity(0.4),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
@@ -449,7 +445,7 @@ class _LoginState extends ConsumerState<Login>
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
 
                       // Sign up link
                       Center(
@@ -468,13 +464,11 @@ class _LoginState extends ConsumerState<Login>
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const Signup(),
-                                  ),
+                                  MaterialPageRoute(builder: (_) => Signup()),
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
+                                padding: EdgeInsets.symmetric(
                                   horizontal: 4,
                                   vertical: 2,
                                 ),
@@ -501,7 +495,7 @@ class _LoginState extends ConsumerState<Login>
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
 
                       // Divider with text
                       Row(
@@ -513,7 +507,7 @@ class _LoginState extends ConsumerState<Login>
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               'or',
                               style: TextStyle(
@@ -532,7 +526,7 @@ class _LoginState extends ConsumerState<Login>
                         ],
                       ),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
 
                       // Provider login button
                       Center(
@@ -554,13 +548,13 @@ class _LoginState extends ConsumerState<Login>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ProviderLoginScreen(),
+                                    builder: (_) => ProviderLoginScreen(),
                                   ),
                                 );
                               },
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
+                                padding: EdgeInsets.symmetric(
                                   horizontal: 24,
                                   vertical: 14,
                                 ),
@@ -572,7 +566,7 @@ class _LoginState extends ConsumerState<Login>
                                       size: 20,
                                       color: AppColors.iconPrimaryColor,
                                     ),
-                                    const SizedBox(width: 10),
+                                    SizedBox(width: 10),
                                     Text(
                                       'Login as Provider',
                                       style: TextStyle(
@@ -588,7 +582,7 @@ class _LoginState extends ConsumerState<Login>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -614,7 +608,7 @@ class _LoginState extends ConsumerState<Login>
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -638,10 +632,7 @@ class _LoginState extends ConsumerState<Login>
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white.withOpacity(0.5),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
@@ -662,11 +653,11 @@ class _LoginState extends ConsumerState<Login>
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: BorderSide(color: Colors.red, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: BorderSide(color: Colors.red, width: 2),
         ),
       ),
       validator: validator,

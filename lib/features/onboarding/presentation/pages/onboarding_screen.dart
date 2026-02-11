@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/features/onboarding/presentation/pages/vet_onboarding_screen.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Onbording extends StatelessWidget {
-  const Onbording({super.key});
+  Onbording({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: Stack(
           children: [
             Positioned(
@@ -27,10 +28,7 @@ class Onbording extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 24,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -71,17 +69,17 @@ class Onbording extends StatelessWidget {
                       Container(
                         width: 100,
                         height: 100,
-                        margin: const EdgeInsets.only(left: 15, top: 8),
+                        margin: EdgeInsets.only(left: 15, top: 8),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: context.textPrimary.withOpacity(0.1),
                               blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              offset: Offset(0, 4),
                             ),
                           ],
-                          image: const DecorationImage(
+                          image: DecorationImage(
                             image: AssetImage('assets/images/pawcare.png'),
                             fit: BoxFit.cover,
                           ),
@@ -92,7 +90,7 @@ class Onbording extends StatelessWidget {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
                     'Find your perfect pet companion',
                     style: Theme.of(
@@ -126,9 +124,9 @@ class Onbording extends StatelessWidget {
                             borderRadius: BorderRadius.circular(22),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: context.textPrimary.withOpacity(0.08),
                                 blurRadius: 12,
-                                offset: const Offset(0, 8),
+                                offset: Offset(0, 8),
                               ),
                             ],
                           ),
@@ -155,15 +153,14 @@ class Onbording extends StatelessWidget {
                                       },
                                       icon: CircleAvatar(
                                         radius: 16,
-                                        backgroundColor:
-                                            AppColors.textPrimaryColor,
+                                        backgroundColor: context.textPrimary,
                                         child: Icon(
                                           Icons.pets,
                                           color: AppColors.buttonTextColor,
                                           size: 18,
                                         ),
                                       ),
-                                      label: const Text('Get Started'),
+                                      label: Text('Get Started'),
                                     ),
                                   ),
                                 ],

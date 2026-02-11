@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -124,7 +124,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryColor.withOpacity(0.1),
+                                      color: AppColors.primaryColor.withOpacity(
+                                        0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Row(
@@ -152,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               const SizedBox(height: 10),
                               Text(
                                 'Hello, ${widget.firstName}!',
-                                style: const TextStyle(
-                                  color: AppColors.textPrimaryColor,
+                                style: TextStyle(
+                                  color: context.textPrimary,
                                   fontSize: 28,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.5,
@@ -164,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Text(
                                 'Ready to care for your pets?',
                                 style: TextStyle(
-                                  color: AppColors.textSecondaryColor,
+                                  color: context.textSecondary,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -196,7 +198,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [AppColors.primaryColor, AppColors.primaryColor],
+                          colors: [
+                            AppColors.primaryColor,
+                            AppColors.primaryColor,
+                          ],
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -393,13 +398,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Services',
                           style: TextStyle(
-                            color: AppColors.textPrimaryColor,
+                            color: context.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
@@ -409,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Text(
                           'Everything your pet needs',
                           style: TextStyle(
-                            color: AppColors.textSecondaryColor,
+                            color: context.textSecondary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -790,7 +795,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add_rounded, color: AppColors.primaryColor, size: 20),
+                Icon(
+                  Icons.add_rounded,
+                  color: AppColors.primaryColor,
+                  size: 20,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Add Your First Pet',

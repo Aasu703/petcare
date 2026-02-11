@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 
+import 'package:petcare/app/theme/theme_extensions.dart';
+
 // Modern color palette for Provider Profile
 class ProviderProfileColors {
   static const Color primary = Color(0xFF6366F1);
@@ -22,7 +24,7 @@ class ProviderProfileColors {
 }
 
 class ProviderProfileScreen extends ConsumerStatefulWidget {
-  const ProviderProfileScreen({super.key});
+  ProviderProfileScreen({super.key});
 
   @override
   ConsumerState<ProviderProfileScreen> createState() =>
@@ -50,19 +52,19 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
 
     _headerController = AnimationController(
       vsync: this,
-      duration: isInTest ? Duration.zero : const Duration(milliseconds: 800),
+      duration: isInTest ? Duration.zero : Duration(milliseconds: 800),
     );
 
     _contentController = AnimationController(
       vsync: this,
-      duration: isInTest ? Duration.zero : const Duration(milliseconds: 1000),
+      duration: isInTest ? Duration.zero : Duration(milliseconds: 1000),
     );
 
     _headerFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
     );
 
-    _headerSlide = Tween<Offset>(begin: const Offset(0, -0.3), end: Offset.zero)
+    _headerSlide = Tween<Offset>(begin: Offset(0, -0.3), end: Offset.zero)
         .animate(
           CurvedAnimation(
             parent: _headerController,
@@ -76,7 +78,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
 
     _headerController.forward();
     Future.delayed(
-      const Duration(milliseconds: 300),
+      Duration(milliseconds: 300),
       () => _contentController.forward(),
     );
   }
@@ -94,7 +96,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
       backgroundColor: ProviderProfileColors.background,
       body: SafeArea(
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: BouncingScrollPhysics(),
           slivers: [
             // Modern Header with Avatar
             SliverToBoxAdapter(
@@ -103,7 +105,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                 child: SlideTransition(
                   position: _headerSlide,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    padding: EdgeInsets.fromLTRB(24, 16, 24, 24),
                     child: Column(
                       children: [
                         Row(
@@ -113,7 +115,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 12,
                                       vertical: 6,
                                     ),
@@ -130,7 +132,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                           size: 14,
                                           color: ProviderProfileColors.primary,
                                         ),
-                                        const SizedBox(width: 6),
+                                        SizedBox(width: 6),
                                         Text(
                                           'Provider Profile',
                                           style: TextStyle(
@@ -143,8 +145,8 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  const Text(
+                                  SizedBox(height: 16),
+                                  Text(
                                     'Your Business Profile',
                                     style: TextStyle(
                                       color: ProviderProfileColors.textPrimary,
@@ -154,7 +156,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                       height: 1.1,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8),
                                   Text(
                                     'Manage your business information',
                                     style: TextStyle(
@@ -167,7 +169,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 20),
+                            SizedBox(width: 20),
                             ScaleTransition(
                               scale: _avatarScale,
                               child: Container(
@@ -188,13 +190,13 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                       color: ProviderProfileColors.primary
                                           .withOpacity(0.3),
                                       blurRadius: 20,
-                                      offset: const Offset(0, 10),
+                                      offset: Offset(0, 10),
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.business_rounded,
-                                  color: Colors.white,
+                                  color: context.textPrimary,
                                   size: 32,
                                 ),
                               ),
@@ -213,7 +215,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
               child: FadeTransition(
                 opacity: _headerFade,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -225,7 +227,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildProfileOption(
                         'Edit Business Profile',
                         'Update your business details',
@@ -234,7 +236,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to edit business profile
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
                                 'Edit profile feature coming soon!',
                               ),
@@ -242,7 +244,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       _buildProfileOption(
                         'Business Documents',
                         'Manage licenses & certificates',
@@ -251,13 +253,13 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to documents screen
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text('Documents feature coming soon!'),
                             ),
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       _buildProfileOption(
                         'Payment Settings',
                         'Manage payment methods',
@@ -266,14 +268,14 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to payment settings
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text('Payment settings coming soon!'),
                             ),
                           );
                         },
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
                       Text(
                         'Account Settings',
                         style: TextStyle(
@@ -282,7 +284,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildProfileOption(
                         'Notifications',
                         'Manage notification preferences',
@@ -291,7 +293,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to notifications settings
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
                                 'Notifications settings coming soon!',
                               ),
@@ -299,7 +301,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       _buildProfileOption(
                         'Help & Support',
                         'Get help and contact support',
@@ -308,13 +310,13 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to help screen
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text('Help & Support coming soon!'),
                             ),
                           );
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       _buildProfileOption(
                         'Privacy Policy',
                         'Read our privacy policy',
@@ -323,16 +325,16 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         () {
                           // TODO: Navigate to privacy policy
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text('Privacy policy coming soon!'),
                             ),
                           );
                         },
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32),
                       _buildLogoutButton(),
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -360,14 +362,14 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.08),
+              color: Color(0xFF6366F1).withOpacity(0.08),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
@@ -379,7 +381,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                 ),
                 child: Icon(icon, color: color, size: 20),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,7 +394,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -432,7 +434,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -441,7 +443,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                 color: ProviderProfileColors.logout,
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text(
                 'Logout',
                 style: TextStyle(
@@ -463,7 +465,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: Container(
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.all(28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -480,8 +482,8 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                   size: 32,
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'Log Out?',
                 style: TextStyle(
                   fontSize: 22,
@@ -489,7 +491,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                   color: ProviderProfileColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Text(
                 'Are you sure you want to log out of your account?',
                 textAlign: TextAlign.center,
@@ -499,19 +501,19 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: 28),
               Row(
                 children: [
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
                         style: TextStyle(
                           fontSize: 16,
@@ -521,7 +523,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
@@ -532,20 +534,20 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                         if (!mounted) return;
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (_) => const Login()),
+                          MaterialPageRoute(builder: (_) => Login()),
                           (_) => false,
                         );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ProviderProfileColors.logout,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: context.textPrimary,
+                        padding: EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Log Out',
                         style: TextStyle(
                           fontSize: 16,

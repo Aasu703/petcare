@@ -1,0 +1,313 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/features/shop/domain/entities/product_entity.dart';
+import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
+
+class ManageInventoryPage extends ConsumerStatefulWidget {
+  const ManageInventoryPage({super.key});
+
+  @override
+  ConsumerState<ManageInventoryPage> createState() =>
+      _ManageInventoryPageState();
+}
+
+class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(shopProvider.notifier).loadProducts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(shopProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage Inventory'),
+        backgroundColor: const Color(0xFFF59E0B),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFF59E0B),
+        foregroundColor: Colors.white,
+        onPressed: () => _showProductDialog(context),
+        child: const Icon(Icons.add),
+      ),
+      body: state.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : state.error != null
+          ? Center(child: Text(state.error!))
+          : state.products.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.inventory, size: 64, color: Colors.grey),
+                  SizedBox(height: 12),
+                  Text(
+                    'No inventory items yet',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Tap + to add your first product',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: () async {
+                ref.read(shopProvider.notifier).loadProducts();
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: state.products.length,
+                itemBuilder: (context, index) {
+                  return _InventoryItemCard(product: state.products[index]);
+                },
+              ),
+            ),
+    );
+  }
+
+  void _showProductDialog(BuildContext context, {ProductEntity? existing}) {
+    final nameController = TextEditingController(
+      text: existing?.productName ?? '',
+    );
+    final descController = TextEditingController(
+      text: existing?.description ?? '',
+    );
+    final priceController = TextEditingController(
+      text: existing?.price?.toStringAsFixed(2) ?? '',
+    );
+    final quantityController = TextEditingController(
+      text: existing?.quantity.toString() ?? '',
+    );
+    final categoryController = TextEditingController(
+      text: existing?.category ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(existing != null ? 'Edit Product' : 'Add Product'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Product Name *',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: priceController,
+                      decoration: const InputDecoration(
+                        labelText: 'Price',
+                        border: OutlineInputBorder(),
+                        prefixText: '\$ ',
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: quantityController,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: categoryController,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Product name is required')),
+                );
+                return;
+              }
+              // TODO: Integrate with backend create/update via shop repository
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    existing != null
+                        ? 'Product updated (integration coming soon)'
+                        : 'Product added (integration coming soon)',
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+            ),
+            child: Text(existing != null ? 'Update' : 'Add'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InventoryItemCard extends StatelessWidget {
+  final ProductEntity product;
+  const _InventoryItemCard({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final isLowStock = product.quantity <= 5;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF59E0B).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.inventory_2, color: Color(0xFFF59E0B)),
+        ),
+        title: Text(
+          product.productName,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (product.category != null)
+              Text(
+                product.category!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                if (product.price != null)
+                  Text(
+                    '\$${product.price!.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.successColor,
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isLowStock
+                        ? Colors.red.withOpacity(0.1)
+                        : Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Qty: ${product.quantity}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isLowStock ? Colors.red : Colors.green,
+                    ),
+                  ),
+                ),
+                if (isLowStock) ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    size: 16,
+                    color: Colors.orange,
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+        trailing: PopupMenuButton(
+          itemBuilder: (_) => [
+            const PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  Icon(Icons.edit, size: 18),
+                  SizedBox(width: 8),
+                  Text('Edit'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete, size: 18, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('Delete', style: TextStyle(color: Colors.red)),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) {
+            if (value == 'edit') {
+              // TODO: open edit dialog
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Edit coming soon')));
+            } else if (value == 'delete') {
+              // TODO: integrate delete via repository
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Delete coming soon')),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}

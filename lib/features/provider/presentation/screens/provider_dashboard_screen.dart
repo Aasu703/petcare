@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/features/bookings/presentation/pages/manage_appointments_page.dart';
+import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_page.dart';
+import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_inventory_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_services_screen.dart';
 
@@ -320,10 +323,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                         icon: Icons.event_note_rounded,
                         color: ProviderColors.bookings,
                         onTap: () {
-                          // TODO: Navigate to bookings screen
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Bookings feature coming soon!'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ManageAppointmentsPage(),
                             ),
                           );
                         },
@@ -347,15 +350,31 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                       const SizedBox(height: 16),
                       _buildModernServiceCard(
                         context,
+                        title: 'Calendar',
+                        subtitle: 'View booking calendar',
+                        icon: Icons.calendar_month_rounded,
+                        color: ProviderColors.messages,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProviderCalendarPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernServiceCard(
+                        context,
                         title: 'Analytics',
-                        subtitle: 'View business insights',
+                        subtitle: 'Earnings & business insights',
                         icon: Icons.analytics_rounded,
                         color: ProviderColors.analytics,
                         onTap: () {
-                          // TODO: Navigate to analytics screen
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Analytics feature coming soon!'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EarningsDashboardPage(),
                             ),
                           );
                         },

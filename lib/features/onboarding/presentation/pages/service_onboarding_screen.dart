@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/pages/signup.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ServiceOnboardingScreen extends StatelessWidget {
   const ServiceOnboardingScreen({super.key});
 
-  // static const Color _bgColor = Color(0xFFFFF5EC);
-  // static const Color _accentColor = Color(0xFFFFA84C);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: Stack(
           children: [
             Positioned(
@@ -90,7 +88,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: context.textPrimary.withOpacity(0.08),
                               blurRadius: 10,
                               offset: const Offset(0, 6),
                             ),
@@ -127,7 +125,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: context.textPrimary.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -157,7 +155,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const Login(),
+                                  builder: (context) => Login(),
                                 ),
                               );
                             },

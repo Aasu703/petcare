@@ -141,7 +141,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
           );
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const ProviderLoginScreen()),
+            MaterialPageRoute(builder: (_) => ProviderLoginScreen()),
             (route) => false,
           );
         },

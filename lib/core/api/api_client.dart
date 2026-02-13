@@ -3,6 +3,7 @@ import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/token_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,9 +13,10 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 class ApiClient {
+  final TokenService? _tokenService;
   late final Dio _dio;
 
-  ApiClient() {
+  ApiClient({TokenService? tokenService}) : _tokenService = tokenService {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -28,7 +30,7 @@ class ApiClient {
     );
 
     // Add interceptors if needed (e.g., for logging, authentication)
-    _dio.interceptors.add(_AuthInterceptor());
+    _dio.interceptors.add(_AuthInterceptor(tokenService: _tokenService));
 
     // Auto retry on network errors
     _dio.interceptors.add(
@@ -140,7 +142,10 @@ class ApiClient {
 
 // Auth interceptor to add token to headers
 class _AuthInterceptor extends Interceptor {
-  static const String _tokenKey = 'auth_token';
+  final TokenService? _tokenService;
+
+  _AuthInterceptor({TokenService? tokenService})
+    : _tokenService = tokenService;
 
   @override
   void onRequest(
@@ -158,8 +163,10 @@ class _AuthInterceptor extends Interceptor {
         options.path == ApiEndpoints.user;
 
     if (!isPublicGet && !isAuthEndpoint) {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(_tokenKey);
+      final token =
+          _tokenService != null
+              ? await _tokenService.getToken()
+              : (await SharedPreferences.getInstance()).getString('auth_token');
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
       }
@@ -171,9 +178,13 @@ class _AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // Handle unauthorized errors (e.g., token expired)
     if (err.response?.statusCode == 401) {
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.remove(_tokenKey);
-      });
+      if (_tokenService != null) {
+        _tokenService.deleteToken();
+      } else {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.remove('auth_token');
+        });
+      }
     }
     handler.next(err);
   }

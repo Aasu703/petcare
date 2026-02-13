@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/auth/presentation/pages/login.dart';
-import 'package:petcare/features/auth/presentation/pages/signup.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
@@ -152,12 +152,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                           height: 64,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const Login(),
-                                ),
-                              );
+                              context.go(RoutePaths.login);
                             },
                             child: const Text('Login'),
                           ),
@@ -168,12 +163,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                           height: 64,
                           child: OutlinedButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const Signup(),
-                                ),
-                              );
+                              context.push(RoutePaths.register);
                             },
                             child: const Text('Sign Up'),
                           ),

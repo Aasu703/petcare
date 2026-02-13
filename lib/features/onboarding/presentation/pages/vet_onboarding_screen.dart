@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/onboarding/presentation/pages/service_onboarding_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class VetOnboardingScreen extends StatelessWidget {
@@ -190,12 +190,8 @@ class VetOnboardingScreen extends StatelessWidget {
                                     height: 54,
                                     child: ElevatedButton.icon(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const ServiceOnboardingScreen(),
-                                          ),
+                                        context.push(
+                                          RoutePaths.onboardingServices,
                                         );
                                       },
                                       icon: CircleAvatar(

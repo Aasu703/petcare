@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:petcare/features/bookings/presentation/pages/manage_appointments_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_inventory_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_services_screen.dart';
+import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
+import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 
 // Modern color palette for Provider Dashboard
 class ProviderColors {
@@ -287,14 +287,14 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                       _buildModernServiceCard(
                         context,
                         title: 'Services',
-                        subtitle: 'Manage your pet care services',
+                        subtitle: 'View and manage your provider services',
                         icon: Icons.medical_services_rounded,
                         color: ProviderColors.services,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ProviderServicesScreen(),
+                              builder: (_) => const MyProviderServicesScreen(),
                             ),
                           );
                         },
@@ -302,15 +302,16 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                       const SizedBox(height: 16),
                       _buildModernServiceCard(
                         context,
-                        title: 'Inventory',
-                        subtitle: 'Track products & stock levels',
-                        icon: Icons.inventory_2_rounded,
+                        title: 'Apply for Service',
+                        subtitle: 'Submit a new provider service application',
+                        icon: Icons.assignment_rounded,
                         color: ProviderColors.inventory,
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ProviderInventoryScreen(),
+                              builder: (_) =>
+                                  const ApplyProviderServiceScreen(),
                             ),
                           );
                         },

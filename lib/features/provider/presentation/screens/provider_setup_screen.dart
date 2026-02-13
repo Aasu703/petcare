@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/provider/di/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
@@ -81,12 +82,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         );
       },
       (_) {
-        // Save session or something? For now, just navigate
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const ProviderDashboardScreen()),
-          (route) => false,
-        );
+        context.go(RoutePaths.providerDashboard);
       },
     );
   }

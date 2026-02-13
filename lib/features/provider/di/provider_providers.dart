@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petcare/core/services/hive/hive_service.dart';
-import 'package:petcare/core/services/connectivity/network_info.dart';
+import 'package:petcare/core/providers/core_providers.dart';
 import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
 import 'package:petcare/features/provider/data/datasource/remote/provider_remote_datasource.dart';
 import 'package:petcare/features/provider/data/datasource/local/provider_local_datasource.dart';
@@ -14,16 +13,9 @@ import 'package:petcare/features/provider/domain/usecases/update_provider_userca
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
 
-// Core
-final hiveServiceProviderDI = Provider<HiveService>((ref) => HiveService());
-
-final networkInfoProviderDI = Provider<INetworkInfo>(
-  (ref) => ref.read(networkInfoProvider),
-);
-
 // Data sources
 final providerLocalDatasourceProvider = Provider<IProviderDatasource>((ref) {
-  final hive = ref.read(hiveServiceProviderDI);
+  final hive = ref.read(hiveServiceProvider);
   return ProviderLocalDatasource(hiveService: hive);
 });
 
@@ -37,7 +29,7 @@ final providerRemoteDatasourceDIProvider = Provider<IProviderRemoteDataSource>((
 final providerRepositoryProvider = Provider<IProviderRepository>((ref) {
   final local = ref.read(providerLocalDatasourceProvider);
   final remote = ref.read(providerRemoteDatasourceDIProvider);
-  final net = ref.read(networkInfoProviderDI);
+  final net = ref.read(iNetworkInfoProvider);
   return ProviderRepositoryImpl(
     localDataSource: local,
     remoteDataSource: remote,

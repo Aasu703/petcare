@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/auth/presentation/view_model/login_view_model.dart';
-import 'package:petcare/features/auth/presentation/pages/signup.dart';
-import 'package:petcare/features/dashboard/presentation/pages/dashboard_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_login_screen.dart';
-import 'package:petcare/features/auth/di/auth_providers.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 
 class Login extends ConsumerStatefulWidget {
   const Login({super.key});
@@ -113,13 +109,7 @@ class _LoginState extends ConsumerState<Login>
           '✅ UI LOGIN: Login successful for user: ${user.email} (ID: ${user.userId})',
         );
         print('🧭 UI LOGIN: Navigating to dashboard');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                Dashboard(firstName: user.FirstName, email: user.email),
-          ),
-        );
+        context.go(RoutePaths.home);
       },
     );
 
@@ -443,10 +433,7 @@ class _LoginState extends ConsumerState<Login>
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => Signup()),
-                                );
+                                context.push(RoutePaths.register);
                               },
                               child: Container(
                                 padding: EdgeInsets.symmetric(
@@ -526,12 +513,7 @@ class _LoginState extends ConsumerState<Login>
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ProviderLoginScreen(),
-                                  ),
-                                );
+                                context.push(RoutePaths.providerLogin);
                               },
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(

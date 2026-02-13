@@ -3,9 +3,10 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
-import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 import 'package:petcare/app/theme/theme_provider.dart';
@@ -941,11 +942,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             .read(userSessionNotifierProvider.notifier)
                             .clearSession();
                         if (!context.mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => Login()),
-                          (_) => false,
-                        );
+                        context.go(RoutePaths.login);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ProfileColors.logout,

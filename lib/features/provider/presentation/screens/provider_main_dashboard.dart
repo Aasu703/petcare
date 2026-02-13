@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_services_screen.dart';
+import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 
 // Modern color palette for Provider Dashboard
 class ProviderDashboardColors {
@@ -27,7 +27,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
   List<Widget> get _screens => [
     const ProviderDashboardScreen(),
-    const ProviderServicesScreen(),
+    const MyProviderServicesScreen(),
     ProviderProfileScreen(),
   ];
 

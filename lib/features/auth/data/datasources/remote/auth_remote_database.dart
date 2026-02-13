@@ -71,13 +71,30 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
 
       if (response.data['success'] == true) {
         final data = response.data['data'];
-        final token = response.data['token'];
 
-        if (data is! Map<String, dynamic>) {}
+        Map<String, dynamic>? userJson;
+        String? token;
 
-        if (token == null || token is! String || token.isEmpty) {}
+        if (data is Map<String, dynamic>) {
+          final nestedUser = data['user'];
+          if (nestedUser is Map<String, dynamic>) {
+            userJson = nestedUser;
+            token = (data['accessToken'] ?? response.data['token'])?.toString();
+          } else {
+            userJson = data;
+            token = response.data['token']?.toString();
+          }
+        }
 
-        final user = AuthApiModel.fromJSON(data);
+        if (userJson == null) {
+          throw Exception('Invalid login payload received from server');
+        }
+
+        if (token == null || token.isEmpty) {
+          throw Exception('Missing access token in login response');
+        }
+
+        final user = AuthApiModel.fromJSON(userJson);
 
         if (user.id == null || user.id!.isEmpty) {
           throw Exception('Invalid user ID received from server');

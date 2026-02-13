@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/features/shop/di/shop_providers.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
+import 'package:petcare/features/shop/domain/repositories/shop_repository.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
 class ManageInventoryPage extends ConsumerStatefulWidget {
@@ -69,10 +71,79 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
                 padding: const EdgeInsets.all(16),
                 itemCount: state.products.length,
                 itemBuilder: (context, index) {
-                  return _InventoryItemCard(product: state.products[index]);
+                  final product = state.products[index];
+                  return _InventoryItemCard(
+                    product: product,
+                    onEdit: () => _showProductDialog(
+                      context,
+                      existing: product,
+                    ),
+                    onDelete: () => _deleteProduct(context, product),
+                  );
                 },
               ),
             ),
+    );
+  }
+
+  Future<void> _deleteProduct(
+    BuildContext context,
+    ProductEntity product,
+  ) async {
+    if (product.productId == null || product.productId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid product identifier')),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Delete Product'),
+            content: Text(
+              'Are you sure you want to delete "${product.productName}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed) return;
+
+    final repo = ref.read(shopRepositoryProvider);
+    final result = await repo.deleteProduct(product.productId!);
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(failure.message)),
+        );
+      },
+      (success) async {
+        if (success) {
+          await ref.read(shopProvider.notifier).loadProducts();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product deleted successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete product')),
+          );
+        }
+      },
     );
   }
 
@@ -161,23 +232,57 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (nameController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Product name is required')),
                 );
                 return;
               }
-              // TODO: Integrate with backend create/update via shop repository
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    existing != null
-                        ? 'Product updated (integration coming soon)'
-                        : 'Product added (integration coming soon)',
-                  ),
-                ),
+
+              final repo = ref.read(shopRepositoryProvider);
+              final parsedPrice =
+                  double.tryParse(priceController.text.trim());
+              final parsedQuantity =
+                  int.tryParse(quantityController.text.trim()) ?? 0;
+
+              final baseEntity = ProductEntity(
+                productId: existing?.productId,
+                productName: nameController.text.trim(),
+                description: descController.text.trim().isEmpty
+                    ? null
+                    : descController.text.trim(),
+                price: parsedPrice,
+                quantity: parsedQuantity,
+                category: categoryController.text.trim().isEmpty
+                    ? null
+                    : categoryController.text.trim(),
+                providerId: existing?.providerId,
+              );
+
+              final result = existing == null
+                  ? await repo.createProduct(baseEntity)
+                  : await repo.updateProduct(baseEntity);
+
+              result.fold(
+                (failure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(failure.message)),
+                  );
+                },
+                (product) async {
+                  Navigator.pop(context);
+                  await ref.read(shopProvider.notifier).loadProducts();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        existing != null
+                            ? 'Product updated successfully'
+                            : 'Product added successfully',
+                      ),
+                    ),
+                  );
+                },
               );
             },
             style: ElevatedButton.styleFrom(
@@ -194,7 +299,14 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
 
 class _InventoryItemCard extends StatelessWidget {
   final ProductEntity product;
-  const _InventoryItemCard({required this.product});
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _InventoryItemCard({
+    required this.product,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -295,15 +407,9 @@ class _InventoryItemCard extends StatelessWidget {
           ],
           onSelected: (value) {
             if (value == 'edit') {
-              // TODO: open edit dialog
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Edit coming soon')));
+              onEdit();
             } else if (value == 'delete') {
-              // TODO: integrate delete via repository
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Delete coming soon')),
-              );
+              onDelete();
             }
           },
         ),

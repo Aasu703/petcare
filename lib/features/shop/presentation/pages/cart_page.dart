@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/shop/domain/entities/cart_entity.dart';
+import 'package:petcare/features/shop/domain/entities/order_entity.dart';
+import 'package:petcare/features/shop/di/shop_providers.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
 class CartPage extends ConsumerWidget {
@@ -100,12 +102,50 @@ class CartPage extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Navigate to checkout
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Checkout coming soon!'),
-                            ),
+                        onPressed: () async {
+                          if (cart.items.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Your cart is empty'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final createOrderUsecase =
+                              ref.read(createOrderUsecaseProvider);
+
+                          final order = OrderEntity(
+                            items: cart.items
+                                .map(
+                                  (item) => OrderItemEntity(
+                                    productId: item.product.productId ?? '',
+                                    productName: item.product.productName,
+                                    quantity: item.quantity,
+                                    price: item.product.price ?? 0,
+                                  ),
+                                )
+                                .toList(),
+                            totalAmount: cart.totalAmount,
+                          );
+
+                          final result = await createOrderUsecase(order);
+
+                          result.fold(
+                            (failure) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(failure.message)),
+                              );
+                            },
+                            (createdOrder) {
+                              ref.read(shopProvider.notifier).clearCart();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Order placed successfully!'),
+                                ),
+                              );
+                            },
                           );
                         },
                         style: ElevatedButton.styleFrom(

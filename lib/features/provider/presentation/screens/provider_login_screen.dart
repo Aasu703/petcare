@@ -9,7 +9,7 @@ import 'package:petcare/features/provider/domain/usecases/provider_login_usecase
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ProviderLoginScreen extends ConsumerStatefulWidget {
-  ProviderLoginScreen({super.key});
+  const ProviderLoginScreen({super.key});
 
   @override
   ConsumerState<ProviderLoginScreen> createState() =>
@@ -132,7 +132,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: context.textPrimary.withOpacity(0.08),
+                          color: context.textPrimary.withValues(alpha: 0.08),
                           blurRadius: 16,
                           offset: const Offset(0, 10),
                         ),
@@ -209,7 +209,9 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: context.textPrimary.withOpacity(isFocused ? 0.10 : 0.06),
+            color: context.textPrimary.withValues(
+              alpha: isFocused ? 0.10 : 0.06,
+            ),
             blurRadius: isFocused ? 14 : 10,
             offset: Offset(0, 6),
           ),

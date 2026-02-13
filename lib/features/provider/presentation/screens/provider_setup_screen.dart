@@ -13,7 +13,7 @@ class ProviderSetupScreen extends ConsumerStatefulWidget {
   final String password;
   final String confirmPassword;
 
-  ProviderSetupScreen({
+  const ProviderSetupScreen({
     super.key,
     required this.email,
     required this.password,
@@ -142,7 +142,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: context.textPrimary.withOpacity(0.08),
+                          color: context.textPrimary.withValues(alpha: 0.08),
                           blurRadius: 16,
                           offset: Offset(0, 10),
                         ),
@@ -222,7 +222,9 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: context.textPrimary.withOpacity(isFocused ? 0.10 : 0.06),
+            color: context.textPrimary.withValues(
+              alpha: isFocused ? 0.10 : 0.06,
+            ),
             blurRadius: isFocused ? 14 : 10,
             offset: const Offset(0, 6),
           ),

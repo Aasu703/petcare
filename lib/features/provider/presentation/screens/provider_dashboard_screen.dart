@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/bookings/presentation/pages/manage_appointments_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
+import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
 
 // Modern color palette for Provider Dashboard
 class ProviderColors {
@@ -23,15 +26,16 @@ class ProviderColors {
   static const Color shadow = Color(0x1A6366F1);
 }
 
-class ProviderDashboardScreen extends StatefulWidget {
+class ProviderDashboardScreen extends ConsumerStatefulWidget {
   const ProviderDashboardScreen({super.key});
 
   @override
-  State<ProviderDashboardScreen> createState() =>
+  ConsumerState<ProviderDashboardScreen> createState() =>
       _ProviderDashboardScreenState();
 }
 
-class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
+class _ProviderDashboardScreenState
+    extends ConsumerState<ProviderDashboardScreen>
     with TickerProviderStateMixin {
   late AnimationController _headerController;
   late AnimationController _statsController;
@@ -88,6 +92,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
     );
 
     _headerController.forward();
+    Future.microtask(
+      () => ref.read(providerServiceProvider.notifier).loadMyServices(),
+    );
     Future.delayed(
       const Duration(milliseconds: 200),
       () => _statsController.forward(),
@@ -108,299 +115,342 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final providerServiceState = ref.watch(providerServiceProvider);
+    final activeServicesCount = providerServiceState.services
+        .where(
+          (service) => service.verificationStatus.toLowerCase() == 'approved',
+        )
+        .length;
+    final pendingServicesCount = providerServiceState.services
+        .where(
+          (service) => service.verificationStatus.toLowerCase() == 'pending',
+        )
+        .length;
+
     return Scaffold(
-      backgroundColor: ProviderColors.background,
+      backgroundColor: context.backgroundColor,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Modern Header
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _headerFade,
-                child: SlideTransition(
-                  position: _headerSlide,
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(providerServiceProvider.notifier).loadMyServices(),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Modern Header
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _headerFade,
+                  child: SlideTransition(
+                    position: _headerSlide,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              context.iconPrimaryColor.withValues(alpha: 0.16),
+                              context.accentColor.withValues(alpha: 0.12),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: context.iconPrimaryColor.withValues(
+                              alpha: 0.18,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: context.iconPrimaryColor
+                                          .withValues(alpha: 0.14),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.business_rounded,
+                                          size: 14,
+                                          color: context.iconPrimaryColor,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Business Dashboard',
+                                          style: TextStyle(
+                                            color: context.iconPrimaryColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Welcome back!',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(
+                                          color: context.textPrimary,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.4,
+                                          height: 1.1,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Manage your pet care business',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: context.textSecondary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildNotificationButton(context),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+              // Statistics Cards
+              SliverToBoxAdapter(
+                child: ScaleTransition(
+                  scale: _statsScale,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Row(
                       children: [
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: ProviderColors.primary.withOpacity(
-                                    0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.business_rounded,
-                                      size: 14,
-                                      color: ProviderColors.primary,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Business Dashboard',
-                                      style: TextStyle(
-                                        color: ProviderColors.primary,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Welcome back!',
-                                style: TextStyle(
-                                  color: ProviderColors.textPrimary,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Manage your pet care business',
-                                style: TextStyle(
-                                  color: ProviderColors.textSecondary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                          child: _buildStatCard(
+                            context,
+                            'Today\'s Bookings',
+                            '12',
+                            Icons.event_available_rounded,
+                            ProviderColors.services,
                           ),
                         ),
-                        _buildNotificationButton(),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildStatCard(
+                            context,
+                            'Revenue',
+                            '\$2,450',
+                            Icons.attach_money_rounded,
+                            ProviderColors.accent,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-            // Statistics Cards
-            SliverToBoxAdapter(
-              child: ScaleTransition(
-                scale: _statsScale,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          'Today\'s Bookings',
-                          '12',
-                          Icons.event_available_rounded,
-                          ProviderColors.services,
+              SliverToBoxAdapter(
+                child: ScaleTransition(
+                  scale: _statsScale,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            context,
+                            'Active Services',
+                            activeServicesCount.toString(),
+                            Icons.medical_services_rounded,
+                            ProviderColors.inventory,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildStatCard(
-                          'Revenue',
-                          '\$2,450',
-                          Icons.attach_money_rounded,
-                          ProviderColors.accent,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildStatCard(
+                            context,
+                            'Pending Reviews',
+                            pendingServicesCount.toString(),
+                            Icons.chat_bubble_rounded,
+                            ProviderColors.messages,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-
-            SliverToBoxAdapter(
-              child: ScaleTransition(
-                scale: _statsScale,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          'Active Services',
-                          '8',
-                          Icons.medical_services_rounded,
-                          ProviderColors.inventory,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildStatCard(
-                          'Messages',
-                          '5',
-                          Icons.chat_bubble_rounded,
-                          ProviderColors.messages,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-            // Services Section
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _servicesFade,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Business Management',
-                    style: TextStyle(
-                      color: ProviderColors.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
 
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _servicesFade,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Services',
-                        subtitle: 'View and manage your provider services',
-                        icon: Icons.medical_services_rounded,
-                        color: ProviderColors.services,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const MyProviderServicesScreen(),
-                            ),
-                          );
-                        },
+              // Services Section
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _servicesFade,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      'Business Management',
+                      style: TextStyle(
+                        color: ProviderColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 16),
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Apply for Service',
-                        subtitle: 'Submit a new provider service application',
-                        icon: Icons.assignment_rounded,
-                        color: ProviderColors.inventory,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const ApplyProviderServiceScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Bookings',
-                        subtitle: 'View & manage appointments',
-                        icon: Icons.event_note_rounded,
-                        color: ProviderColors.bookings,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ManageAppointmentsPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Messages',
-                        subtitle: 'Chat with pet owners',
-                        icon: Icons.chat_bubble_rounded,
-                        color: ProviderColors.messages,
-                        onTap: () {
-                          // TODO: Navigate to messages screen
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Messages feature coming soon!'),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Calendar',
-                        subtitle: 'View booking calendar',
-                        icon: Icons.calendar_month_rounded,
-                        color: ProviderColors.messages,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ProviderCalendarPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _buildModernServiceCard(
-                        context,
-                        title: 'Analytics',
-                        subtitle: 'Earnings & business insights',
-                        icon: Icons.analytics_rounded,
-                        color: ProviderColors.analytics,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const EarningsDashboardPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _servicesFade,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Services',
+                          subtitle: 'View and manage your provider services',
+                          icon: Icons.medical_services_rounded,
+                          color: ProviderColors.services,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const MyProviderServicesScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Apply for Service',
+                          subtitle: 'Submit a new provider service application',
+                          icon: Icons.assignment_rounded,
+                          color: ProviderColors.inventory,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ApplyProviderServiceScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Bookings',
+                          subtitle: 'View & manage appointments',
+                          icon: Icons.event_note_rounded,
+                          color: ProviderColors.bookings,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ManageAppointmentsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Messages',
+                          subtitle: 'Chat with pet owners',
+                          icon: Icons.chat_bubble_rounded,
+                          color: ProviderColors.messages,
+                          onTap: () {
+                            // TODO: Navigate to messages screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Messages feature coming soon!'),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Calendar',
+                          subtitle: 'View booking calendar',
+                          icon: Icons.calendar_month_rounded,
+                          color: ProviderColors.messages,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ProviderCalendarPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModernServiceCard(
+                          context,
+                          title: 'Analytics',
+                          subtitle: 'Earnings & business insights',
+                          icon: Icons.analytics_rounded,
+                          color: ProviderColors.analytics,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const EarningsDashboardPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNotificationButton() {
+  Widget _buildNotificationButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: ProviderColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ProviderColors.shadow,
+            color: context.textPrimary.withValues(alpha: 0.10),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -410,15 +460,13 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
         onPressed: () {
           // TODO: Navigate to notifications
         },
-        icon: Icon(
-          Icons.notifications_outlined,
-          color: ProviderColors.textPrimary,
-        ),
+        icon: Icon(Icons.notifications_outlined, color: context.textPrimary),
       ),
     );
   }
 
   Widget _buildStatCard(
+    BuildContext context,
     String title,
     String value,
     IconData icon,
@@ -427,11 +475,11 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: ProviderColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ProviderColors.shadow,
+            color: context.textPrimary.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -443,7 +491,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -452,7 +500,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
           Text(
             value,
             style: TextStyle(
-              color: ProviderColors.textPrimary,
+              color: context.textPrimary,
               fontSize: 24,
               fontWeight: FontWeight.w800,
             ),
@@ -461,7 +509,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
           Text(
             title,
             style: TextStyle(
-              color: ProviderColors.textSecondary,
+              color: context.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -484,11 +532,11 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
       borderRadius: BorderRadius.circular(24),
       child: Ink(
         decoration: BoxDecoration(
-          color: ProviderColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: ProviderColors.shadow,
+              color: context.textPrimary.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -502,7 +550,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -515,7 +563,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                     Text(
                       title,
                       style: TextStyle(
-                        color: ProviderColors.textPrimary,
+                        color: context.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -524,7 +572,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: ProviderColors.textSecondary,
+                        color: context.textSecondary,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -534,7 +582,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: ProviderColors.textSecondary,
+                color: context.textSecondary,
                 size: 16,
               ),
             ],

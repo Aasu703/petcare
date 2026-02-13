@@ -25,7 +25,7 @@ class ProviderProfileColors {
 }
 
 class ProviderProfileScreen extends ConsumerStatefulWidget {
-  ProviderProfileScreen({super.key});
+  const ProviderProfileScreen({super.key});
 
   @override
   ConsumerState<ProviderProfileScreen> createState() =>
@@ -122,7 +122,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                     ),
                                     decoration: BoxDecoration(
                                       color: ProviderProfileColors.primary
-                                          .withOpacity(0.1),
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Row(
@@ -189,7 +189,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                                   boxShadow: [
                                     BoxShadow(
                                       color: ProviderProfileColors.primary
-                                          .withOpacity(0.3),
+                                          .withValues(alpha: 0.3),
                                       blurRadius: 20,
                                       offset: Offset(0, 10),
                                     ),
@@ -363,7 +363,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF6366F1).withOpacity(0.08),
+              color: Color(0xFF6366F1).withValues(alpha: 0.08),
               blurRadius: 12,
               offset: Offset(0, 4),
             ),
@@ -377,7 +377,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 20),
@@ -427,10 +427,10 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
       borderRadius: BorderRadius.circular(16),
       child: Ink(
         decoration: BoxDecoration(
-          color: ProviderProfileColors.logout.withOpacity(0.1),
+          color: ProviderProfileColors.logout.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: ProviderProfileColors.logout.withOpacity(0.2),
+            color: ProviderProfileColors.logout.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -474,7 +474,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: ProviderProfileColors.logout.withOpacity(0.1),
+                  color: ProviderProfileColors.logout.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

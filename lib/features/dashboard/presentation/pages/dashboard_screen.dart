@@ -3,7 +3,6 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/explore_scr
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
-import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Dashboard extends StatefulWidget {

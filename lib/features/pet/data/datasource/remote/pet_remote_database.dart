@@ -2,17 +2,26 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/pet/data/datasource/pet_datasource.dart';
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
 
 final petRemoteDatasourceProvider = Provider<IPetRemoteDataSource>((ref) {
-  return PetRemoteDatabase(apiClient: ref.read(apiClientProvider));
+  return PetRemoteDatabase(
+    apiClient: ref.read(apiClientProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class PetRemoteDatabase implements IPetRemoteDataSource {
   final ApiClient _apiClient;
+  final UserSessionService _sessionService;
 
-  PetRemoteDatabase({required ApiClient apiClient}) : _apiClient = apiClient;
+  PetRemoteDatabase({
+    required ApiClient apiClient,
+    required UserSessionService sessionService,
+  }) : _apiClient = apiClient,
+       _sessionService = sessionService;
 
   @override
   Future<PetApiModel> addPet(PetApiModel pet, {String? imagePath}) async {
@@ -69,6 +78,9 @@ class PetRemoteDatabase implements IPetRemoteDataSource {
 
   @override
   Future<List<PetApiModel>> getAllUserPets() async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
     final response = await _apiClient.get(ApiEndpoints.petGetAll);
 
     if (response.data['success'] == true) {

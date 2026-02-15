@@ -20,7 +20,7 @@ class ShopRepositoryImpl implements IShopRepository {
     try {
       // For now, inventory is provider-scoped. This loads all.
       // Can be expanded when a public product listing endpoint is added.
-      final models = await _remoteDataSource.getProviderInventory('');
+      final models = await _remoteDataSource.getProducts();
       return Right(ProductModel.toEntityList(models));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
@@ -88,6 +88,77 @@ class ShopRepositoryImpl implements IShopRepository {
     try {
       final result = await _remoteDataSource.deleteProduct(productId);
       return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  // Cart methods
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getCart() async {
+    try {
+      final result = await _remoteDataSource.getCart();
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> addToCart(
+    String productId,
+    int quantity,
+  ) async {
+    try {
+      final result = await _remoteDataSource.addToCart(productId, quantity);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> updateCartItem(
+    String itemId,
+    int quantity,
+  ) async {
+    try {
+      final result = await _remoteDataSource.updateCartItem(itemId, quantity);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> removeCartItem(
+    String itemId,
+  ) async {
+    try {
+      final result = await _remoteDataSource.removeCartItem(itemId);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> updateCart(
+    Map<String, dynamic> cartData,
+  ) async {
+    try {
+      final result = await _remoteDataSource.updateCart(cartData);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> clearCart() async {
+    try {
+      await _remoteDataSource.clearCart();
+      return const Right(null);
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

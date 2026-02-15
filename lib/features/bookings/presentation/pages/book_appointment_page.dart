@@ -202,6 +202,11 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Book Appointment'),
         backgroundColor: context.surfaceColor,
         foregroundColor: context.textPrimary,

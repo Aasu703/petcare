@@ -34,6 +34,10 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
 
   @override
   Future<AuthApiModel?> getUserById(String authId) async {
+    // Check if user is logged in before making the request
+    if (!_sessionService.isLoggedIn()) {
+      return null;
+    }
     try {
       final response = await _apiClient.get(ApiEndpoints.userWhoAmI);
 

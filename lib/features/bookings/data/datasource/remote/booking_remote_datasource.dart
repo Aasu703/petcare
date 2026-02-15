@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/data/models/booking_model.dart';
 
 abstract interface class IBookingRemoteDataSource {
@@ -19,14 +20,21 @@ abstract interface class IBookingRemoteDataSource {
 final bookingRemoteDatasourceProvider = Provider<IBookingRemoteDataSource>((
   ref,
 ) {
-  return BookingRemoteDataSource(apiClient: ref.read(apiClientProvider));
+  return BookingRemoteDataSource(
+    apiClient: ref.read(apiClientProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class BookingRemoteDataSource implements IBookingRemoteDataSource {
   final ApiClient _apiClient;
+  final UserSessionService _sessionService;
 
-  BookingRemoteDataSource({required ApiClient apiClient})
-    : _apiClient = apiClient;
+  BookingRemoteDataSource({
+    required ApiClient apiClient,
+    required UserSessionService sessionService,
+  }) : _apiClient = apiClient,
+       _sessionService = sessionService;
 
   @override
   Future<BookingModel> createBooking(BookingModel booking) async {
@@ -51,6 +59,9 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
     int page = 1,
     int limit = 20,
   }) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
     final response = await _apiClient.get(
       '${ApiEndpoints.bookingByUser}/$userId',
       queryParameters: {'page': page, 'limit': limit},

@@ -8,11 +8,9 @@ import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/health_records/presentation/view_model/vaccination_reminder_view_model.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
-import 'package:petcare/features/bookings/presentation/pages/booking_calendar_page.dart';
-import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
-import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
+import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 
 // Service-specific colors (not theme-dependent)
 const _kVeterinaryColor = Color(0xFFFF6B6B);
@@ -118,6 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
+    final bookingState = ref.watch(userBookingProvider);
     final reminderState = ref.watch(vaccinationReminderProvider);
     final petIds = petState.pets
         .map((pet) => pet.petId)
@@ -293,96 +292,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 ),
                               ),
                             ),
-                            // Content
+                            // Content - dynamic depending on whether user has pets
                             Padding(
                               padding: const EdgeInsets.all(28),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
+                              child: petState.pets.isEmpty
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(
-                                          Icons.pets_rounded,
-                                          color: Colors.white,
-                                          size: 14,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'NEW PET',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 1.5,
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 6,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Text(
-                                    'Add Your First Pet',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Track health, schedule vet visits,\nand never miss a grooming session.',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.85),
-                                      fontSize: 14,
-                                      height: 1.6,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Row(
-                                    children: [
-                                      _buildAddPetButton(),
-                                      const SizedBox(width: 16),
-                                      Container(
-                                        width: 56,
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(
-                                            18,
-                                          ),
-                                          border: Border.all(
+                                          decoration: BoxDecoration(
                                             color: Colors.white.withOpacity(
                                               0.2,
                                             ),
-                                            width: 1,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.pets_rounded,
+                                                color: Colors.white,
+                                                size: 14,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'NEW PET',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: 1.5,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        child: const Icon(
-                                          Icons.pets_rounded,
-                                          color: Colors.white,
-                                          size: 28,
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          'Add Your First Pet',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.5,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Track health, schedule vet visits,\nand never miss a grooming session.',
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.85,
+                                            ),
+                                            fontSize: 14,
+                                            height: 1.6,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        Row(
+                                          children: [
+                                            _buildAddPetButton(),
+                                            const SizedBox(width: 16),
+                                            Container(
+                                              width: 56,
+                                              height: 56,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(
+                                                  0.15,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.2),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: const Icon(
+                                                Icons.pets_rounded,
+                                                color: Colors.white,
+                                                size: 28,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'You have ${petState.pets.length} ${petState.pets.length == 1 ? 'pet' : 'pets'}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          '${bookingState.bookings.length} upcoming appointment${bookingState.bookings.length == 1 ? '' : 's'}',
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.9,
+                                            ),
+                                            fontSize: 14,
+                                            height: 1.4,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          children: [
+                                            _buildViewPetsButton(),
+                                            const SizedBox(width: 12),
+                                            _buildAddPetButton(),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                             ),
                           ],
                         ),
@@ -540,7 +583,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   children: [
                     _buildStatCard(
                       icon: Icons.favorite_rounded,
-                      value: '0',
+                      value: '${petState.pets.length}',
                       label: 'My Pets',
                       color: _kAccentColor,
                       delay: 0,
@@ -548,7 +591,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     const SizedBox(width: 12),
                     _buildStatCard(
                       icon: Icons.calendar_today_rounded,
-                      value: '0',
+                      value: '${bookingState.bookings.length}',
                       label: 'Appointments',
                       color: _kPetShopColor,
                       delay: 100,
@@ -556,7 +599,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     const SizedBox(width: 12),
                     _buildStatCard(
                       icon: Icons.notifications_active_rounded,
-                      value: '0',
+                      value: '${reminderState.reminders.length}',
                       label: 'Reminders',
                       color: _kGroomingColor,
                       delay: 200,
@@ -971,6 +1014,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 const SizedBox(width: 12),
                 const Text(
                   'Add Pet',
+                  style: TextStyle(
+                    color: AppColors.primaryColor,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewPetsButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+            spreadRadius: -6,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(context, MaterialPageRoute(builder: (_) => MyPet()));
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(
+                  Icons.pets_rounded,
+                  color: AppColors.primaryColor,
+                  size: 18,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'My Pets',
                   style: TextStyle(
                     color: AppColors.primaryColor,
                     fontWeight: FontWeight.w800,

@@ -7,7 +7,7 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      true; // Set to true for physical device testing, false for emulator/simulator
+      false; // Set to true for physical device testing, false for emulator/simulator
   static const String _ipAddress = '192.168.1.6';
   static const int _port = 5050;
 
@@ -23,7 +23,11 @@ class ApiEndpoints {
   static String get baseUrl => '${serverUrl}api/';
   static String get mediaUrl => '${serverUrl}media/';
 
-  static String resolveMediaUrl(String path) => '$mediaUrl$path';
+  static String resolveMediaUrl(String path) {
+    if (path.isEmpty) return mediaUrl;
+    final normalized = path.startsWith('/') ? path.substring(1) : path;
+    return '$mediaUrl$normalized';
+  }
 
   static const Duration connectionTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);
@@ -75,11 +79,12 @@ class ApiEndpoints {
   static const String serviceByProvider = 'service/provider';
 
   // ---------------------- INVENTORY ------------------------
-  static const String inventoryByProvider = 'provider/inventory';
+  static const String products = 'product';
+  static const String inventoryByProvider = 'product/provider';
   static const String inventoryCreate = 'provider/inventory';
   static const String inventoryUpdate = 'provider/inventory';
   static const String inventoryDelete = 'provider/inventory';
-  static const String inventoryById = 'provider/inventory';
+  static const String inventoryById = 'product';
 
   // ----------------------- ORDER ---------------------------
   static const String orderCreate = 'order';
@@ -91,4 +96,22 @@ class ApiEndpoints {
   // -------------------- HEALTH RECORD ----------------------
   static const String healthRecord = 'health-record';
   static const String healthRecordByPet = 'health-record/pet';
+
+  // ----------------------- MESSAGE -------------------------
+  static const String messageList = 'message';
+  static const String messageMy = 'message/my';
+  static const String messageById = 'message';
+
+  // ------------------------ POST ---------------------------
+  static const String postCreate = 'provider/post';
+  static const String postMy = 'provider/post/my';
+  static const String postById = 'provider/post';
+
+  // ------------------------- CART --------------------------
+  static const String cartGet = 'cart';
+  static const String cartAdd = 'cart/add';
+  static const String cartUpdateItem = 'cart/item';
+  static const String cartRemoveItem = 'cart/item';
+  static const String cartUpdate = 'cart';
+  static const String cartClear = 'cart';
 }

@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {

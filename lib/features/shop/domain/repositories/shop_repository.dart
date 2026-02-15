@@ -19,6 +19,22 @@ abstract interface class IShopRepository {
   Future<Either<Failure, ProductEntity>> updateProduct(ProductEntity product);
   Future<Either<Failure, bool>> deleteProduct(String productId);
 
+  // Cart
+  Future<Either<Failure, Map<String, dynamic>>> getCart();
+  Future<Either<Failure, Map<String, dynamic>>> addToCart(
+    String productId,
+    int quantity,
+  );
+  Future<Either<Failure, Map<String, dynamic>>> updateCartItem(
+    String itemId,
+    int quantity,
+  );
+  Future<Either<Failure, Map<String, dynamic>>> removeCartItem(String itemId);
+  Future<Either<Failure, Map<String, dynamic>>> updateCart(
+    Map<String, dynamic> cartData,
+  );
+  Future<Either<Failure, void>> clearCart();
+
   // Orders
   Future<Either<Failure, OrderEntity>> createOrder(OrderEntity order);
   Future<Either<Failure, List<OrderEntity>>> getUserOrders();

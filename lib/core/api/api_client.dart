@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  return ApiClient(tokenService: ref.read(tokenServiceProvider));
 });
 
 class ApiClient {
@@ -144,8 +144,7 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final TokenService? _tokenService;
 
-  _AuthInterceptor({TokenService? tokenService})
-    : _tokenService = tokenService;
+  _AuthInterceptor({TokenService? tokenService}) : _tokenService = tokenService;
 
   @override
   void onRequest(
@@ -163,12 +162,14 @@ class _AuthInterceptor extends Interceptor {
         options.path == ApiEndpoints.user;
 
     if (!isPublicGet && !isAuthEndpoint) {
-      final token =
-          _tokenService != null
-              ? await _tokenService.getToken()
-              : (await SharedPreferences.getInstance()).getString('auth_token');
+      final token = _tokenService != null
+          ? await _tokenService.getToken()
+          : (await SharedPreferences.getInstance()).getString('auth_token');
       if (token != null) {
-        options.headers['Authorization'] = 'Bearer $token';
+        options.headers['authorization'] = token;
+        print('Added token for request to ${options.path}');
+      } else {
+        print('No token found for request to ${options.path}');
       }
     }
     handler.next(options);

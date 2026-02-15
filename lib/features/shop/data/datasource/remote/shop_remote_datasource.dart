@@ -1,15 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/shop/data/models/product_model.dart';
 
 abstract interface class IShopRemoteDataSource {
   // Products / Inventory
+  Future<List<ProductModel>> getProducts();
   Future<List<ProductModel>> getProviderInventory(String providerId);
   Future<ProductModel?> getProductById(String productId);
   Future<ProductModel> createProduct(ProductModel product);
   Future<ProductModel> updateProduct(String productId, ProductModel product);
   Future<bool> deleteProduct(String productId);
+
+  // Cart
+  Future<Map<String, dynamic>> getCart();
+  Future<Map<String, dynamic>> addToCart(String productId, int quantity);
+  Future<Map<String, dynamic>> updateCartItem(String itemId, int quantity);
+  Future<Map<String, dynamic>> removeCartItem(String itemId);
+  Future<Map<String, dynamic>> updateCart(Map<String, dynamic> cartData);
+  Future<void> clearCart();
 
   // Orders
   Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData);
@@ -18,13 +28,41 @@ abstract interface class IShopRemoteDataSource {
 }
 
 final shopRemoteDatasourceProvider = Provider<IShopRemoteDataSource>((ref) {
-  return ShopRemoteDataSource(apiClient: ref.read(apiClientProvider));
+  return ShopRemoteDataSource(
+    apiClient: ref.read(apiClientProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class ShopRemoteDataSource implements IShopRemoteDataSource {
   final ApiClient _apiClient;
+  final UserSessionService _sessionService;
 
-  ShopRemoteDataSource({required ApiClient apiClient}) : _apiClient = apiClient;
+  ShopRemoteDataSource({
+    required ApiClient apiClient,
+    required UserSessionService sessionService,
+  }) : _apiClient = apiClient,
+       _sessionService = sessionService;
+
+  @override
+  Future<List<ProductModel>> getProducts() async {
+    final response = await _apiClient.get(ApiEndpoints.products);
+    final data = response.data;
+    List<dynamic> list = [];
+    if (data is Map<String, dynamic>) {
+      final inner = data['data'];
+      if (inner is List) {
+        list = inner;
+      } else if (inner is Map<String, dynamic>) {
+        list = inner['items'] ?? [];
+      }
+    } else if (data is List) {
+      list = data;
+    }
+    return list
+        .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
 
   @override
   Future<List<ProductModel>> getProviderInventory(String providerId) async {
@@ -103,6 +141,94 @@ class ShopRemoteDataSource implements IShopRemoteDataSource {
       return data['success'] == true;
     }
     return false;
+  }
+
+  // Cart methods
+  @override
+  Future<Map<String, dynamic>> getCart() async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.get(ApiEndpoints.cartGet);
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> addToCart(String productId, int quantity) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.post(
+      ApiEndpoints.cartAdd,
+      data: {'productId': productId, 'quantity': quantity},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateCartItem(
+    String itemId,
+    int quantity,
+  ) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.put(
+      '${ApiEndpoints.cartUpdateItem}/$itemId',
+      data: {'quantity': quantity},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> removeCartItem(String itemId) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.delete(
+      '${ApiEndpoints.cartRemoveItem}/$itemId',
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return {};
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateCart(Map<String, dynamic> cartData) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.put(
+      ApiEndpoints.cartUpdate,
+      data: cartData,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return {};
+  }
+
+  @override
+  Future<void> clearCart() async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    await _apiClient.delete(ApiEndpoints.cartClear);
   }
 
   @override

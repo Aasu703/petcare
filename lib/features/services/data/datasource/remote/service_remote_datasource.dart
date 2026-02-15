@@ -32,12 +32,7 @@ class ServiceRemoteDataSource implements IServiceRemoteDataSource {
       queryParameters: {'page': page, 'limit': limit},
     );
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['services'] ?? data['data'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    List<dynamic> list = normalizeToList(data);
     return list
         .map((item) => ServiceModel.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -69,14 +64,36 @@ class ServiceRemoteDataSource implements IServiceRemoteDataSource {
       queryParameters: {'page': page, 'limit': limit},
     );
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['services'] ?? data['data'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    List<dynamic> list = normalizeToList(data);
     return list
         .map((item) => ServiceModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
+}
+
+// Public helper to normalize various API response shapes into a List.
+List<dynamic> normalizeToList(dynamic data) {
+  if (data == null) return <dynamic>[];
+
+  if (data is List) return data;
+
+  if (data is Map<String, dynamic>) {
+    final possible =
+        data['services'] ?? data['data'] ?? data['items'] ?? data['results'];
+    if (possible is List) return possible;
+
+    if (possible is Map<String, dynamic>) {
+      for (final v in possible.values) {
+        if (v is List) return v;
+      }
+    }
+
+    for (final v in data.values) {
+      if (v is List) return v;
+    }
+
+    return [data];
+  }
+
+  return [data];
 }

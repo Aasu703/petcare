@@ -90,6 +90,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: _selectedCategory != 'All'
+            ? IconButton(
+                tooltip: 'Back',
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () {
+                  setState(() {
+                    _selectedCategory = 'All';
+                    _searchController.clear();
+                    _query = '';
+                  });
+                },
+              )
+            : null,
         title: const Text('Explore Services'),
         actions: [
           IconButton(

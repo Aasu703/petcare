@@ -24,6 +24,23 @@ class LoginUsecase
 
   @override
   Future<Either<Failure, AuthEntity>> call(LoginUsecaseParams params) {
-    return _repository.login(params.email, params.password);
+    print('⚡ USECASE LOGIN: Starting login usecase for email: ${params.email}');
+
+    final result = _repository.login(params.email, params.password);
+
+    result.then((either) {
+      either.fold(
+        (failure) {
+          print(
+            '❌ USECASE LOGIN: Login failed with message: ${failure.message}',
+          );
+        },
+        (user) {
+          print('✅ USECASE LOGIN: Login successful for user: ${user.email}');
+        },
+      );
+    });
+
+    return result;
   }
 }

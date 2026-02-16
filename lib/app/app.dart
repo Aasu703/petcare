@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/splash/presentation/pages/Splash_screen.dart';
-import 'package:petcare/app/theme/theme_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/routes/app_router.dart';
+import 'package:petcare/app/theme/app_theme.dart';
+import 'package:petcare/app/theme/theme_provider.dart';
 
-class App extends StatelessWidget {
+class App extends ConsumerWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'PawCare',
-      theme: getApplicationTheme(),
-      home: const SplashScreen(),
+      theme: getLightTheme(),
+      darkTheme: getDarkTheme(),
+      themeMode: themeMode,
+      routerConfig: router,
     );
   }
 }

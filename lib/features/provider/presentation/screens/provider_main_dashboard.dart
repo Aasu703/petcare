@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_services_screen.dart';
-
-// Modern color palette for Provider Dashboard
-class ProviderDashboardColors {
-  static const Color primary = Color(0xFF6366F1);
-  static const Color primaryLight = Color(0xFF8B5CF6);
-  static const Color primaryDark = Color(0xFF4F46E5);
-  static const Color accent = Color(0xFFF59E0B);
-  static const Color background = Color(0xFFF8F9FE);
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF1F2937);
-  static const Color textSecondary = Color(0xFF6B7280);
-}
+import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ProviderDashboard extends StatefulWidget {
   const ProviderDashboard({super.key});
@@ -27,8 +16,8 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
   List<Widget> get _screens => [
     const ProviderDashboardScreen(),
-    const ProviderServicesScreen(),
-    const ProviderProfileScreen(),
+    const MyProviderServicesScreen(),
+    ProviderProfileScreen(),
   ];
 
   final List<_NavItem> _navItems = const [
@@ -51,28 +40,46 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final primary = context.iconPrimaryColor;
+    final surface = context.surfaceColor;
+    final background = context.backgroundColor;
+    final textSecondary = context.textSecondary;
+    final navShadow = context.textPrimary.withValues(alpha: 0.08);
+
     return Scaffold(
-      backgroundColor: ProviderDashboardColors.background,
+      backgroundColor: background,
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: ProviderDashboardColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: surface,
+              boxShadow: [
+                BoxShadow(
+                  color: navShadow,
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+              border: Border.all(
+                color: context.dividerColor.withValues(alpha: 0.25),
+              ),
             ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(
-                _navItems.length,
-                (index) => _buildNavItem(index),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 10,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: List.generate(
+                    _navItems.length,
+                    (index) => _buildNavItem(index, primary, textSecondary),
+                  ),
+                ),
               ),
             ),
           ),
@@ -81,7 +88,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     );
   }
 
-  Widget _buildNavItem(int index) {
+  Widget _buildNavItem(int index, Color primary, Color textSecondary) {
     final isSelected = _selectedIndex == index;
     final item = _navItems[index];
     return GestureDetector(
@@ -92,18 +99,16 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? ProviderDashboardColors.primary.withOpacity(0.1)
+              ? primary.withValues(alpha: 0.14)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isSelected ? item.activeIcon : item.icon,
-              color: isSelected
-                  ? ProviderDashboardColors.primary
-                  : ProviderDashboardColors.textSecondary,
+              color: isSelected ? primary : textSecondary,
               size: 20,
             ),
             if (isSelected) ...[
@@ -111,7 +116,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
               Text(
                 item.label,
                 style: TextStyle(
-                  color: ProviderDashboardColors.primary,
+                  color: primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),

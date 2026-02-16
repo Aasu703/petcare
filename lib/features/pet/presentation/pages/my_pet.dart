@@ -7,9 +7,10 @@ import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/edit_pet.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class MyPet extends ConsumerStatefulWidget {
-  const MyPet({super.key});
+  MyPet({super.key});
 
   @override
   ConsumerState<MyPet> createState() => _MyPetState();
@@ -35,7 +36,7 @@ class _MyPetState extends ConsumerState<MyPet> {
           'Delete Pet',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to delete this pet? This action cannot be undone.',
         ),
         actions: [
@@ -43,20 +44,20 @@ class _MyPetState extends ConsumerState<MyPet> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondaryColor),
+              style: TextStyle(color: context.textSecondary),
             ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.errorColor,
-              foregroundColor: Colors.white,
+              foregroundColor: context.textPrimary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -86,14 +87,12 @@ class _MyPetState extends ConsumerState<MyPet> {
     final petState = ref.watch(petNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('My Pets', style: Theme.of(context).textTheme.titleLarge),
-        backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         centerTitle: true,
       ),
@@ -101,13 +100,13 @@ class _MyPetState extends ConsumerState<MyPet> {
         onRefresh: _refresh,
         color: AppColors.primaryColor,
         child: petState.isLoading && petState.pets.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : petState.pets.isEmpty
             ? _buildEmptyState()
             : ListView.separated(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20),
                 itemCount: petState.pets.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                separatorBuilder: (_, __) => SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final pet = petState.pets[index];
                   return _PetCard(
@@ -132,7 +131,7 @@ class _MyPetState extends ConsumerState<MyPet> {
         onPressed: () async {
           final added = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddPet()),
+            MaterialPageRoute(builder: (context) => AddPet()),
           );
           if (added == true) {
             await _refresh();
@@ -141,42 +140,39 @@ class _MyPetState extends ConsumerState<MyPet> {
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.buttonTextColor,
         elevation: 4,
-        icon: const Icon(Icons.add),
-        label: const Text(
-          'Add Pet',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
+        icon: Icon(Icons.add),
+        label: Text('Add Pet', style: TextStyle(fontWeight: FontWeight.w600)),
       ),
     );
   }
 
   Widget _buildEmptyState() {
     return ListView(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(40),
       children: [
-        const SizedBox(height: 80),
+        SizedBox(height: 80),
         Icon(
           Icons.pets,
           size: 120,
-          color: AppColors.iconSecondaryColor.withOpacity(0.3),
+          color: context.textSecondary.withOpacity(0.3),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Text(
           'No Pets Yet',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimaryColor,
+            color: context.textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           'Start adding your beloved pets to keep track of their information and care.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
-            color: AppColors.textSecondaryColor,
+            color: context.textSecondary,
             height: 1.5,
           ),
         ),
@@ -190,11 +186,7 @@ class _PetCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
-  const _PetCard({
-    required this.pet,
-    required this.onTap,
-    required this.onDelete,
-  });
+  _PetCard({required this.pet, required this.onTap, required this.onDelete});
 
   String _getSpeciesEmoji(String species) {
     switch (species.toLowerCase()) {
@@ -217,15 +209,16 @@ class _PetCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: context.borderColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(context.isDark ? 0.25 : 0.06),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -248,7 +241,7 @@ class _PetCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: (imageUrl != null && imageUrl.isNotEmpty)
                     ? CachedNetworkImage(
-                        imageUrl: '${ApiEndpoints.mediaServerUrl}$imageUrl',
+                        imageUrl: ApiEndpoints.resolveMediaUrl(imageUrl!),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
@@ -259,19 +252,19 @@ class _PetCard extends StatelessWidget {
                         errorWidget: (context, url, error) => Center(
                           child: Text(
                             _getSpeciesEmoji(pet.species),
-                            style: const TextStyle(fontSize: 32),
+                            style: TextStyle(fontSize: 32),
                           ),
                         ),
                       )
                     : Center(
                         child: Text(
                           _getSpeciesEmoji(pet.species),
-                          style: const TextStyle(fontSize: 32),
+                          style: TextStyle(fontSize: 32),
                         ),
                       ),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
 
             // Pet Info
             Expanded(
@@ -280,17 +273,17 @@ class _PetCard extends StatelessWidget {
                 children: [
                   Text(
                     pet.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: AppColors.textPrimaryColor,
+                      color: context.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 4,
                         ),
@@ -309,13 +302,13 @@ class _PetCard extends StatelessWidget {
                         ),
                       ),
                       if (pet.breed != null && pet.breed!.isNotEmpty) ...[
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             pet.breed!,
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textSecondaryColor,
+                              color: context.textSecondary,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -323,48 +316,48 @@ class _PetCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Row(
                     children: [
                       if (pet.age != null) ...[
                         Icon(
                           Icons.cake_outlined,
                           size: 14,
-                          color: AppColors.iconSecondaryColor,
+                          color: context.textSecondary,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           '${pet.age} ${pet.age == 1 ? 'year' : 'years'}',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondaryColor,
+                            color: context.textSecondary,
                           ),
                         ),
                       ],
                       if (pet.age != null && pet.weight != null) ...[
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Container(
                           width: 4,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: AppColors.borderColor,
+                            color: context.borderColor,
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                       ],
                       if (pet.weight != null) ...[
                         Icon(
                           Icons.monitor_weight_outlined,
                           size: 14,
-                          color: AppColors.iconSecondaryColor,
+                          color: context.textSecondary,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text(
                           '${pet.weight} kg',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondaryColor,
+                            color: context.textSecondary,
                           ),
                         ),
                       ],

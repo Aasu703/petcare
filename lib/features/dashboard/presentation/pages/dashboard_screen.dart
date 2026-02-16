@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/discover_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
-import 'package:petcare/app/theme/app_colors.dart' as theme_colors;
+import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Dashboard extends StatefulWidget {
   final String firstName;
@@ -18,7 +18,7 @@ class _DashboardState extends State<Dashboard> {
   List<Widget> get _screens => [
     HomeScreen(firstName: widget.firstName),
     const ExploreScreen(),
-    const DiscoverScreen(),
+    const ProductListPage(),
     const ProfileScreen(),
   ];
   final List<_NavItem> _navItems = const [
@@ -33,9 +33,9 @@ class _DashboardState extends State<Dashboard> {
       label: 'Explore',
     ),
     _NavItem(
-      icon: Icons.search_rounded,
-      activeIcon: Icons.search_rounded,
-      label: 'Discover',
+      icon: Icons.store_outlined,
+      activeIcon: Icons.store_rounded,
+      label: 'Shop',
     ),
     _NavItem(
       icon: Icons.person_outline_rounded,
@@ -46,14 +46,14 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: theme_colors.AppColors.backgroundColor,
+      backgroundColor: context.backgroundColor,
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: theme_colors.AppColors.surfaceColor,
+          color: context.surfaceColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: context.textPrimary.withOpacity(0.06),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -86,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme_colors.AppColors.iconPrimaryColor.withOpacity(0.1)
+              ? context.primaryColor.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -96,8 +96,8 @@ class _DashboardState extends State<Dashboard> {
             Icon(
               isSelected ? item.activeIcon : item.icon,
               color: isSelected
-                  ? theme_colors.AppColors.iconPrimaryColor
-                  : theme_colors.AppColors.iconSecondaryColor,
+                  ? context.primaryColor
+                  : context.iconSecondaryColor,
               size: 24,
             ),
             if (isSelected) ...[
@@ -105,7 +105,7 @@ class _DashboardState extends State<Dashboard> {
               Text(
                 item.label,
                 style: TextStyle(
-                  color: theme_colors.AppColors.iconPrimaryColor,
+                  color: context.primaryColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),

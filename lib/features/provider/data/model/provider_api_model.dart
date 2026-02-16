@@ -7,6 +7,7 @@ class ProviderApiModel {
   final String address;
   final String phone;
   final int rating;
+  final String? providerType;
   final String? email;
   final String? password;
   final String? confirmPassword;
@@ -18,6 +19,7 @@ class ProviderApiModel {
     required this.address,
     required this.phone,
     required this.rating,
+    this.providerType,
     this.email,
     this.password,
     this.confirmPassword,
@@ -33,6 +35,7 @@ class ProviderApiModel {
     if (email != null) json["email"] = email;
     if (password != null) json["password"] = password;
     if (confirmPassword != null) json["confirmPassword"] = confirmPassword;
+    if (providerType != null) json["providerType"] = providerType;
     return json;
   }
 
@@ -40,11 +43,13 @@ class ProviderApiModel {
   factory ProviderApiModel.fromJson(Map<String, dynamic> json) {
     return ProviderApiModel(
       providerId: (json["_id"] ?? json["provider_id"])?.toString(),
-      userId: json["user_id"]?.toString() ?? '',
-      businessName: json["business_name"]?.toString() ?? '',
+      userId: (json["userId"] ?? json["user_id"])?.toString() ?? '',
+      businessName:
+          (json["businessName"] ?? json["business_name"])?.toString() ?? '',
       address: json["address"]?.toString() ?? '',
       phone: json["phone"]?.toString() ?? '',
       rating: json["rating"] ?? 0,
+      providerType: json["providerType"]?.toString(),
       email: json["email"]?.toString(),
       password: json["password"]?.toString(),
     );
@@ -59,6 +64,7 @@ class ProviderApiModel {
       address: address,
       phone: phone,
       rating: rating,
+      providerType: providerType,
       email: email,
       password: password,
     );
@@ -73,6 +79,7 @@ class ProviderApiModel {
       address: entity.address,
       phone: entity.phone,
       rating: entity.rating,
+      providerType: entity.providerType,
       email: entity.email,
       password: entity.password,
     );

@@ -7,6 +7,7 @@ class ProviderEntity extends Equatable {
   final String address;
   final String phone;
   final int rating;
+  final String? providerType; // shop, vet, babysitter
   final String? email;
   final String? password;
 
@@ -17,6 +18,7 @@ class ProviderEntity extends Equatable {
     required this.address,
     required this.phone,
     required this.rating,
+    this.providerType,
     this.email,
     this.password,
   });
@@ -30,6 +32,7 @@ class ProviderEntity extends Equatable {
     address,
     phone,
     rating,
+    providerType,
     email,
     password,
   ];

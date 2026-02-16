@@ -1,31 +1,72 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petcare/app/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/features/auth/presentation/pages/login.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
+import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
+import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
+import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
- 
-// Modern color palette
+import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
+import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
+import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
+
+// Modern color palette - Theme Aware
 class ProfileColors {
   static const Color primary = Color(0xFF6C63FF);
   static const Color primaryLight = Color(0xFF8B85FF);
   static const Color primaryDark = Color(0xFF5046E5);
   static const Color accent = Color(0xFFFF6584);
-  static const Color background = Color(0xFFF8F9FE);
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF2D3142);
-  static const Color textSecondary = Color(0xFF9CA3AF);
+
+  // Light theme colors
+  static const Color backgroundLight = Color(0xFFF8F9FE);
+  static const Color surfaceLight = Colors.white;
+  static const Color textPrimaryLight = Color(0xFF2D3142);
+  static const Color textSecondaryLight = Color(0xFF9CA3AF);
+
+  // Dark theme colors
+  static const Color backgroundDark = Color(0xFF121212);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
+  static const Color textPrimaryDark = Colors.white;
+  static const Color textSecondaryDark = Colors.white70;
+
   static const Color editProfile = Color(0xFF4ECFFF);
   static const Color myPets = Color(0xFFFF6B9D);
   static const Color notifications = Color(0xFF9D6BFF);
   static const Color theme = Color(0xFFFFB84D);
   static const Color help = Color(0xFF00D4FF);
   static const Color logout = Color(0xFFFF4757);
+
+  // Theme-aware getters
+  static Color background(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? backgroundDark
+        : backgroundLight;
+  }
+
+  static Color surface(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? surfaceDark
+        : surfaceLight;
+  }
+
+  static Color textPrimary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textPrimaryDark
+        : textPrimaryLight;
+  }
+
+  static Color textSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? textSecondaryDark
+        : textSecondaryLight;
+  }
 }
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -100,15 +141,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(sessionStateProvider);
+    final session = ref.watch(userSessionServiceProvider);
     final profileState = ref.watch(profileViewModelProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     final avatar = profileState.user?.avatar;
-    final displayName = session.firstName ?? 'User';
-    final displayEmail = session.email ?? '';
+    final displayName = session.getFirstName() ?? 'User';
+    final displayEmail = session.getEmail() ?? '';
 
     return Scaffold(
-      backgroundColor: ProfileColors.background,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -123,8 +164,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [
-                          ProfileColors.primary,
-                          ProfileColors.primaryDark,
+                          AppColors.primaryColor,
+                          AppColors.primaryColor,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -135,7 +176,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: ProfileColors.primary.withOpacity(0.4),
+                          color: AppColors.primaryColor.withOpacity(0.4),
                           blurRadius: 30,
                           offset: const Offset(0, 15),
                           spreadRadius: -10,
@@ -202,7 +243,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     backgroundImage:
                                         avatar != null && avatar.isNotEmpty
                                         ? CachedNetworkImageProvider(
-                                            '${ApiEndpoints.mediaServerUrl}$avatar',
+                                            ApiEndpoints.resolveMediaUrl(
+                                              avatar,
+                                            ),
                                           )
                                         : null,
                                     child: avatar == null || avatar.isEmpty
@@ -307,9 +350,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               await ref
                                   .read(profileViewModelProvider.notifier)
                                   .loadProfile();
-                              await ref
-                                  .read(sessionStateProvider.notifier)
-                                  .load();
                             }
                           },
                         ),
@@ -322,7 +362,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             HapticFeedback.lightImpact();
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const MyPet()),
+                              MaterialPageRoute(builder: (_) => MyPet()),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.storefront_rounded,
+                          title: 'My Services',
+                          subtitle: 'View your provider service applications',
+                          color: ProfileColors.myPets,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const MyProviderServicesScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.message_rounded,
+                          title: 'Messages',
+                          subtitle: 'View and send messages',
+                          color: ProfileColors.myPets,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MessagesScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.post_add_rounded,
+                          title: 'Posts',
+                          subtitle: 'View and create posts',
+                          color: ProfileColors.myPets,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PostsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.work_outline_rounded,
+                          title: 'Apply as Provider',
+                          subtitle: 'Submit documents to offer services',
+                          color: ProfileColors.editProfile,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ApplyProviderServiceScreen(),
+                              ),
                             );
                           },
                         ),
@@ -347,8 +449,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         title: 'Dark Mode',
                         subtitle: 'Switch app appearance',
                         color: ProfileColors.theme,
-                        trailing: _buildToggleSwitch(false),
-                        onTap: () {},
+                        trailing: _buildToggleSwitch(
+                          themeMode == ThemeMode.dark,
+                        ),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          if (themeMode == ThemeMode.dark) {
+                            ref.read(themeModeProvider.notifier).setLight();
+                          } else {
+                            ref.read(themeModeProvider.notifier).setDark();
+                          }
+                        },
                       ),
                     ], delay: 100),
 
@@ -372,7 +483,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           icon: Icons.chat_bubble_rounded,
                           title: 'Contact Us',
                           subtitle: 'Get in touch with our team',
-                          color: ProfileColors.primary,
+                          color: AppColors.primaryColor,
                           onTap: () {
                             HapticFeedback.lightImpact();
                           },
@@ -494,10 +605,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   const SizedBox(height: 12),
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: ProfileColors.textPrimary,
+                      color: ProfileColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -506,7 +617,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: ProfileColors.textSecondary,
+                      color: ProfileColors.textSecondary(context),
                     ),
                   ),
                 ],
@@ -543,22 +654,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: ProfileColors.primary.withOpacity(0.1),
+                        color: AppColors.primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
                         sectionIcon,
                         size: 16,
-                        color: ProfileColors.primary,
+                        color: AppColors.primaryColor,
                       ),
                     ),
                     const SizedBox(width: 10),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: ProfileColors.textSecondary,
+                        color: ProfileColors.textSecondary(context),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -568,7 +679,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 // Menu Items Container
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: ProfileColors.surface(context),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -638,10 +749,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     Text(
                       item.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: ProfileColors.textPrimary,
+                        color: ProfileColors.textPrimary(context),
                       ),
                     ),
                     if (item.subtitle != null) const SizedBox(height: 3),
@@ -651,7 +762,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: ProfileColors.textSecondary,
+                          color: ProfileColors.textSecondary(context),
                         ),
                       ),
                   ],
@@ -662,12 +773,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: ProfileColors.surface(context),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: Colors.grey.shade400,
+                      color: ProfileColors.textSecondary(context),
                       size: 14,
                     ),
                   ),
@@ -683,8 +794,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       width: 48,
       height: 26,
       decoration: BoxDecoration(
-        color: isActive ? ProfileColors.primary : Colors.grey.shade300,
+        color: isActive
+            ? AppColors.primaryColor
+            : ProfileColors.surface(context),
         borderRadius: BorderRadius.circular(13),
+        border: isActive
+            ? null
+            : Border.all(
+                color: ProfileColors.textSecondary(context).withOpacity(0.2),
+              ),
       ),
       child: AnimatedAlign(
         duration: const Duration(milliseconds: 200),
@@ -694,7 +812,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           height: 22,
           margin: const EdgeInsets.all(2),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: ProfileColors.surface(context),
             borderRadius: BorderRadius.circular(11),
             boxShadow: [
               BoxShadow(
@@ -807,12 +925,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Log Out?',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: ProfileColors.textPrimary,
+                  color: ProfileColors.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 10),
@@ -821,7 +939,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: ProfileColors.textSecondary,
+                  color: ProfileColors.textSecondary(context),
                   height: 1.5,
                 ),
               ),
@@ -837,12 +955,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: ProfileColors.textSecondary,
+                          color: ProfileColors.textSecondary(context),
                         ),
                       ),
                     ),
@@ -853,14 +971,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       onPressed: () async {
                         Navigator.pop(ctx);
                         await ref
-                            .read(sessionStateProvider.notifier)
+                            .read(userSessionNotifierProvider.notifier)
                             .clearSession();
                         if (!context.mounted) return;
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Login()),
-                          (_) => false,
-                        );
+                        context.go(RoutePaths.login);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ProfileColors.logout,

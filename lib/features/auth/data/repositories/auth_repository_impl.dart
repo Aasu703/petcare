@@ -61,29 +61,54 @@ class AuthRepositoryImpl implements IAuthRepository {
     String email,
     String password,
   ) async {
+    print('🏗️ REPOSITORY LOGIN: Starting repository login for email: $email');
+
     try {
-      if (await _networkInfo.isConnected) {
+      final isConnected = await _networkInfo.isConnected;
+      print('🌐 REPOSITORY NETWORK: Network connection status: $isConnected');
+
+      if (isConnected) {
         // Online: use remote API
+        print('🌐 REPOSITORY: Using remote API for login');
         final apiModel = await _remoteDataSource.login(email, password);
+
         if (apiModel == null) {
+          print('❌ REPOSITORY LOGIN: Remote login returned null user');
           return const Left(
             LocalDatabaseFailure(message: 'Invalid email or password'),
           );
         }
+
         _currentUserId = apiModel.id ?? '';
-        return Right(apiModel.toEntity());
+        print('✅ REPOSITORY LOGIN: Login successful, user ID: $_currentUserId');
+
+        final entity = apiModel.toEntity();
+        print('🔄 REPOSITORY LOGIN: Converted to entity: ${entity.email}');
+        return Right(entity);
       } else {
         // Offline: fallback to local Hive
+        print('💾 REPOSITORY: Network unavailable, using local storage');
         final model = await _localDataSource.login(email, password);
+
         if (model == null) {
+          print('❌ REPOSITORY LOGIN: Local login returned null user');
           return const Left(
             LocalDatabaseFailure(message: 'Invalid email or password'),
           );
         }
+
         _currentUserId = model.userId;
-        return Right(model.toEntity());
+        print(
+          '✅ REPOSITORY LOGIN: Local login successful, user ID: $_currentUserId',
+        );
+
+        final entity = model.toEntity();
+        print('🔄 REPOSITORY LOGIN: Converted to entity: ${entity.email}');
+        return Right(entity);
       }
     } catch (e) {
+      print('💥 REPOSITORY LOGIN EXCEPTION: ${e.toString()}');
+      print('🔍 REPOSITORY EXCEPTION TYPE: ${e.runtimeType}');
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
   }

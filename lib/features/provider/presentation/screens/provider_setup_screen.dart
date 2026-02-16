@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/provider/di/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ProviderSetupScreen extends ConsumerStatefulWidget {
   final String email;
@@ -81,12 +82,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         );
       },
       (_) {
-        // Save session or something? For now, just navigate
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const ProviderDashboardScreen()),
-          (route) => false,
-        );
+        context.go(RoutePaths.providerDashboard);
       },
     );
   }
@@ -94,7 +90,6 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -123,7 +118,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
               ),
             ),
             SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -133,23 +128,23 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     'Tell pet owners about your business',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceColor,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: context.textPrimary.withValues(alpha: 0.08),
                           blurRadius: 16,
-                          offset: const Offset(0, 10),
+                          offset: Offset(0, 10),
                         ),
                       ],
                     ),
@@ -164,7 +159,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             label: 'Business name',
                             icon: Icons.storefront_rounded,
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18),
                           _field(
                             controller: _addressController,
                             focusNode: _addressFocusNode,
@@ -172,7 +167,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             label: 'Address',
                             icon: Icons.location_on_rounded,
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18),
                           _field(
                             controller: _phoneController,
                             focusNode: _phoneFocusNode,
@@ -181,7 +176,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             icon: Icons.phone_rounded,
                             keyboardType: TextInputType.phone,
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18),
                           _field(
                             controller: _emailController,
                             focusNode: _emailFocusNode,
@@ -190,13 +185,13 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             icon: Icons.email_rounded,
                             keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
                               onPressed: _completeSetup,
-                              child: const Text('Finish setup'),
+                              child: Text('Finish setup'),
                             ),
                           ),
                         ],
@@ -227,7 +222,9 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isFocused ? 0.10 : 0.06),
+            color: context.textPrimary.withValues(
+              alpha: isFocused ? 0.10 : 0.06,
+            ),
             blurRadius: isFocused ? 14 : 10,
             offset: const Offset(0, 6),
           ),

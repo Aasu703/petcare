@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';

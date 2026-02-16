@@ -38,6 +38,7 @@ dependencies:
   # State Management
   flutter_riverpod: ^3.0.3
   riverpod_annotation: ^3.0.3
+  go_router: ^16.1.0
 
   # Local Database (Offline Storage)
   hive: ^2.2.3
@@ -83,11 +84,23 @@ dependencies:
   permission_handler: ^12.0.1
   equatable: ^2.0.7
   dartz: ^0.10.1
+
+  # Calendar
+  table_calendar: ^3.1.2
+
+  # Charts
+  fl_chart: ^0.69.2
+
+  # Local Notifications
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
   
   
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   flutter_lints: ^6.0.0

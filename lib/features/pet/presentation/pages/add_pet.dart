@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
@@ -125,17 +126,15 @@ class _AddPetState extends ConsumerState<AddPet> {
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimaryColor),
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Add New Pet',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         centerTitle: true,
       ),
@@ -218,7 +217,7 @@ class _AddPetState extends ConsumerState<AddPet> {
                       'Add pet photo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondaryColor,
+                        color: context.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -358,7 +357,7 @@ class _AddPetState extends ConsumerState<AddPet> {
       style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimaryColor,
+        color: context.textPrimary,
       ),
     );
   }
@@ -374,7 +373,7 @@ class _AddPetState extends ConsumerState<AddPet> {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: TextStyle(fontSize: 15, color: AppColors.textPrimaryColor),
+      style: TextStyle(fontSize: 15, color: context.textPrimary),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(fontSize: 15, color: AppColors.textHintColor),
@@ -457,7 +456,7 @@ class _AddPetState extends ConsumerState<AddPet> {
                           : FontWeight.w500,
                       color: isSelected
                           ? AppColors.primaryColor
-                          : AppColors.textSecondaryColor,
+                          : context.textSecondary,
                     ),
                   ),
                 ],

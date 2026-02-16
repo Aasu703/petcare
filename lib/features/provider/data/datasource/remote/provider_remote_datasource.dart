@@ -1,11 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
 import 'package:petcare/features/provider/data/model/provider_api_model.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/core/providers/token_service.dart';
-import 'package:petcare/core/services/session/session_service.dart';
+import 'package:petcare/core/services/storage/token_service.dart';
 
 // Provider for ProviderRemoteDatasource
 final providerRemoteDatasourceProvider = Provider<IProviderRemoteDataSource>((
@@ -13,19 +12,19 @@ final providerRemoteDatasourceProvider = Provider<IProviderRemoteDataSource>((
 ) {
   return ProviderRemoteDatasource(
     apiClient: ref.read(apiClientProvider),
-    sessionService: ref.read(sessionServiceProvider),
+    sessionService: ref.read(userSessionServiceProvider),
     tokenService: ref.read(tokenServiceProvider),
   );
 });
 
 class ProviderRemoteDatasource implements IProviderRemoteDataSource {
   final ApiClient _apiClient;
-  final SessionService _sessionService;
+  final UserSessionService _sessionService;
   final TokenService _tokenService;
 
   ProviderRemoteDatasource({
     required ApiClient apiClient,
-    required SessionService sessionService,
+    required UserSessionService sessionService,
     required TokenService tokenService,
   }) : _apiClient = apiClient,
        _sessionService = sessionService,
@@ -117,7 +116,7 @@ class ProviderRemoteDatasource implements IProviderRemoteDataSource {
           userId: provider.providerId ?? '',
           firstName: provider.businessName,
           email: email,
-          token: token,
+          lastName: '',
           role: 'provider',
         );
         if (token is String && token.isNotEmpty) {

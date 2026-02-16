@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
 import 'package:petcare/features/provider/di/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ProviderLoginScreen extends ConsumerStatefulWidget {
   const ProviderLoginScreen({super.key});
@@ -67,10 +68,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
         // Session is already saved in the datasource
         if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ProviderDashboard()),
-        );
+        context.go(RoutePaths.providerDashboard);
       },
     );
 
@@ -80,7 +78,6 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -109,7 +106,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
               ),
             ),
             SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -119,23 +116,23 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     'Access your provider dashboard',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(color: Colors.black87),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: context.textPrimary,
+                    ),
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceColor,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: context.textPrimary.withValues(alpha: 0.08),
                           blurRadius: 16,
                           offset: const Offset(0, 10),
                         ),
@@ -153,7 +150,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                             icon: Icons.email_rounded,
                             keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(height: 18),
+                          SizedBox(height: 18),
                           _field(
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
@@ -162,25 +159,25 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                             icon: Icons.lock_rounded,
                             obscure: true,
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _tryLogin,
                               child: _isLoading
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       height: 22,
                                       width: 22,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
+                                              context.textPrimary,
                                             ),
                                       ),
                                     )
-                                  : const Text('Login as provider'),
+                                  : Text('Login as provider'),
                             ),
                           ),
                         ],
@@ -212,9 +209,11 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isFocused ? 0.10 : 0.06),
+            color: context.textPrimary.withValues(
+              alpha: isFocused ? 0.10 : 0.06,
+            ),
             blurRadius: isFocused ? 14 : 10,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
           ),
         ],
       ),

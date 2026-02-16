@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/features/auth/di/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
-import 'package:petcare/features/auth/presentation/pages/login.dart';
-import 'package:petcare/features/auth/presentation/pages/provider_signup.dart';
 
 class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
@@ -94,7 +95,7 @@ class _SignupState extends ConsumerState<Signup>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: context.backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -106,9 +107,9 @@ class _SignupState extends ConsumerState<Signup>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.accentColor.withOpacity(0.08),
-                      AppColors.backgroundColor,
-                      AppColors.accentColor.withOpacity(0.05),
+                      context.accentColor.withOpacity(0.08),
+                      context.backgroundColor,
+                      context.accentColor.withOpacity(0.05),
                     ],
                   ),
                 ),
@@ -575,12 +576,7 @@ class _SignupState extends ConsumerState<Signup>
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const Login(),
-                                  ),
-                                );
+                                context.push(RoutePaths.login);
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
@@ -779,10 +775,7 @@ class _SignupState extends ConsumerState<Signup>
 
     try {
       if (_isProvider) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProviderSignupScreen()),
-        );
+        context.push(RoutePaths.providerRegister);
       } else {
         final usecase = ref.read(registerUsecaseProvider);
 
@@ -832,10 +825,7 @@ class _SignupState extends ConsumerState<Signup>
                 ),
               ),
             );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Login()),
-            );
+            context.go(RoutePaths.login);
           },
         );
       }

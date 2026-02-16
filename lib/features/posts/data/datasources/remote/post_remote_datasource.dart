@@ -5,6 +5,7 @@ import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/posts/data/models/post_model.dart';
 
 abstract interface class IPostRemoteDataSource {
+  Future<List<PostModel>> getAllPosts({int page = 1, int limit = 20});
   Future<PostModel> createPost(PostModel post);
   Future<List<PostModel>> getMyPosts();
   Future<PostModel?> getPostById(String postId);
@@ -28,6 +29,24 @@ class PostRemoteDataSource implements IPostRemoteDataSource {
     required UserSessionService sessionService,
   }) : _apiClient = apiClient,
        _sessionService = sessionService;
+
+  @override
+  Future<List<PostModel>> getAllPosts({int page = 1, int limit = 20}) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.postAll,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    final data = response.data;
+    List<dynamic> list = [];
+    if (data is Map<String, dynamic>) {
+      list = data['data'] ?? [];
+    } else if (data is List) {
+      list = data;
+    }
+    return list
+        .map((item) => PostModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
 
   @override
   Future<PostModel> createPost(PostModel post) async {

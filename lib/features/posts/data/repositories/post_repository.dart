@@ -1,15 +1,11 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/posts/data/datasources/remote/post_remote_datasource.dart';
-import 'package:petcare/features/posts/data/models/post_model.dart';
-
-abstract interface class IPostRepository {
-  Future<PostModel> createPost(PostModel post);
-  Future<List<PostModel>> getMyPosts();
-  Future<PostModel?> getPostById(String postId);
-  Future<PostModel> updatePost(String postId, PostModel post);
-  Future<bool> deletePost(String postId);
-}
+import 'package:petcare/features/posts/data/mappers/post_mapper.dart';
+import 'package:petcare/features/posts/domain/entities/post_entity.dart';
+import 'package:petcare/features/posts/domain/repositories/post_repository.dart';
 
 final postRepositoryProvider = Provider<IPostRepository>((ref) {
   return PostRepository(
@@ -29,43 +25,68 @@ class PostRepository implements IPostRepository {
        _sessionService = sessionService;
 
   @override
-  Future<PostModel> createPost(PostModel post) async {
-    if (!_sessionService.isLoggedIn() ||
-        _sessionService.getRole() != 'provider') {
-      throw Exception('Provider authentication required');
+  Future<Either<Failure, List<PostEntity>>> getAllPosts({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final posts = await _remoteDataSource.getAllPosts(
+        page: page,
+        limit: limit,
+      );
+      return Right(PostMapper.toEntityList(posts));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
-    return await _remoteDataSource.createPost(post);
   }
 
   @override
-  Future<List<PostModel>> getMyPosts() async {
-    if (!_sessionService.isLoggedIn() ||
-        _sessionService.getRole() != 'provider') {
-      throw Exception('Provider authentication required');
+  Future<Either<Failure, List<PostEntity>>> getMyPosts() async {
+    try {
+      if (!_sessionService.isLoggedIn() ||
+          _sessionService.getRole() != 'provider') {
+        return Left(ServerFailure(message: 'Provider authentication required'));
+      }
+      final posts = await _remoteDataSource.getMyPosts();
+      return Right(PostMapper.toEntityList(posts));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
     }
-    return await _remoteDataSource.getMyPosts();
   }
 
   @override
-  Future<PostModel?> getPostById(String postId) async {
-    return await _remoteDataSource.getPostById(postId);
+  Future<Either<Failure, PostEntity>> createPost(PostEntity post) async {
+    try {
+      if (!_sessionService.isLoggedIn() ||
+          _sessionService.getRole() != 'provider') {
+        return Left(ServerFailure(message: 'Provider authentication required'));
+      }
+      final postModel = PostMapper.toModel(post);
+      final createdPost = await _remoteDataSource.createPost(postModel);
+      return Right(PostMapper.toEntity(createdPost));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
-  Future<PostModel> updatePost(String postId, PostModel post) async {
-    if (!_sessionService.isLoggedIn() ||
-        _sessionService.getRole() != 'provider') {
-      throw Exception('Provider authentication required');
-    }
-    return await _remoteDataSource.updatePost(postId, post);
+  Future<Either<Failure, PostEntity>> updatePost(
+    String postId,
+    PostEntity post,
+  ) async {
+    // TODO: Implement update functionality in datasource
+    return Left(ServerFailure(message: 'Update post not implemented yet'));
   }
 
   @override
-  Future<bool> deletePost(String postId) async {
-    if (!_sessionService.isLoggedIn() ||
-        _sessionService.getRole() != 'provider') {
-      throw Exception('Provider authentication required');
-    }
-    return await _remoteDataSource.deletePost(postId);
+  Future<Either<Failure, bool>> deletePost(String postId) async {
+    // TODO: Implement delete functionality in datasource
+    return Left(ServerFailure(message: 'Delete post not implemented yet'));
+  }
+
+  @override
+  Future<Either<Failure, PostEntity>> getPostById(String postId) async {
+    // TODO: Implement get by id functionality in datasource
+    return Left(ServerFailure(message: 'Get post by id not implemented yet'));
   }
 }

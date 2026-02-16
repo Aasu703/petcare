@@ -103,6 +103,7 @@ class ApiEndpoints {
   static const String messageById = 'message';
 
   // ------------------------ POST ---------------------------
+  static const String postAll = 'provider/post/all';
   static const String postCreate = 'provider/post';
   static const String postMy = 'provider/post/my';
   static const String postById = 'provider/post';

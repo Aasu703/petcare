@@ -228,7 +228,7 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
             petState.isLoading
                 ? const LinearProgressIndicator(minHeight: 2)
                 : DropdownButtonFormField<String>(
-                    value: _selectedPetId,
+                    initialValue: _selectedPetId,
                     items: petState.pets
                         .map(
                           (pet) => DropdownMenuItem(
@@ -265,7 +265,7 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
             serviceState.isLoading
                 ? const LinearProgressIndicator(minHeight: 2)
                 : DropdownButtonFormField<ServiceEntity>(
-                    value: _selectedService,
+                    initialValue: _selectedService,
                     items: services
                         .map(
                           (service) => DropdownMenuItem(
@@ -315,7 +315,7 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
             providerState.isLoading
                 ? const LinearProgressIndicator(minHeight: 2)
                 : DropdownButtonFormField<String>(
-                    value: _selectedProviderId,
+                    initialValue: _selectedProviderId,
                     items: filteredProviders
                         .map(
                           (provider) => DropdownMenuItem(

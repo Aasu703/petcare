@@ -39,7 +39,23 @@ class PostRemoteDataSource implements IPostRemoteDataSource {
     final data = response.data;
     List<dynamic> list = [];
     if (data is Map<String, dynamic>) {
-      list = data['data'] ?? [];
+      final inner = data['data'];
+      if (inner is Map<String, dynamic>) {
+        final posts = inner['posts'];
+        if (posts is List) {
+          list = posts;
+        } else if (inner['data'] is List) {
+          list = inner['data'] as List;
+        } else {
+          list = [];
+        }
+      } else if (inner is List) {
+        list = inner;
+      } else if (data['posts'] is List) {
+        list = data['posts'] as List;
+      } else {
+        list = [];
+      }
     } else if (data is List) {
       list = data;
     }

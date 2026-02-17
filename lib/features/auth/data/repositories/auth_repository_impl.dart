@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
 import 'package:petcare/features/auth/data/datasources/auth_datasource.dart';
@@ -51,6 +52,29 @@ class AuthRepositoryImpl implements IAuthRepository {
         await _localDataSource.register(model);
         return const Right(true);
       }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        return Left(
+          NetworkFailure(
+            message:
+                'Connection timeout. Please check your internet connection and try again.',
+          ),
+        );
+      } else if (e.response != null) {
+        return Left(
+          ServerFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data['message'] ??
+                e.message ??
+                'Server error occurred',
+          ),
+        );
+      }
+      return Left(ServerFailure(message: e.message ?? 'An error occurred'));
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
@@ -106,6 +130,31 @@ class AuthRepositoryImpl implements IAuthRepository {
         print('🔄 REPOSITORY LOGIN: Converted to entity: ${entity.email}');
         return Right(entity);
       }
+    } on DioException catch (e) {
+      print('💥 REPOSITORY LOGIN EXCEPTION: ${e.toString()}');
+      print('🔍 REPOSITORY EXCEPTION TYPE: ${e.runtimeType}');
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        return Left(
+          NetworkFailure(
+            message:
+                'Connection timeout. Please check your internet connection and try again.',
+          ),
+        );
+      } else if (e.response != null) {
+        return Left(
+          ServerFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data['message'] ??
+                e.message ??
+                'Invalid email or password',
+          ),
+        );
+      }
+      return Left(ServerFailure(message: e.message ?? 'An error occurred'));
     } catch (e) {
       print('💥 REPOSITORY LOGIN EXCEPTION: ${e.toString()}');
       print('🔍 REPOSITORY EXCEPTION TYPE: ${e.runtimeType}');
@@ -134,6 +183,29 @@ class AuthRepositoryImpl implements IAuthRepository {
         }
         return Right(model.toEntity());
       }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        return Left(
+          NetworkFailure(
+            message:
+                'Connection timeout. Please check your internet connection and try again.',
+          ),
+        );
+      } else if (e.response != null) {
+        return Left(
+          ServerFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data['message'] ??
+                e.message ??
+                'Server error occurred',
+          ),
+        );
+      }
+      return Left(ServerFailure(message: e.message ?? 'An error occurred'));
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }
@@ -156,6 +228,29 @@ class AuthRepositoryImpl implements IAuthRepository {
         }
         return Right(result);
       }
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError) {
+        return Left(
+          NetworkFailure(
+            message:
+                'Connection timeout. Please check your internet connection and try again.',
+          ),
+        );
+      } else if (e.response != null) {
+        return Left(
+          ServerFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data['message'] ??
+                e.message ??
+                'Server error occurred',
+          ),
+        );
+      }
+      return Left(ServerFailure(message: e.message ?? 'An error occurred'));
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
     }

@@ -10,7 +10,7 @@ import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class MyPet extends ConsumerStatefulWidget {
-  MyPet({super.key});
+  const MyPet({super.key});
 
   @override
   ConsumerState<MyPet> createState() => _MyPetState();
@@ -186,7 +186,11 @@ class _PetCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
-  _PetCard({required this.pet, required this.onTap, required this.onDelete});
+  const _PetCard({
+    required this.pet,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   String _getSpeciesEmoji(String species) {
     switch (species.toLowerCase()) {
@@ -241,7 +245,7 @@ class _PetCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: (imageUrl != null && imageUrl.isNotEmpty)
                     ? CachedNetworkImage(
-                        imageUrl: ApiEndpoints.resolveMediaUrl(imageUrl!),
+                        imageUrl: ApiEndpoints.resolveMediaUrl(imageUrl),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(

@@ -11,7 +11,7 @@ class ProviderEntity extends Equatable {
   final String? email;
   final String? password;
 
-  ProviderEntity({
+  const ProviderEntity({
     this.providerId,
     this.userId,
     required this.businessName,

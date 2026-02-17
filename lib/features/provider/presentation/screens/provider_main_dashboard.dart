@@ -1,45 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
-import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/shop/presentation/pages/manage_inventory_page.dart';
 
-class ProviderDashboard extends StatefulWidget {
+class ProviderDashboard extends ConsumerStatefulWidget {
   const ProviderDashboard({super.key});
 
   @override
-  State<ProviderDashboard> createState() => _ProviderDashboardState();
+  ConsumerState<ProviderDashboard> createState() => _ProviderDashboardState();
 }
 
-class _ProviderDashboardState extends State<ProviderDashboard> {
+class _ProviderDashboardState extends ConsumerState<ProviderDashboard> {
   int _selectedIndex = 0;
-
-  List<Widget> get _screens => [
-    const ProviderDashboardScreen(),
-    const MyProviderServicesScreen(),
-    ProviderProfileScreen(),
-  ];
-
-  final List<_NavItem> _navItems = const [
-    _NavItem(
-      icon: Icons.dashboard_rounded,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-    ),
-    _NavItem(
-      icon: Icons.medical_services_outlined,
-      activeIcon: Icons.medical_services_rounded,
-      label: 'Services',
-    ),
-    _NavItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionServiceProvider);
+    final providerType = (session.getProviderType() ?? '').toLowerCase();
+    final isShop = providerType == 'shop';
+
+    final screens = [
+      const ProviderDashboardScreen(),
+      isShop ? const ManageInventoryPage() : const MyProviderServicesScreen(),
+      ProviderProfileScreen(),
+    ];
+
+    final navItems = [
+      const _NavItem(
+        icon: Icons.dashboard_rounded,
+        activeIcon: Icons.dashboard_rounded,
+        label: 'Dashboard',
+      ),
+      _NavItem(
+        icon: isShop ? Icons.inventory_2_outlined : Icons.medical_services_outlined,
+        activeIcon:
+            isShop ? Icons.inventory_2 : Icons.medical_services_rounded,
+        label: isShop ? 'Inventory' : 'Services',
+      ),
+      const _NavItem(
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: 'Profile',
+      ),
+    ];
+
     final primary = context.iconPrimaryColor;
     final surface = context.surfaceColor;
     final background = context.backgroundColor;
@@ -48,7 +56,7 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
 
     return Scaffold(
       backgroundColor: background,
-      body: IndexedStack(index: _selectedIndex, children: _screens),
+      body: IndexedStack(index: _selectedIndex, children: screens),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
         child: ClipRRect(
@@ -68,19 +76,24 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
               ),
             ),
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 10,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(
-                    _navItems.length,
-                    (index) => _buildNavItem(index, primary, textSecondary),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(
+                    navItems.length,
+                    (index) => _buildNavItem(
+                      index,
+                      navItems,
+                      primary,
+                      textSecondary,
+                    ),
                   ),
-                ),
-              ),
+                    ),
+                  ),
             ),
           ),
         ),
@@ -88,9 +101,14 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
     );
   }
 
-  Widget _buildNavItem(int index, Color primary, Color textSecondary) {
+  Widget _buildNavItem(
+    int index,
+    List<_NavItem> navItems,
+    Color primary,
+    Color textSecondary,
+  ) {
     final isSelected = _selectedIndex == index;
-    final item = _navItems[index];
+    final item = navItems[index];
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,

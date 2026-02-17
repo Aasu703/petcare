@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/services/notification/notification_service.dart';
 import 'package:petcare/features/bookings/di/booking_providers.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';

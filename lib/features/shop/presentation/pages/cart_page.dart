@@ -53,7 +53,7 @@ class CartPage extends ConsumerWidget {
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: cart.items.length,
-              separatorBuilder: (_, _a) => Divider(color: context.borderColor),
+              separatorBuilder: (_, a) => Divider(color: context.borderColor),
               itemBuilder: (context, index) {
                 return _CartItemTile(item: cart.items[index]);
               },
@@ -112,8 +112,9 @@ class CartPage extends ConsumerWidget {
                             return;
                           }
 
-                          final createOrderUsecase =
-                              ref.read(createOrderUsecaseProvider);
+                          final createOrderUsecase = ref.read(
+                            createOrderUsecaseProvider,
+                          );
 
                           final order = OrderEntity(
                             items: cart.items
@@ -141,8 +142,7 @@ class CartPage extends ConsumerWidget {
                               ref.read(shopProvider.notifier).clearCart();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content:
-                                      Text('Order placed successfully!'),
+                                  content: Text('Order placed successfully!'),
                                 ),
                               );
                             },

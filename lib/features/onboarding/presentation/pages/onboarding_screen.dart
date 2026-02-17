@@ -5,7 +5,7 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Onbording extends StatelessWidget {
-  Onbording({super.key});
+  const Onbording({super.key});
 
   @override
   Widget build(BuildContext context) {

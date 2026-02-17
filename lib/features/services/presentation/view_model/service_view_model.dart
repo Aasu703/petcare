@@ -46,11 +46,6 @@ class ServiceNotifier extends StateNotifier<ServiceState> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 final serviceProvider = StateNotifierProvider<ServiceNotifier, ServiceState>(

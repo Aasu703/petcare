@@ -12,6 +12,7 @@ class ProviderRegisterUsecaseParams extends Equatable {
   final String businessName;
   final String address;
   final String phone;
+  final String providerType;
 
   const ProviderRegisterUsecaseParams({
     required this.email,
@@ -20,6 +21,7 @@ class ProviderRegisterUsecaseParams extends Equatable {
     required this.businessName,
     required this.address,
     required this.phone,
+    required this.providerType,
   });
 
   @override
@@ -30,6 +32,7 @@ class ProviderRegisterUsecaseParams extends Equatable {
     businessName,
     address,
     phone,
+    providerType,
   ];
 }
 
@@ -49,6 +52,7 @@ class ProviderRegisterUsecase
       address: params.address,
       phone: params.phone,
       rating: 0,
+      providerType: params.providerType,
       email: params.email,
       password: params.password,
     );

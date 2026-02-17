@@ -37,6 +37,8 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   bool _isSubmitting = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  String? _selectedProviderType;
+  bool _showProviderTypeError = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -93,6 +95,20 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   Future<void> _tryRegister() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
+    if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
+      setState(() {
+        _showProviderTypeError = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please choose a provider type to continue'),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
@@ -107,6 +123,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
         businessName: _businessNameController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
+        providerType: _selectedProviderType!,
       );
 
       final result = await usecase(params);
@@ -241,6 +258,8 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                               key: _formKey,
                               child: Column(
                                 children: [
+                                  _buildProviderTypeSelector(context),
+                                  const SizedBox(height: 18),
                                   _modernField(
                                     controller: _emailController,
                                     focusNode: _emailFocusNode,
@@ -516,4 +535,147 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
           },
     );
   }
+
+  Widget _buildProviderTypeSelector(BuildContext context) {
+    final options = <_ProviderTypeOption>[
+      const _ProviderTypeOption(
+        value: 'vet',
+        title: 'Veterinary Clinic',
+        subtitle: 'Vet & medical services',
+        icon: Icons.medical_services_rounded,
+      ),
+      const _ProviderTypeOption(
+        value: 'shop',
+        title: 'Pet Shop',
+        subtitle: 'Products & retail services',
+        icon: Icons.storefront_rounded,
+      ),
+      const _ProviderTypeOption(
+        value: 'babysitter',
+        title: 'Groomer / Babysitter',
+        subtitle: 'Grooming & pet care',
+        icon: Icons.pets_rounded,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Provider type',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: options.map((option) {
+            final isSelected = _selectedProviderType == option.value;
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedProviderType = option.value;
+                  _showProviderTypeError = false;
+                });
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.accentColor.withOpacity(0.12)
+                      : Colors.white.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.accentColor
+                        : Colors.black.withOpacity(0.08),
+                    width: isSelected ? 1.6 : 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.accentColor.withOpacity(0.16)
+                            : Colors.black.withOpacity(0.04),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        option.icon,
+                        size: 20,
+                        color: isSelected
+                            ? AppColors.accentColor
+                            : AppColors.iconPrimaryColor.withOpacity(0.7),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          option.title,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? AppColors.accentColor
+                                : Colors.black.withOpacity(0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          option.subtitle,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        if (_showProviderTypeError) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Please select a provider type to continue',
+            style: TextStyle(
+              color: Colors.red.shade400,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ProviderTypeOption {
+  final String value;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _ProviderTypeOption({
+    required this.value,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
 }

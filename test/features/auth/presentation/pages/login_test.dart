@@ -6,13 +6,13 @@ import 'package:petcare/features/auth/presentation/pages/login.dart';
 void main() {
   group('Login Page Widget Tests', () {
     // Helper function to pump the Login widget
-    Future<void> _buildLoginPage(WidgetTester tester) async {
+    Future<void> buildLoginPage(WidgetTester tester) async {
       await tester.pumpWidget(ProviderScope(child: MaterialApp(home: Login())));
       await tester.pumpAndSettle();
     }
 
     testWidgets('Email TextFormField is present', (WidgetTester tester) async {
-      await _buildLoginPage(tester);
+      await buildLoginPage(tester);
 
       final emailField = find.widgetWithText(TextFormField, 'Email Address');
 
@@ -22,7 +22,7 @@ void main() {
     testWidgets('Password TextFormField is present', (
       WidgetTester tester,
     ) async {
-      await _buildLoginPage(tester);
+      await buildLoginPage(tester);
 
       final passwordField = find.widgetWithText(TextFormField, 'Password');
 
@@ -30,7 +30,7 @@ void main() {
     });
 
     testWidgets('Sign In button is present', (WidgetTester tester) async {
-      await _buildLoginPage(tester);
+      await buildLoginPage(tester);
 
       final signInButton = find.widgetWithText(ElevatedButton, 'Sign In');
 
@@ -38,7 +38,7 @@ void main() {
     });
 
     testWidgets('Sign Up link is present', (WidgetTester tester) async {
-      await _buildLoginPage(tester);
+      await buildLoginPage(tester);
 
       final signUpLink = find.text('Sign Up');
 
@@ -48,7 +48,7 @@ void main() {
     testWidgets('Provider login button is present', (
       WidgetTester tester,
     ) async {
-      await _buildLoginPage(tester);
+      await buildLoginPage(tester);
 
       final providerLoginButton = find.text('Login as Provider');
 

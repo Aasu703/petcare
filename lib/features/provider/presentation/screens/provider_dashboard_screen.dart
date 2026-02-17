@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/manage_appointments_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_messages_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_notifications_screen.dart';
+import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
+import 'package:petcare/features/shop/presentation/pages/manage_inventory_page.dart';
 
 // Modern color palette for Provider Dashboard
 class ProviderColors {
@@ -117,6 +120,10 @@ class _ProviderDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionServiceProvider);
+    final providerType = (session.getProviderType() ?? '').toLowerCase();
+    final providerLabel = _providerTypeLabel(providerType);
+
     final providerServiceState = ref.watch(providerServiceProvider);
     final activeServicesCount = providerServiceState.services
         .where(
@@ -128,6 +135,9 @@ class _ProviderDashboardScreenState
           (service) => service.verificationStatus.toLowerCase() == 'pending',
         )
         .length;
+
+    final features = _getFeatureCards(context, providerType);
+    final featureWidgets = _buildFeatureWidgets(context, features);
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
@@ -190,7 +200,7 @@ class _ProviderDashboardScreenState
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'Business Dashboard',
+                                          '$providerLabel Dashboard',
                                           style: TextStyle(
                                             color: context.iconPrimaryColor,
                                             fontSize: 12,
@@ -333,105 +343,7 @@ class _ProviderDashboardScreenState
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
-                      children: [
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Services',
-                          subtitle: 'View and manage your provider services',
-                          icon: Icons.medical_services_rounded,
-                          color: ProviderColors.services,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const MyProviderServicesScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Apply for Service',
-                          subtitle: 'Submit a new provider service application',
-                          icon: Icons.assignment_rounded,
-                          color: ProviderColors.inventory,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ApplyProviderServiceScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Bookings',
-                          subtitle: 'View & manage appointments',
-                          icon: Icons.event_note_rounded,
-                          color: ProviderColors.bookings,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ManageAppointmentsPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Messages',
-                          subtitle: 'Chat with pet owners',
-                          icon: Icons.chat_bubble_rounded,
-                          color: ProviderColors.messages,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProviderMessagesScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Calendar',
-                          subtitle: 'View booking calendar',
-                          icon: Icons.calendar_month_rounded,
-                          color: ProviderColors.messages,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProviderCalendarPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildModernServiceCard(
-                          context,
-                          title: 'Analytics',
-                          subtitle: 'Earnings & business insights',
-                          icon: Icons.analytics_rounded,
-                          color: ProviderColors.analytics,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const EarningsDashboardPage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                      children: featureWidgets,
                     ),
                   ),
                 ),
@@ -443,6 +355,154 @@ class _ProviderDashboardScreenState
         ),
       ),
     );
+  }
+
+  String _providerTypeLabel(String providerType) {
+    switch (providerType) {
+      case 'vet':
+        return 'Veterinary';
+      case 'shop':
+        return 'Shop';
+      case 'babysitter':
+        return 'Groomer';
+      default:
+        return 'Business';
+    }
+  }
+
+  List<_FeatureCard> _getFeatureCards(
+    BuildContext context,
+    String providerType,
+  ) {
+    final isShop = providerType == 'shop';
+    final servicesTitle = isShop ? 'Shop Services' : 'Services';
+    final servicesSubtitle = isShop
+        ? 'View your shop service listings'
+        : 'View and manage your provider services';
+
+    return [
+      if (isShop)
+        _FeatureCard(
+          title: 'Inventory',
+          subtitle: 'Manage products & stock',
+          icon: Icons.inventory_2,
+          color: ProviderColors.inventory,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ManageInventoryPage()),
+            );
+          },
+        ),
+      _FeatureCard(
+        title: servicesTitle,
+        subtitle: servicesSubtitle,
+        icon: Icons.medical_services_rounded,
+        color: ProviderColors.services,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MyProviderServicesScreen()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Apply for Service',
+        subtitle: 'Submit a new provider service application',
+        icon: Icons.assignment_rounded,
+        color: ProviderColors.inventory,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ApplyProviderServiceScreen()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Bookings',
+        subtitle: 'View & manage appointments',
+        icon: Icons.event_note_rounded,
+        color: ProviderColors.bookings,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ManageAppointmentsPage()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Messages',
+        subtitle: 'Chat with pet owners',
+        icon: Icons.chat_bubble_rounded,
+        color: ProviderColors.messages,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProviderMessagesScreen()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Calendar',
+        subtitle: 'View booking calendar',
+        icon: Icons.calendar_month_rounded,
+        color: ProviderColors.messages,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ProviderCalendarPage()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Analytics',
+        subtitle: 'Earnings & business insights',
+        icon: Icons.analytics_rounded,
+        color: ProviderColors.analytics,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const EarningsDashboardPage()),
+          );
+        },
+      ),
+      _FeatureCard(
+        title: 'Posts',
+        subtitle: 'Share blogs & updates',
+        icon: Icons.post_add_rounded,
+        color: ProviderColors.primary,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PostsScreen()),
+          );
+        },
+      ),
+    ];
+  }
+
+  List<Widget> _buildFeatureWidgets(
+    BuildContext context,
+    List<_FeatureCard> features,
+  ) {
+    final widgets = <Widget>[];
+    for (final feature in features) {
+      widgets.add(
+        _buildModernServiceCard(
+          context,
+          title: feature.title,
+          subtitle: feature.subtitle,
+          icon: feature.icon,
+          color: feature.color,
+          onTap: feature.onTap,
+        ),
+      );
+      widgets.add(const SizedBox(height: 16));
+    }
+    if (widgets.isNotEmpty) {
+      widgets.removeLast();
+    }
+    return widgets;
   }
 
   Widget _buildNotificationButton(BuildContext context) {
@@ -598,4 +658,20 @@ class _ProviderDashboardScreenState
       ),
     );
   }
+}
+
+class _FeatureCard {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _FeatureCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 }

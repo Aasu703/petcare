@@ -30,6 +30,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  String? _selectedProviderType;
 
   final FocusNode _businessNameFocusNode = FocusNode();
   final FocusNode _addressFocusNode = FocusNode();
@@ -53,6 +54,17 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
   void _completeSetup() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
+    if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a provider type'),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
 
     final usecase = ref.read(providerRegisterUsecaseProvider);
     final result = await usecase(
@@ -63,6 +75,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         businessName: _businessNameController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
+        providerType: _selectedProviderType!,
       ),
     );
 
@@ -152,6 +165,33 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
+                          DropdownButtonFormField<String>(
+                            value: _selectedProviderType,
+                            decoration: const InputDecoration(
+                              labelText: 'Provider type',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'vet',
+                                child: Text('Veterinary Clinic'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'shop',
+                                child: Text('Pet Shop'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'babysitter',
+                                child: Text('Groomer / Babysitter'),
+                              ),
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _selectedProviderType = value),
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Select provider type'
+                                : null,
+                          ),
+                          SizedBox(height: 18),
                           _field(
                             controller: _businessNameController,
                             focusNode: _businessNameFocusNode,

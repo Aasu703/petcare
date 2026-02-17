@@ -106,25 +106,40 @@ class ProviderRemoteDatasource implements IProviderRemoteDataSource {
 
     if (response.data['success'] == true) {
       final data = response.data['data'];
-      final token = response.data['token'];
+      Map<String, dynamic>? providerJson;
+      String? token;
 
       if (data is Map<String, dynamic>) {
-        final provider = ProviderApiModel.fromJson(data);
-
-        // Save session
-        await _sessionService.saveSession(
-          userId: provider.providerId ?? '',
-          firstName: provider.businessName,
-          email: email,
-          lastName: '',
-          role: 'provider',
-        );
-        if (token is String && token.isNotEmpty) {
-          await _tokenService.saveToken(token);
+        final nestedProvider = data['provider'];
+        if (nestedProvider is Map<String, dynamic>) {
+          providerJson = nestedProvider;
+          token = (data['accessToken'] ?? response.data['token'])?.toString();
+        } else {
+          providerJson = data;
+          token = response.data['token']?.toString();
         }
-
-        return provider;
       }
+
+      if (providerJson == null) {
+        return null;
+      }
+
+      final provider = ProviderApiModel.fromJson(providerJson);
+
+      // Save session
+      await _sessionService.saveSession(
+        userId: provider.providerId ?? '',
+        firstName: provider.businessName,
+        email: provider.email ?? email,
+        lastName: '',
+        role: 'provider',
+        providerType: provider.providerType,
+      );
+      if (token is String && token.isNotEmpty) {
+        await _tokenService.saveToken(token);
+      }
+
+      return provider;
     }
     return null;
   }
@@ -139,6 +154,10 @@ class ProviderRemoteDatasource implements IProviderRemoteDataSource {
     if (response.data['success'] == true) {
       final data = response.data['data'];
       if (data is Map<String, dynamic>) {
+        final nestedProvider = data['provider'];
+        if (nestedProvider is Map<String, dynamic>) {
+          return ProviderApiModel.fromJson(nestedProvider);
+        }
         return ProviderApiModel.fromJson(data);
       }
     }

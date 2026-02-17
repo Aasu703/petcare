@@ -4,7 +4,6 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/shop/di/shop_providers.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
-import 'package:petcare/features/shop/domain/repositories/shop_repository.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
 class ManageInventoryPage extends ConsumerStatefulWidget {
@@ -73,10 +72,8 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
                   final product = state.products[index];
                   return _InventoryItemCard(
                     product: product,
-                    onEdit: () => _showProductDialog(
-                      context,
-                      existing: product,
-                    ),
+                    onEdit: () =>
+                        _showProductDialog(context, existing: product),
                     onDelete: () => _deleteProduct(context, product),
                   );
                 },
@@ -109,7 +106,8 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
             title: const Text('Delete Product'),
@@ -140,9 +138,9 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.message)));
       },
       (success) async {
         if (success) {
@@ -253,8 +251,7 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
               }
 
               final repo = ref.read(shopRepositoryProvider);
-              final parsedPrice =
-                  double.tryParse(priceController.text.trim());
+              final parsedPrice = double.tryParse(priceController.text.trim());
               final parsedQuantity =
                   int.tryParse(quantityController.text.trim()) ?? 0;
 
@@ -278,9 +275,9 @@ class _ManageInventoryPageState extends ConsumerState<ManageInventoryPage> {
 
               result.fold(
                 (failure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(failure.message)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(failure.message)));
                 },
                 (product) async {
                   Navigator.pop(context);

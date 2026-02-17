@@ -120,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final reminderState = ref.watch(vaccinationReminderProvider);
     final petIds = petState.pets
         .map((pet) => pet.petId)
-        .where((id) => id != null && id!.isNotEmpty)
+        .where((id) => id != null && id.isNotEmpty)
         .map((id) => id!)
         .toList();
 

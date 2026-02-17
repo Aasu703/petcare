@@ -175,6 +175,7 @@ class ProviderRepositoryImpl implements IProviderRepository {
           address: apiModel.address,
           phone: apiModel.phone,
           rating: apiModel.rating,
+          providerType: apiModel.providerType,
           email: apiModel.email ?? '',
           password: apiModel.password ?? '',
           confirmPassword: confirmPassword,

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/features/bookings/di/booking_providers.dart';
 import 'package:petcare/features/bookings/domain/entities/earnings_entity.dart';
 import 'package:petcare/features/bookings/domain/usecases/get_provider_earnings_usecase.dart';

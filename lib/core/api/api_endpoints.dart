@@ -7,8 +7,8 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      false; // Set to true for physical device testing, false for emulator/simulator
-  static const String _ipAddress = '192.168.1.6';
+      true; // Set to true for physical device testing, false for emulator/simulator
+  static const String _ipAddress = '192.168.1.4';
   static const int _port = 5050;
 
   // Base URL configuration
@@ -29,8 +29,8 @@ class ApiEndpoints {
     return '$mediaUrl$normalized';
   }
 
-  static const Duration connectionTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectionTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
 
   // -------------------------- AUTH -------------------------
   static const String user = 'auth/user';
@@ -103,7 +103,7 @@ class ApiEndpoints {
   static const String messageById = 'message';
 
   // ------------------------ POST ---------------------------
-  static const String postAll = 'provider/post/all';
+  static const String postAll = 'post';
   static const String postCreate = 'provider/post';
   static const String postMy = 'provider/post/my';
   static const String postById = 'provider/post';

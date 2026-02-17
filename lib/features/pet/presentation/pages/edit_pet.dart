@@ -208,7 +208,7 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                                   ? FileImage(_imageFile!)
                                   : (imageUrl != null && imageUrl.isNotEmpty)
                                   ? CachedNetworkImageProvider(
-                                      ApiEndpoints.resolveMediaUrl(imageUrl!),
+                                      ApiEndpoints.resolveMediaUrl(imageUrl),
                                     )
                                   : null,
                               child:

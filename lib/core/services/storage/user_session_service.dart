@@ -20,6 +20,7 @@ class UserSessionService {
   static const String _phoneKey = 'phone';
   static const String _userProfilePicKey = 'profile_pic';
   static const String _roleKey = 'role';
+  static const String _providerTypeKey = 'provider_type';
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
 
   // Save user session data
@@ -31,6 +32,7 @@ class UserSessionService {
     String? phone,
     String? userProfilePic,
     String? role,
+    String? providerType,
   }) async {
     await _prefs.setBool(_isLoggedInKey, true);
     await _prefs.setString(_userIdKey, userId);
@@ -45,6 +47,9 @@ class UserSessionService {
     }
     if (role != null) {
       await _prefs.setString(_roleKey, role);
+    }
+    if (providerType != null) {
+      await _prefs.setString(_providerTypeKey, providerType);
     }
   }
 
@@ -88,6 +93,11 @@ class UserSessionService {
     return _prefs.getString(_roleKey);
   }
 
+  // get current provider type (shop, vet, babysitter)
+  String? getProviderType() {
+    return _prefs.getString(_providerTypeKey);
+  }
+
   // Clear user session data
   Future<void> clearSession() async {
     await _prefs.remove(_isLoggedInKey);
@@ -98,5 +108,6 @@ class UserSessionService {
     await _prefs.remove(_phoneKey);
     await _prefs.remove(_userProfilePicKey);
     await _prefs.remove(_roleKey);
+    await _prefs.remove(_providerTypeKey);
   }
 }

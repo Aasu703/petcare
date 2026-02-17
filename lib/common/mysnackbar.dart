@@ -8,7 +8,7 @@ import 'package:flutter/material.dart'
         SnackBarBehavior,
         Colors;
 
-showMySnackBar({
+void showMySnackBar({
   required BuildContext context,
   required String message,
   Color? color,

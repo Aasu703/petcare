@@ -153,20 +153,17 @@ class _AuthInterceptor extends Interceptor {
   ) async {
     // Skip auth for public endpoints
     final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userRegister];
-    final isPublicGet =
-        options.method == 'GET' &&
-        publicEndpoints.any((endpoints) => options.path.startsWith(endpoints));
+    final isPublicEndpoint =
+        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
 
-    final isAuthEndpoint =
-        options.path == ApiEndpoints.userLogin ||
-        options.path == ApiEndpoints.user;
-
-    if (!isPublicGet && !isAuthEndpoint) {
+    if (!isPublicEndpoint) {
       final token = _tokenService != null
           ? await _tokenService.getToken()
           : (await SharedPreferences.getInstance()).getString('auth_token');
-      if (token != null) {
-        options.headers['authorization'] = token;
+      if (token != null && token.isNotEmpty) {
+        final bearerToken =
+            token.startsWith('Bearer ') ? token : 'Bearer $token';
+        options.headers['Authorization'] = bearerToken;
         print('Added token for request to ${options.path}');
       } else {
         print('No token found for request to ${options.path}');

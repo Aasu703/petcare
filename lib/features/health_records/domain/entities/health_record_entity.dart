@@ -9,6 +9,10 @@ class HealthRecordEntity extends Equatable {
   final String? nextDueDate;
   final int? attachmentsCount;
   final String? petId;
+  final String? prescribedByProviderId;
+  final String? prescribedByProviderName;
+  final String? prescribedForUserId;
+  final String? prescribedForUserName;
   final String? createdAt;
   final String? updatedAt;
 
@@ -21,6 +25,10 @@ class HealthRecordEntity extends Equatable {
     this.nextDueDate,
     this.attachmentsCount,
     this.petId,
+    this.prescribedByProviderId,
+    this.prescribedByProviderName,
+    this.prescribedForUserId,
+    this.prescribedForUserName,
     this.createdAt,
     this.updatedAt,
   });
@@ -35,6 +43,10 @@ class HealthRecordEntity extends Equatable {
     nextDueDate,
     attachmentsCount,
     petId,
+    prescribedByProviderId,
+    prescribedByProviderName,
+    prescribedForUserId,
+    prescribedForUserName,
     createdAt,
     updatedAt,
   ];

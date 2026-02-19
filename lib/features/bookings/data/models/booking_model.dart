@@ -12,6 +12,11 @@ class BookingModel {
   final String? petId;
   final String? providerId;
   final String? providerServiceId;
+  final String? userName;
+  final String? userEmail;
+  final String? petName;
+  final String? providerBusinessName;
+  final String? serviceTitle;
   final String? createdAt;
   final String? updatedAt;
 
@@ -27,12 +32,32 @@ class BookingModel {
     this.petId,
     this.providerId,
     this.providerServiceId,
+    this.userName,
+    this.userEmail,
+    this.petName,
+    this.providerBusinessName,
+    this.serviceTitle,
     this.createdAt,
     this.updatedAt,
   });
 
-  // FROM JSON — matches backend field names exactly
+  // FROM JSON - supports both plain ids and enriched nested objects.
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    String? extractId(dynamic value) {
+      if (value is String) {
+        return value;
+      }
+      if (value is Map<String, dynamic>) {
+        return (value['_id'] ?? value['id'])?.toString();
+      }
+      return null;
+    }
+
+    final user = json['user'] as Map<String, dynamic>?;
+    final pet = json['pet'] as Map<String, dynamic>?;
+    final provider = json['provider'] as Map<String, dynamic>?;
+    final service = json['service'] as Map<String, dynamic>?;
+
     return BookingModel(
       id: (json['_id'] ?? json['id'])?.toString(),
       startTime: json['startTime']?.toString() ?? '',
@@ -40,17 +65,25 @@ class BookingModel {
       status: json['status']?.toString() ?? 'pending',
       price: (json['price'] is num) ? (json['price'] as num).toDouble() : null,
       notes: json['notes']?.toString(),
-      serviceId: json['serviceId']?.toString(),
-      userId: json['userId']?.toString(),
-      petId: json['petId']?.toString(),
-      providerId: json['providerId']?.toString(),
+      serviceId: extractId(json['serviceId']) ?? extractId(service),
+      userId: extractId(json['userId']) ?? extractId(user),
+      petId: extractId(json['petId']) ?? extractId(pet),
+      providerId: extractId(json['providerId']) ?? extractId(provider),
       providerServiceId: json['providerServiceId']?.toString(),
+      userName: json['userName']?.toString() ?? user?['name']?.toString(),
+      userEmail: json['userEmail']?.toString() ?? user?['email']?.toString(),
+      petName: json['petName']?.toString() ?? pet?['name']?.toString(),
+      providerBusinessName:
+          json['providerName']?.toString() ??
+          provider?['businessName']?.toString(),
+      serviceTitle:
+          json['serviceTitle']?.toString() ?? service?['title']?.toString(),
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
     );
   }
 
-  // TO JSON — matches backend expected fields exactly
+  // TO JSON - fields expected by booking create/update APIs.
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{'startTime': startTime, 'endTime': endTime};
     if (price != null) json['price'] = price;
@@ -65,7 +98,6 @@ class BookingModel {
     return json;
   }
 
-  // TO ENTITY
   BookingEntity toEntity() {
     return BookingEntity(
       bookingId: id,
@@ -79,12 +111,16 @@ class BookingModel {
       petId: petId,
       providerId: providerId,
       providerServiceId: providerServiceId,
+      userName: userName,
+      userEmail: userEmail,
+      petName: petName,
+      providerBusinessName: providerBusinessName,
+      serviceTitle: serviceTitle,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
   }
 
-  // FROM ENTITY
   factory BookingModel.fromEntity(BookingEntity entity) {
     return BookingModel(
       id: entity.bookingId,
@@ -98,12 +134,16 @@ class BookingModel {
       petId: entity.petId,
       providerId: entity.providerId,
       providerServiceId: entity.providerServiceId,
+      userName: entity.userName,
+      userEmail: entity.userEmail,
+      petName: entity.petName,
+      providerBusinessName: entity.providerBusinessName,
+      serviceTitle: entity.serviceTitle,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
   }
 
-  // TO ENTITY LIST
   static List<BookingEntity> toEntityList(List<BookingModel> models) {
     return models.map((model) => model.toEntity()).toList();
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
@@ -28,6 +30,17 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go(RoutePaths.home);
+            }
+          },
+        ),
         title: const Text('Pet Shop'),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,

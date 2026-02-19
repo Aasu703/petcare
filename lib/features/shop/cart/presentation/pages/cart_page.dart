@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/shop/cart/presentation/view_model/cart_view_model.dart';
 import 'package:petcare/features/shop/cart/presentation/widgets/cart_checkout_bottom_bar.dart';
@@ -12,6 +14,8 @@ class CartPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarForeground = isDark ? Colors.white : Colors.black87;
     final cart = ref.watch(cartEntityProvider);
     final cartState = ref.watch(cartViewModelProvider);
     final viewModel = ref.read(cartViewModelProvider.notifier);
@@ -29,9 +33,27 @@ class CartPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: Icon(Icons.arrow_back_rounded, color: appBarForeground),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go(RoutePaths.shop);
+            }
+          },
+        ),
         title: const Text('My Cart'),
         backgroundColor: context.surfaceColor,
-        foregroundColor: context.textPrimary,
+        foregroundColor: appBarForeground,
+        titleTextStyle: TextStyle(
+          color: appBarForeground,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: appBarForeground),
         centerTitle: true,
         actions: [
           if (cart.items.isNotEmpty)
@@ -45,7 +67,15 @@ class CartPage extends ConsumerWidget {
         ],
       ),
       body: cart.items.isEmpty
-          ? const CartEmptyState()
+          ? CartEmptyState(
+              onBack: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.go(RoutePaths.shop);
+                }
+              },
+            )
           : LayoutBuilder(
               builder: (context, constraints) {
                 return Align(

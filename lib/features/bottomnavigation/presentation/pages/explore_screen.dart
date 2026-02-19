@@ -90,21 +90,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: _selectedCategory != 'All'
-            ? IconButton(
-                tooltip: 'Back',
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () {
-                  setState(() {
-                    _selectedCategory = 'All';
-                    _searchController.clear();
-                    _query = '';
-                  });
-                },
-              )
-            : null,
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go(RoutePaths.home);
+            }
+          },
+        ),
         title: const Text('Explore Services'),
         actions: [
+          if (_selectedCategory != 'All' || _query.isNotEmpty)
+            IconButton(
+              tooltip: 'Clear filters',
+              onPressed: () {
+                setState(() {
+                  _selectedCategory = 'All';
+                  _searchController.clear();
+                  _query = '';
+                });
+              },
+              icon: const Icon(Icons.filter_alt_off_rounded),
+            ),
           IconButton(
             tooltip: 'Book Appointment',
             onPressed: () => context.push(RoutePaths.bookingNew),

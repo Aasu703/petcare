@@ -10,6 +10,7 @@ import 'package:petcare/features/provider/presentation/screens/provider_messages
 import 'package:petcare/features/provider/domain/utils/provider_access.dart';
 import 'package:petcare/features/provider/presentation/widgets/provider_dashboard_components.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
+import 'package:petcare/features/health_records/presentation/pages/provider_vaccination_prescriptions_page.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
@@ -461,6 +462,25 @@ class _ProviderDashboardScreenState
           },
         ),
       );
+
+      if (isVet) {
+        cards.add(
+          ProviderDashboardFeature(
+            title: 'Vaccination Prescriptions',
+            subtitle: 'See prescribed vaccinations by pet owner',
+            icon: Icons.vaccines_rounded,
+            color: ProviderColors.primary,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProviderVaccinationPrescriptionsPage(),
+                ),
+              );
+            },
+          ),
+        );
+      }
 
       cards.add(
         ProviderDashboardFeature(

@@ -11,7 +11,6 @@ import 'package:petcare/features/auth/presentation/view_model/profile_view_model
 import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
-import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
@@ -378,21 +377,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               MaterialPageRoute(
                                 builder: (_) =>
                                     const MyProviderServicesScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _MenuItem(
-                          icon: Icons.message_rounded,
-                          title: 'Messages',
-                          subtitle: 'View and send messages',
-                          color: ProfileColors.myPets,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MessagesScreen(),
                               ),
                             );
                           },

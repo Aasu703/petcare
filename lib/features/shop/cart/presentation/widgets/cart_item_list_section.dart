@@ -22,7 +22,7 @@ class CartItemListSection extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
-      separatorBuilder: (_, index) => Divider(color: context.borderColor),
+      separatorBuilder: (_, __) => Divider(color: context.borderColor),
       itemBuilder: (context, index) {
         final item = items[index];
         return CartItemTile(

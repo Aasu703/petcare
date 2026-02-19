@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
@@ -12,6 +14,17 @@ class ProductDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go(RoutePaths.shop);
+            }
+          },
+        ),
         title: Text(product.productName),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,

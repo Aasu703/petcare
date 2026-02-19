@@ -167,7 +167,9 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
     final providerState = ref.watch(providerListProvider);
     final serviceState = ref.watch(serviceProvider);
     final services = serviceState.services;
-    final providers = providerState.providers;
+    final providers = providerState.providers
+        .where((provider) => (provider.providerId ?? '').isNotEmpty)
+        .toList();
 
     if (_selectedService == null && _selectedServiceId != null) {
       final match = services
@@ -190,13 +192,12 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
       }
     }
 
-    final filteredProviders =
-        (_selectedService?.providerId != null &&
-            _selectedService!.providerId!.isNotEmpty)
-        ? providers
-              .where((p) => p.providerId == _selectedService!.providerId)
-              .toList()
-        : providers;
+    final hasSelectedProviderInList = providers.any(
+      (provider) => provider.providerId == _selectedProviderId,
+    );
+    final dropdownSelectedProvider = hasSelectedProviderInList
+        ? _selectedProviderId
+        : null;
 
     final displayPrice = widget.price ?? _selectedService?.price;
 
@@ -315,8 +316,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
             providerState.isLoading
                 ? const LinearProgressIndicator(minHeight: 2)
                 : DropdownButtonFormField<String>(
-                    initialValue: _selectedProviderId,
-                    items: filteredProviders
+                    initialValue: dropdownSelectedProvider,
+                    items: providers
                         .map(
                           (provider) => DropdownMenuItem(
                             value: provider.providerId,
@@ -328,7 +329,7 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
                       setState(() => _selectedProviderId = value);
                     },
                     decoration: InputDecoration(
-                      hintText: filteredProviders.isEmpty
+                      hintText: providers.isEmpty
                           ? 'No providers available'
                           : 'Choose a provider',
                       filled: true,

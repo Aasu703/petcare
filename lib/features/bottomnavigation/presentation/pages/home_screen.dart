@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/health_records/presentation/view_model/vaccination_reminder_view_model.dart';
+import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
+import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
+import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 
@@ -39,6 +45,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late Animation<double> _heroFade;
 
   bool isInTest = false;
+  bool _isRequestingLocation = false;
+  LatLng? _mapPreviewCenter;
 
   @override
   void initState() {
@@ -497,12 +505,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     else
                       Column(
                         children: reminderState.reminders.take(3).map((record) {
-                          final petName = petState.pets
-                              .firstWhere(
-                                (pet) => pet.petId == record.petId,
-                                orElse: () => petState.pets.first,
-                              )
-                              .name;
+                          final matchedPets = petState.pets.where(
+                            (pet) => pet.petId == record.petId,
+                          );
+                          final petName = matchedPets.isNotEmpty
+                              ? matchedPets.first.name
+                              : 'Your pet';
                           final dueDate = DateTime.tryParse(
                             record.nextDueDate ?? '',
                           );
@@ -510,60 +518,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ? DateFormat('MMM d, yyyy').format(dueDate)
                               : 'Due soon';
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: context.surfaceColor,
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: context.borderColor),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => VaccinationRecordDetailPage(
+                                      record: record,
+                                      petName: petName,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Ink(
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.shade50,
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: context.surfaceColor,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: context.borderColor,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
                                   ),
-                                  child: Icon(
-                                    Icons.vaccines,
-                                    color: Colors.red.shade400,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        record.title ?? 'Vaccination',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.vaccines,
+                                          color: Colors.red.shade400,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '$petName • $dueStr',
-                                        style: TextStyle(
-                                          color: context.textSecondary,
-                                          fontSize: 12,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              record.title ?? 'Vaccination',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '$petName | $dueStr',
+                                              style: TextStyle(
+                                                color: context.textSecondary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      Icon(
+                                        Icons.chevron_right_rounded,
+                                        color: context.textSecondary,
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           );
                         }).toList(),
@@ -604,6 +639,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       color: _kGroomingColor,
                       delay: 200,
                     ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+
+            // Quick Actions
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Messages and nearby map at your fingertips',
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildQuickActionCard(
+                            icon: Icons.chat_rounded,
+                            title: 'Messages',
+                            subtitle: 'Open chats',
+                            color: const Color(0xFF4C6EF5),
+                            onTap: () {
+                              _openMessages();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildQuickActionCard(
+                            icon: Icons.map_rounded,
+                            title: _isRequestingLocation
+                                ? 'Requesting...'
+                                : (_mapPreviewCenter == null
+                                      ? 'Enable Map'
+                                      : 'Nearby Map Ready'),
+                            subtitle: _mapPreviewCenter == null
+                                ? 'Allow location to show map here'
+                                : 'Find vets & pet spots nearby',
+                            color: const Color(0xFF0CA678),
+                            isLoading: _isRequestingLocation,
+                            onTap: () {
+                              if (_mapPreviewCenter == null) {
+                                _openNearbyMap();
+                              } else {
+                                _openFullNearbyMap();
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_mapPreviewCenter != null) ...[
+                      const SizedBox(height: 16),
+                      _buildInlineMapPreview(),
+                    ],
                   ],
                 ),
               ),
@@ -919,6 +1029,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
+  Future<void> _openMessages() async {
+    HapticFeedback.lightImpact();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MessagesScreen()),
+    );
+  }
+
+  Future<void> _openNearbyMap() async {
+    if (_isRequestingLocation) {
+      return;
+    }
+
+    setState(() {
+      _isRequestingLocation = true;
+    });
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showHomeSnack(
+          'Location services are off. Please enable GPS to open nearby map.',
+        );
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showHomeSnack(
+          'Location permission is required to show nearby vets and pet places.',
+        );
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        _mapPreviewCenter = LatLng(position.latitude, position.longitude);
+      });
+      _showHomeSnack(
+        'Nearby map enabled on home. Tap Open Full Map for details.',
+      );
+    } catch (_) {
+      _showHomeSnack('Unable to open map right now. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRequestingLocation = false;
+        });
+      }
+    }
+  }
+
+  void _showHomeSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openFullNearbyMap() async {
+    final center = _mapPreviewCenter;
+    if (center == null) {
+      await _openNearbyMap();
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NearbyMapScreen(
+          latitude: center.latitude,
+          longitude: center.longitude,
+        ),
+      ),
+    );
+  }
+
   Widget _buildNotificationButton() {
     return Container(
       width: 56,
@@ -1208,6 +1404,216 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withOpacity(0.16), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.16),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+            spreadRadius: -6,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onTap();
+                },
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: isLoading
+                      ? Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: color,
+                          ),
+                        )
+                      : Icon(icon, color: color, size: 26),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInlineMapPreview() {
+    final center = _mapPreviewCenter!;
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF0CA678).withOpacity(0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0CA678).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.location_on_rounded,
+                    color: Color(0xFF0CA678),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nearby Map',
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Map is now shown on your home screen',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: _openFullNearbyMap,
+                  child: const Text('Open Full Map'),
+                ),
+              ],
+            ),
+          ),
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+            child: SizedBox(
+              height: 220,
+              child: FlutterMap(
+                key: ValueKey(
+                  '${center.latitude.toStringAsFixed(5)}-${center.longitude.toStringAsFixed(5)}',
+                ),
+                options: MapOptions(
+                  initialCenter: center,
+                  initialZoom: 14,
+                  minZoom: 3,
+                  maxZoom: 19,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.petcare.app',
+                    maxNativeZoom: 19,
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: center,
+                        width: 42,
+                        height: 42,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF0CA678),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF0CA678,
+                                ).withOpacity(0.45),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.my_location_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

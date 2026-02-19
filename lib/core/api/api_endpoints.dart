@@ -7,7 +7,7 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      true; // Set to true for physical device testing, false for emulator/simulator
+      false; // Set to true for physical device testing, false for emulator/simulator
   static const String _ipAddress = '192.168.1.4';
   static const int _port = 5050;
 
@@ -44,6 +44,9 @@ class ApiEndpoints {
   static const String provider = 'provider';
   static const String providerLogin = 'login';
   static const String providerRegister = 'register';
+  static const String providerMe = 'provider/me';
+  static const String providerProfile = 'provider/profile';
+  static const String providerSetType = 'provider/set-type';
 
   static const String providerGetAll = 'provider';
   static const String providerById = 'provider';
@@ -101,6 +104,11 @@ class ApiEndpoints {
   static const String messageList = 'message';
   static const String messageMy = 'message/my';
   static const String messageById = 'message';
+
+  // ------------------------ CHAT ---------------------------
+  static const String chatConversations = 'chat/conversations';
+  static const String chatMessages = 'chat/messages';
+  static const String chatContacts = 'chat/contacts';
 
   // ------------------------ POST ---------------------------
   static const String postAll = 'post';

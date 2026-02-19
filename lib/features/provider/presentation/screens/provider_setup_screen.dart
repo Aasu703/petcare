@@ -60,7 +60,9 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
           content: const Text('Please select a provider type'),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -166,7 +168,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                       child: Column(
                         children: [
                           DropdownButtonFormField<String>(
-                            value: _selectedProviderType,
+                            initialValue: _selectedProviderType,
                             decoration: const InputDecoration(
                               labelText: 'Provider type',
                               border: OutlineInputBorder(),

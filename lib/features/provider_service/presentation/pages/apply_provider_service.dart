@@ -7,7 +7,14 @@ import 'package:petcare/features/provider_service/domain/entities/provider_servi
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
 
 class ApplyProviderServiceScreen extends ConsumerStatefulWidget {
-  const ApplyProviderServiceScreen({super.key});
+  final String? initialServiceType;
+  final bool lockServiceType;
+
+  const ApplyProviderServiceScreen({
+    super.key,
+    this.initialServiceType,
+    this.lockServiceType = false,
+  });
 
   @override
   ConsumerState<ApplyProviderServiceScreen> createState() =>
@@ -35,7 +42,7 @@ class _ApplyProviderServiceScreenState
   }) async {
     if (multiple) {
       final List<XFile> files = await _picker.pickMultiImage();
-      if (files != null && files.isNotEmpty) {
+      if (files.isNotEmpty) {
         setState(() {
           _facilityImages = files.map((e) => e.path).toList();
         });
@@ -55,7 +62,9 @@ class _ApplyProviderServiceScreenState
           content: const Text('Please select a service type'),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -100,6 +109,12 @@ class _ApplyProviderServiceScreenState
   }
 
   @override
+  void initState() {
+    super.initState();
+    _selectedServiceType = widget.initialServiceType;
+  }
+
+  @override
   void dispose() {
     _registrationController.dispose();
     _bioController.dispose();
@@ -123,7 +138,7 @@ class _ApplyProviderServiceScreenState
           child: Column(
             children: [
               DropdownButtonFormField<String>(
-                value: _selectedServiceType,
+                initialValue: _selectedServiceType,
                 decoration: const InputDecoration(
                   labelText: 'Service Type',
                   border: OutlineInputBorder(),
@@ -136,11 +151,13 @@ class _ApplyProviderServiceScreenState
                       ),
                     )
                     .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedServiceType = value;
-                  });
-                },
+                onChanged: widget.lockServiceType
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _selectedServiceType = value;
+                        });
+                      },
                 validator: (value) => value == null || value.isEmpty
                     ? 'Select a service type'
                     : null,

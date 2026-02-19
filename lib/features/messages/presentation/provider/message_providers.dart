@@ -97,7 +97,10 @@ class MessageNotifier extends StateNotifier<MessageState> {
       (failure) =>
           state = state.copyWith(isLoading: false, error: failure.message),
       (newMessage) {
-        final updatedMessages = [...state.messages, newMessage];
+        final updatedMessages = [
+          newMessage,
+          ...state.messages.where((message) => message.id != newMessage.id),
+        ];
         state = state.copyWith(isLoading: false, messages: updatedMessages);
       },
     );

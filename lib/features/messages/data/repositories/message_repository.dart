@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/messages/data/datasources/remote/message_remote_datasource.dart';
+import 'package:petcare/features/messages/data/models/message_model.dart';
 import 'package:petcare/features/messages/domain/entities/message_entity.dart';
 import 'package:petcare/features/messages/domain/repositories/message_repository.dart';
 
@@ -23,6 +24,14 @@ class MessageRepository implements IMessageRepository {
   }) : _remoteDataSource = remoteDataSource,
        _sessionService = sessionService;
 
+  List<MessageEntity> _toEntities(List<MessageModel> models) {
+    return models.map((model) => model.toEntity()).toList();
+  }
+
+  MessageEntity _toEntity(MessageModel model) {
+    return model.toEntity();
+  }
+
   @override
   Future<Either<Failure, List<MessageEntity>>> getAllMessages({
     int page = 1,
@@ -33,7 +42,7 @@ class MessageRepository implements IMessageRepository {
         page: page,
         limit: limit,
       );
-      return Right(messages as List<MessageEntity>);
+      return Right(_toEntities(messages));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -46,7 +55,7 @@ class MessageRepository implements IMessageRepository {
         return Left(ServerFailure(message: 'User not authenticated'));
       }
       final messages = await _remoteDataSource.getMyMessages();
-      return Right(messages as List<MessageEntity>);
+      return Right(_toEntities(messages));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -59,7 +68,7 @@ class MessageRepository implements IMessageRepository {
         return Left(ServerFailure(message: 'User not authenticated'));
       }
       final message = await _remoteDataSource.createMessage(content);
-      return Right(message as MessageEntity);
+      return Right(_toEntity(message));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -74,7 +83,7 @@ class MessageRepository implements IMessageRepository {
       if (message == null) {
         return Left(ServerFailure(message: 'Message not found'));
       }
-      return Right(message as MessageEntity);
+      return Right(_toEntity(message));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }
@@ -90,7 +99,7 @@ class MessageRepository implements IMessageRepository {
         return Left(ServerFailure(message: 'User not authenticated'));
       }
       final message = await _remoteDataSource.updateMessage(messageId, content);
-      return Right(message as MessageEntity);
+      return Right(_toEntity(message));
     } catch (e) {
       return Left(ServerFailure(message: e.toString()));
     }

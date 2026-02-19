@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_business_profile_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_documents_screen.dart';
@@ -10,6 +11,9 @@ import 'package:petcare/features/provider/presentation/screens/provider_help_scr
 import 'package:petcare/features/provider/presentation/screens/provider_notifications_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_payment_settings_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_privacy_policy_screen.dart';
+import 'package:petcare/features/provider/domain/utils/provider_access.dart';
+import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
+import 'package:petcare/features/shop/presentation/pages/manage_inventory_page.dart';
 
 // Modern color palette for Provider Profile
 class ProviderProfileColors {
@@ -97,6 +101,17 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(userSessionServiceProvider);
+    final providerType = session.getProviderType();
+    final addServiceTitle = isShopProvider(providerType)
+        ? 'Add Product'
+        : 'Add Service';
+    final addServiceSubtitle = isShopProvider(providerType)
+        ? 'Create and publish inventory items'
+        : isVetProvider(providerType)
+        ? 'Create veterinary service application'
+        : 'Create grooming/boarding service application';
+
     return Scaffold(
       backgroundColor: ProviderProfileColors.background,
       body: SafeArea(
@@ -234,6 +249,16 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                       ),
                       SizedBox(height: 16),
                       _buildProfileOption(
+                        addServiceTitle,
+                        addServiceSubtitle,
+                        isShopProvider(providerType)
+                            ? Icons.add_business_rounded
+                            : Icons.add_circle_rounded,
+                        ProviderProfileColors.primary,
+                        () => _openAddByProviderType(providerType),
+                      ),
+                      SizedBox(height: 12),
+                      _buildProfileOption(
                         'Edit Business Profile',
                         'Update your business details',
                         Icons.business_rounded,
@@ -346,6 +371,27 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _openAddByProviderType(ProviderType providerType) {
+    if (isShopProvider(providerType)) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ManageInventoryPage()),
+      );
+      return;
+    }
+
+    final initialServiceType = isVetProvider(providerType) ? 'vet' : 'groomer';
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ApplyProviderServiceScreen(
+          initialServiceType: initialServiceType,
+          lockServiceType: true,
         ),
       ),
     );

@@ -32,6 +32,33 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   }) : _apiClient = apiClient,
        _sessionService = sessionService;
 
+  List<dynamic> _extractListFromResponse(dynamic data) {
+    if (data is List) {
+      return data;
+    }
+
+    if (data is Map<String, dynamic>) {
+      final payload = data['data'];
+      if (payload is List) {
+        return payload;
+      }
+      if (payload is Map<String, dynamic>) {
+        final nestedList =
+            payload['messages'] ?? payload['data'] ?? payload['items'];
+        if (nestedList is List) {
+          return nestedList;
+        }
+      }
+
+      final rootList = data['messages'] ?? data['items'];
+      if (rootList is List) {
+        return rootList;
+      }
+    }
+
+    return [];
+  }
+
   @override
   Future<List<MessageModel>> getAllMessages({
     int page = 1,
@@ -42,12 +69,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
       queryParameters: {'page': page, 'limit': limit},
     );
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['data'] ?? data['messages'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    final list = _extractListFromResponse(data);
     return list
         .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -60,12 +82,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
     }
     final response = await _apiClient.get(ApiEndpoints.messageMy);
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['data'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    final list = _extractListFromResponse(data);
     return list
         .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
         .toList();

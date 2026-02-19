@@ -41,6 +41,20 @@ class ProviderApiModel {
 
   // FROM JSON (From API)
   factory ProviderApiModel.fromJson(Map<String, dynamic> json) {
+    int parseRating(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.round();
+      if (value is num) return value.toInt();
+      if (value is String) {
+        final parsedInt = int.tryParse(value);
+        if (parsedInt != null) return parsedInt;
+        final parsedDouble = double.tryParse(value);
+        if (parsedDouble != null) return parsedDouble.round();
+      }
+      return 0;
+    }
+
     return ProviderApiModel(
       providerId: (json["_id"] ?? json["provider_id"])?.toString(),
       userId: (json["userId"] ?? json["user_id"])?.toString() ?? '',
@@ -48,7 +62,7 @@ class ProviderApiModel {
           (json["businessName"] ?? json["business_name"])?.toString() ?? '',
       address: json["address"]?.toString() ?? '',
       phone: json["phone"]?.toString() ?? '',
-      rating: json["rating"] ?? 0,
+      rating: parseRating(json["rating"]),
       providerType: json["providerType"]?.toString(),
       email: json["email"]?.toString(),
       password: json["password"]?.toString(),

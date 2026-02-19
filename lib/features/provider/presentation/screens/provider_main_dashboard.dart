@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/features/provider/domain/utils/provider_access.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
@@ -20,8 +21,21 @@ class _ProviderDashboardState extends ConsumerState<ProviderDashboard> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(userSessionServiceProvider);
-    final providerType = (session.getProviderType() ?? '').toLowerCase();
-    final isShop = providerType == 'shop';
+    final providerType = session.getProviderType();
+    final isShop = canManageInventory(providerType);
+    final secondTabLabel = isShop
+        ? 'Inventory'
+        : isVetProvider(providerType)
+        ? 'Services'
+        : isGroomerProvider(providerType)
+        ? 'Grooming'
+        : 'Services';
+    final secondTabIcon = isShop
+        ? Icons.inventory_2_outlined
+        : Icons.medical_services_outlined;
+    final secondTabActiveIcon = isShop
+        ? Icons.inventory_2
+        : Icons.medical_services_rounded;
 
     final screens = [
       const ProviderDashboardScreen(),
@@ -36,10 +50,9 @@ class _ProviderDashboardState extends ConsumerState<ProviderDashboard> {
         label: 'Dashboard',
       ),
       _NavItem(
-        icon: isShop ? Icons.inventory_2_outlined : Icons.medical_services_outlined,
-        activeIcon:
-            isShop ? Icons.inventory_2 : Icons.medical_services_rounded,
-        label: isShop ? 'Inventory' : 'Services',
+        icon: secondTabIcon,
+        activeIcon: secondTabActiveIcon,
+        label: secondTabLabel,
       ),
       const _NavItem(
         icon: Icons.person_outline_rounded,
@@ -76,24 +89,20 @@ class _ProviderDashboardState extends ConsumerState<ProviderDashboard> {
               ),
             ),
             child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 10,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: List.generate(
                     navItems.length,
-                    (index) => _buildNavItem(
-                      index,
-                      navItems,
-                      primary,
-                      textSecondary,
-                    ),
+                    (index) =>
+                        _buildNavItem(index, navItems, primary, textSecondary),
                   ),
-                    ),
-                  ),
+                ),
+              ),
             ),
           ),
         ),

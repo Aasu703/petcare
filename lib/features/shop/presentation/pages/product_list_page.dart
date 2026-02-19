@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
-import 'package:petcare/features/shop/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
@@ -124,7 +124,7 @@ class _ProductCard extends ConsumerWidget {
                   child: Icon(
                     Icons.inventory_2_rounded,
                     size: 48,
-                    color: AppColors.iconPrimaryColor.withOpacity(0.3),
+                    color: AppColors.iconPrimaryColor.withValues(alpha: 0.3),
                   ),
                 ),
               ),

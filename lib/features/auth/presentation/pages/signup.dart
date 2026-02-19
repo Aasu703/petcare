@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/features/auth/di/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
+import 'package:petcare/features/auth/presentation/widgets/account_type_chip.dart';
+import 'package:petcare/features/auth/presentation/widgets/auth_form_field.dart';
 
 class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
@@ -107,9 +109,9 @@ class _SignupState extends ConsumerState<Signup>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      context.accentColor.withOpacity(0.08),
+                      context.accentColor.withValues(alpha: 0.08),
                       context.backgroundColor,
-                      context.accentColor.withOpacity(0.05),
+                      context.accentColor.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
@@ -127,8 +129,8 @@ class _SignupState extends ConsumerState<Signup>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.accentColor.withOpacity(0.15),
-                      AppColors.accentColor.withOpacity(0.0),
+                      AppColors.accentColor.withValues(alpha: 0.15),
+                      AppColors.accentColor.withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -144,8 +146,8 @@ class _SignupState extends ConsumerState<Signup>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.accentColor.withOpacity(0.12),
-                      AppColors.accentColor.withOpacity(0.0),
+                      AppColors.accentColor.withValues(alpha: 0.12),
+                      AppColors.accentColor.withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -180,13 +182,15 @@ class _SignupState extends ConsumerState<Signup>
                                 end: Alignment.bottomRight,
                                 colors: [
                                   AppColors.accentColor,
-                                  AppColors.accentColor.withOpacity(0.7),
+                                  AppColors.accentColor.withValues(alpha: 0.7),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.accentColor.withOpacity(0.4),
+                                  color: AppColors.accentColor.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   blurRadius: 30,
                                   offset: const Offset(0, 15),
                                   spreadRadius: -5,
@@ -220,7 +224,7 @@ class _SignupState extends ConsumerState<Signup>
                               'Join our pet-loving community 🐾',
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
-                                    color: Colors.black.withOpacity(0.6),
+                                    color: Colors.black.withValues(alpha: 0.6),
                                     fontWeight: FontWeight.w500,
                                     fontSize: 16,
                                   ),
@@ -235,15 +239,15 @@ class _SignupState extends ConsumerState<Signup>
                         width: double.infinity,
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 40,
                               offset: const Offset(0, 20),
                               spreadRadius: -10,
@@ -259,7 +263,7 @@ class _SignupState extends ConsumerState<Signup>
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: _modernField(
+                                      child: AuthFormField(
                                         controller: _fnameController,
                                         focusNode: _fnameFocusNode,
                                         hint: 'First',
@@ -276,7 +280,7 @@ class _SignupState extends ConsumerState<Signup>
                                     ),
                                     const SizedBox(width: 14),
                                     Expanded(
-                                      child: _modernField(
+                                      child: AuthFormField(
                                         controller: _lnameController,
                                         focusNode: _lnameFocusNode,
                                         hint: 'Last',
@@ -294,7 +298,7 @@ class _SignupState extends ConsumerState<Signup>
                                   ],
                                 ),
                               if (!_isProvider) const SizedBox(height: 18),
-                              _modernField(
+                              AuthFormField(
                                 controller: _newEmailController,
                                 focusNode: _newEmailFocusNode,
                                 hint: 'example@email.com',
@@ -312,7 +316,7 @@ class _SignupState extends ConsumerState<Signup>
                                 },
                               ),
                               const SizedBox(height: 18),
-                              _modernField(
+                              AuthFormField(
                                 controller: _phoneController,
                                 focusNode: _phoneFocusNode,
                                 hint: '+1234567890',
@@ -330,7 +334,7 @@ class _SignupState extends ConsumerState<Signup>
                                 },
                               ),
                               const SizedBox(height: 18),
-                              _modernField(
+                              AuthFormField(
                                 controller: _newPasswordController,
                                 focusNode: _newPasswordFocusNode,
                                 hint: '••••••••',
@@ -362,7 +366,7 @@ class _SignupState extends ConsumerState<Signup>
                                 },
                               ),
                               const SizedBox(height: 18),
-                              _modernField(
+                              AuthFormField(
                                 controller: _confirmPasswordController,
                                 focusNode: _confirmPasswordFocusNode,
                                 hint: '••••••••',
@@ -405,14 +409,18 @@ class _SignupState extends ConsumerState<Signup>
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      AppColors.accentColor.withOpacity(0.08),
-                                      AppColors.accentColor.withOpacity(0.04),
+                                      AppColors.accentColor.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                      AppColors.accentColor.withValues(
+                                        alpha: 0.04,
+                                      ),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: AppColors.accentColor.withOpacity(
-                                      0.15,
+                                    color: AppColors.accentColor.withValues(
+                                      alpha: 0.15,
                                     ),
                                     width: 1,
                                   ),
@@ -426,7 +434,7 @@ class _SignupState extends ConsumerState<Signup>
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             color: AppColors.accentColor
-                                                .withOpacity(0.1),
+                                                .withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
@@ -454,7 +462,7 @@ class _SignupState extends ConsumerState<Signup>
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: _modernRoleChip(
+                                          child: AccountTypeChip(
                                             label: 'Pet Owner',
                                             icon: Icons.pets,
                                             selected: !_isProvider,
@@ -467,7 +475,7 @@ class _SignupState extends ConsumerState<Signup>
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
-                                          child: _modernRoleChip(
+                                          child: AccountTypeChip(
                                             label: 'Provider',
                                             icon: Icons.store_rounded,
                                             selected: _isProvider,
@@ -500,7 +508,7 @@ class _SignupState extends ConsumerState<Signup>
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         shadowColor: AppColors.accentColor
-                                            .withOpacity(0.4),
+                                            .withValues(alpha: 0.4),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
                                             18,
@@ -546,8 +554,8 @@ class _SignupState extends ConsumerState<Signup>
                                             Icon(
                                               Icons.arrow_forward_rounded,
                                               size: 22,
-                                              color: Colors.white.withOpacity(
-                                                0.95,
+                                              color: Colors.white.withValues(
+                                                alpha: 0.95,
                                               ),
                                             ),
                                           ],
@@ -570,7 +578,7 @@ class _SignupState extends ConsumerState<Signup>
                               'Already have an account? ',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
-                                    color: Colors.black.withOpacity(0.6),
+                                    color: Colors.black.withValues(alpha: 0.6),
                                     fontSize: 15,
                                   ),
                             ),
@@ -614,153 +622,6 @@ class _SignupState extends ConsumerState<Signup>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _modernRoleChip({
-    required String label,
-    required IconData icon,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          gradient: selected
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.accentColor,
-                    AppColors.accentColor.withOpacity(0.85),
-                  ],
-                )
-              : null,
-          color: selected ? null : Colors.white.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected
-                ? AppColors.accentColor.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-            width: selected ? 2 : 1.5,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.accentColor.withOpacity(0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                    spreadRadius: -4,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: selected ? Colors.white : Colors.black.withOpacity(0.6),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _modernField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String hint,
-    required String label,
-    required IconData icon,
-    bool obscure = false,
-    TextInputType keyboardType = TextInputType.text,
-    Widget? suffixIcon,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      keyboardType: keyboardType,
-      obscureText: obscure,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: Colors.black.withOpacity(0.35),
-          fontWeight: FontWeight.w400,
-        ),
-        labelStyle: TextStyle(
-          color: Colors.black.withOpacity(0.6),
-          fontWeight: FontWeight.w600,
-        ),
-        floatingLabelStyle: TextStyle(
-          color: AppColors.accentColor,
-          fontWeight: FontWeight.w700,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: AppColors.iconPrimaryColor.withOpacity(0.7),
-          size: 22,
-        ),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.5),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: Colors.black.withOpacity(0.08),
-            width: 1.5,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: Colors.black.withOpacity(0.08),
-            width: 1.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.accentColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-      ),
-      validator:
-          validator ??
-          (value) {
-            if (value == null || value.trim().isEmpty) {
-              return '$label is empty';
-            }
-            return null;
-          },
     );
   }
 
@@ -830,10 +691,11 @@ class _SignupState extends ConsumerState<Signup>
         );
       }
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 }

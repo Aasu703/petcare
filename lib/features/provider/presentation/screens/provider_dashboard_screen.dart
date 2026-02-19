@@ -7,8 +7,8 @@ import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_
 import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/provider/presentation/screens/provider_messages_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_notifications_screen.dart';
 import 'package:petcare/features/provider/domain/utils/provider_access.dart';
+import 'package:petcare/features/provider/presentation/widgets/provider_dashboard_components.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
@@ -119,9 +119,9 @@ class _ProviderDashboardScreenState
     super.dispose();
   }
 
-  _ProviderUiKit _uiKitForType(ProviderType providerType) {
+  ProviderDashboardUiKit _uiKitForType(ProviderType providerType) {
     if (isShopProvider(providerType)) {
-      return const _ProviderUiKit(
+      return const ProviderDashboardUiKit(
         headerIcon: Icons.storefront_rounded,
         accentColor: Color(0xFF0F766E),
         accentSoft: Color(0xFFD1FAE5),
@@ -132,7 +132,7 @@ class _ProviderDashboardScreenState
     }
 
     if (isGroomerProvider(providerType)) {
-      return const _ProviderUiKit(
+      return const ProviderDashboardUiKit(
         headerIcon: Icons.content_cut_rounded,
         accentColor: Color(0xFFBE185D),
         accentSoft: Color(0xFFFCE7F3),
@@ -143,7 +143,7 @@ class _ProviderDashboardScreenState
     }
 
     if (isVetProvider(providerType)) {
-      return const _ProviderUiKit(
+      return const ProviderDashboardUiKit(
         headerIcon: Icons.health_and_safety_rounded,
         accentColor: Color(0xFF7C3AED),
         accentSoft: Color(0xFFEDE9FE),
@@ -153,7 +153,7 @@ class _ProviderDashboardScreenState
       );
     }
 
-    return const _ProviderUiKit(
+    return const ProviderDashboardUiKit(
       headerIcon: Icons.business_rounded,
       accentColor: Color(0xFF4F46E5),
       accentSoft: Color(0xFFE0E7FF),
@@ -231,19 +231,19 @@ class _ProviderDashboardScreenState
 
     final dashboardStats = isShop
         ? [
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Products',
               value: inventoryCount.toString(),
               icon: Icons.inventory_2_rounded,
               color: ProviderColors.inventory,
             ),
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Low Stock Alerts',
               value: lowStockCount.toString(),
               icon: Icons.warning_amber_rounded,
               color: ProviderColors.bookings,
             ),
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Inventory Value',
               value: '\$${inventoryValue.toStringAsFixed(0)}',
               icon: Icons.payments_rounded,
@@ -251,25 +251,25 @@ class _ProviderDashboardScreenState
             ),
           ]
         : [
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Active Services',
               value: activeServicesCount.toString(),
               icon: Icons.medical_services_rounded,
               color: ProviderColors.services,
             ),
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Pending Bookings',
               value: pendingBookingsCount.toString(),
               icon: Icons.schedule_rounded,
               color: ProviderColors.accent,
             ),
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Completed Bookings',
               value: completedBookingsCount.toString(),
               icon: Icons.check_circle_rounded,
               color: ProviderColors.inventory,
             ),
-            _DashboardStat(
+            ProviderDashboardStat(
               label: 'Revenue Potential',
               value: '\$${totalBookingRevenue.toStringAsFixed(0)}',
               icon: Icons.attach_money_rounded,
@@ -294,97 +294,11 @@ class _ProviderDashboardScreenState
                   opacity: _headerFade,
                   child: SlideTransition(
                     position: _headerSlide,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              uiKit.headerGradientStart,
-                              uiKit.headerGradientEnd,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: uiKit.accentColor.withValues(alpha: 0.22),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: uiKit.accentSoft,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          uiKit.headerIcon,
-                                          size: 14,
-                                          color: uiKit.accentColor,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '$providerLabel Dashboard',
-                                          style: TextStyle(
-                                            color: uiKit.accentColor,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'Welcome back!',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall
-                                        ?.copyWith(
-                                          color: context.textPrimary,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: -0.4,
-                                          height: 1.1,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    isShop
-                                        ? 'Manage products and stock visibility'
-                                        : isVet
-                                        ? 'Manage vet services and appointments'
-                                        : 'Manage grooming and care bookings',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: context.textSecondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _buildNotificationButton(
-                              context,
-                              accentColor: uiKit.accentColor,
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: ProviderDashboardHeader(
+                      providerLabel: providerLabel,
+                      isShop: isShop,
+                      isVet: isVet,
+                      uiKit: uiKit,
                     ),
                   ),
                 ),
@@ -410,12 +324,11 @@ class _ProviderDashboardScreenState
                       ),
                       itemBuilder: (context, index) {
                         final stat = dashboardStats[index];
-                        return _buildStatCard(
-                          context,
-                          stat.label,
-                          stat.value,
-                          stat.icon,
-                          stat.color,
+                        return ProviderDashboardStatCard(
+                          title: stat.label,
+                          value: stat.value,
+                          icon: stat.icon,
+                          color: stat.color,
                         );
                       },
                     ),
@@ -463,7 +376,7 @@ class _ProviderDashboardScreenState
     );
   }
 
-  List<_FeatureCard> _getFeatureCards(
+  List<ProviderDashboardFeature> _getFeatureCards(
     BuildContext context,
     ProviderType providerType,
   ) {
@@ -472,11 +385,11 @@ class _ProviderDashboardScreenState
     final canInventory = canManageInventory(providerType);
     final isVet = canAccessVetFeatures(providerType);
 
-    final cards = <_FeatureCard>[];
+    final cards = <ProviderDashboardFeature>[];
 
     if (canInventory) {
       cards.add(
-        _FeatureCard(
+        ProviderDashboardFeature(
           title: 'Inventory',
           subtitle: 'Manage products and stock',
           icon: Icons.inventory_2_rounded,
@@ -493,7 +406,7 @@ class _ProviderDashboardScreenState
 
     if (canServices) {
       cards.add(
-        _FeatureCard(
+        ProviderDashboardFeature(
           title: isVet ? 'Vet Services' : 'Grooming Services',
           subtitle: 'View and manage your services',
           icon: Icons.medical_services_rounded,
@@ -510,7 +423,7 @@ class _ProviderDashboardScreenState
       );
 
       cards.add(
-        _FeatureCard(
+        ProviderDashboardFeature(
           title: 'Apply for Service',
           subtitle: 'Submit a new provider service application',
           icon: Icons.assignment_rounded,
@@ -533,7 +446,7 @@ class _ProviderDashboardScreenState
 
     if (canBookings) {
       cards.add(
-        _FeatureCard(
+        ProviderDashboardFeature(
           title: isVet ? 'Vet Appointments' : 'Bookings',
           subtitle: isVet
               ? 'Manage pet consultation requests'
@@ -550,7 +463,7 @@ class _ProviderDashboardScreenState
       );
 
       cards.add(
-        _FeatureCard(
+        ProviderDashboardFeature(
           title: 'Calendar',
           subtitle: 'View booking calendar',
           icon: Icons.calendar_month_rounded,
@@ -566,7 +479,7 @@ class _ProviderDashboardScreenState
     }
 
     cards.addAll([
-      _FeatureCard(
+      ProviderDashboardFeature(
         title: 'Messages',
         subtitle: 'Chat with pet owners',
         icon: Icons.chat_bubble_rounded,
@@ -578,7 +491,7 @@ class _ProviderDashboardScreenState
           );
         },
       ),
-      _FeatureCard(
+      ProviderDashboardFeature(
         title: 'Analytics',
         subtitle: canInventory
             ? 'Inventory and sales insights'
@@ -592,7 +505,7 @@ class _ProviderDashboardScreenState
           );
         },
       ),
-      _FeatureCard(
+      ProviderDashboardFeature(
         title: 'Posts',
         subtitle: 'Share blogs and updates',
         icon: Icons.post_add_rounded,
@@ -611,13 +524,12 @@ class _ProviderDashboardScreenState
 
   List<Widget> _buildFeatureWidgets(
     BuildContext context,
-    List<_FeatureCard> features,
+    List<ProviderDashboardFeature> features,
   ) {
     final widgets = <Widget>[];
     for (final feature in features) {
       widgets.add(
-        _buildModernServiceCard(
-          context,
+        ProviderDashboardFeatureCard(
           title: feature.title,
           subtitle: feature.subtitle,
           icon: feature.icon,
@@ -632,239 +544,4 @@ class _ProviderDashboardScreenState
     }
     return widgets;
   }
-
-  Widget _buildNotificationButton(
-    BuildContext context, {
-    required Color accentColor,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: context.textPrimary.withValues(alpha: 0.10),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: IconButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const ProviderNotificationsScreen(),
-            ),
-          );
-        },
-        icon: Icon(Icons.notifications_outlined, color: accentColor),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.14)),
-        boxShadow: [
-          BoxShadow(
-            color: context.textPrimary.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 18),
-              ),
-              const Spacer(),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.55),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: TextStyle(
-                color: context.textPrimary,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                height: 1.0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: context.textSecondary,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernServiceCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: color.withValues(alpha: 0.16)),
-          boxShadow: [
-            BoxShadow(
-              color: context.textPrimary.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: color,
-                  size: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureCard {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _FeatureCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-}
-
-class _DashboardStat {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _DashboardStat({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-}
-
-class _ProviderUiKit {
-  final IconData headerIcon;
-  final Color accentColor;
-  final Color accentSoft;
-  final Color headerGradientStart;
-  final Color headerGradientEnd;
-  final String managementTitle;
-
-  const _ProviderUiKit({
-    required this.headerIcon,
-    required this.accentColor,
-    required this.accentSoft,
-    required this.headerGradientStart,
-    required this.headerGradientEnd,
-    required this.managementTitle,
-  });
 }

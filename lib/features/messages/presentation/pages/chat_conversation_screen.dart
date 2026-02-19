@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petcare/features/messages/presentation/provider/chat_providers.dart';
+import 'package:petcare/features/messages/presentation/view_model/chat_view_model.dart';
+import 'package:petcare/features/messages/presentation/widgets/chat_message_input_bar.dart';
+import 'package:petcare/features/messages/presentation/widgets/chat_message_list.dart';
 
 class ChatConversationScreen extends ConsumerStatefulWidget {
   final String participantId;
@@ -31,7 +33,7 @@ class _ChatConversationScreenState
     super.initState();
     Future.microtask(() async {
       await ref
-          .read(chatNotifierProvider.notifier)
+          .read(chatViewModelProvider.notifier)
           .loadConversationMessages(
             participantId: widget.participantId,
             participantRole: widget.participantRole,
@@ -63,7 +65,7 @@ class _ChatConversationScreenState
     if (text.isEmpty) return;
 
     final sent = await ref
-        .read(chatNotifierProvider.notifier)
+        .read(chatViewModelProvider.notifier)
         .sendMessage(
           participantId: widget.participantId,
           participantRole: widget.participantRole,
@@ -78,11 +80,10 @@ class _ChatConversationScreenState
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(chatNotifierProvider);
-    final notifier = ref.read(chatNotifierProvider.notifier);
+    final state = ref.watch(chatViewModelProvider);
+    final notifier = ref.read(chatViewModelProvider.notifier);
     final currentUserId = notifier.currentUserId;
     final currentUserRole = notifier.currentUserRole;
-    final messages = state.messages;
 
     return Scaffold(
       appBar: AppBar(
@@ -102,119 +103,20 @@ class _ChatConversationScreenState
       body: Column(
         children: [
           Expanded(
-            child: state.isLoadingMessages && messages.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : state.error != null && messages.isEmpty
-                ? Center(child: Text('Error: ${state.error}'))
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      final isMine =
-                          message.senderId == currentUserId &&
-                          message.senderRole == currentUserRole;
-
-                      return Align(
-                        alignment: isMine
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          constraints: const BoxConstraints(maxWidth: 320),
-                          decoration: BoxDecoration(
-                            color: isMine
-                                ? const Color(
-                                    0xFFF59E0B,
-                                  ).withValues(alpha: 0.16)
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isMine
-                                  ? const Color(
-                                      0xFFF59E0B,
-                                    ).withValues(alpha: 0.45)
-                                  : Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message.content,
-                                style: const TextStyle(fontSize: 15),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                _formatTime(message.createdAt),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText: 'Type a message',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _sendMessage(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 48,
-                    width: 48,
-                    child: IconButton(
-                      onPressed: state.isSending ? null : _sendMessage,
-                      icon: state.isSending
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send_rounded),
-                    ),
-                  ),
-                ],
-              ),
+            child: ChatMessageList(
+              state: state,
+              scrollController: _scrollController,
+              currentUserId: currentUserId,
+              currentUserRole: currentUserRole,
             ),
+          ),
+          ChatMessageInputBar(
+            controller: _messageController,
+            isSending: state.isSending,
+            onSend: _sendMessage,
           ),
         ],
       ),
     );
-  }
-
-  String _formatTime(DateTime? dateTime) {
-    if (dateTime == null) return '';
-    final local = dateTime.toLocal();
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final minute = local.minute.toString().padLeft(2, '0');
-    final suffix = local.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $suffix';
   }
 }

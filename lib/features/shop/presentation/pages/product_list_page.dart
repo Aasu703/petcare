@@ -5,6 +5,7 @@ import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
+import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
 import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
@@ -46,6 +47,14 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         actions: [
+          IconButton(
+            tooltip: 'My Orders',
+            icon: const Icon(Icons.receipt_long_rounded),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyOrdersPage()),
+            ),
+          ),
           Stack(
             children: [
               IconButton(

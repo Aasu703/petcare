@@ -27,6 +27,7 @@ class _ChatConversationScreenState
     extends ConsumerState<ChatConversationScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  int _lastMessageCount = 0;
 
   @override
   void initState() {
@@ -84,6 +85,11 @@ class _ChatConversationScreenState
     final notifier = ref.read(chatViewModelProvider.notifier);
     final currentUserId = notifier.currentUserId;
     final currentUserRole = notifier.currentUserRole;
+
+    if (state.messages.length > _lastMessageCount) {
+      _lastMessageCount = state.messages.length;
+      _scrollToBottom();
+    }
 
     return Scaffold(
       appBar: AppBar(

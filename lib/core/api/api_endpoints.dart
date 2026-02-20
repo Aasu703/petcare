@@ -7,7 +7,7 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      true; // Set to true for physical device testing, false for emulator/simulator
+      false; // Set to true for physical device testing, false for emulator/simulator
   static const String _ipAddress = '192.168.1.6';
   static const int _port = 5050;
 
@@ -20,6 +20,7 @@ class ApiEndpoints {
   }
 
   static String get serverUrl => 'http://$_host:$_port/';
+  static String get socketUrl => 'http://$_host:$_port';
   static String get baseUrl => '${serverUrl}api/';
   static String get mediaUrl => '${serverUrl}media/';
 

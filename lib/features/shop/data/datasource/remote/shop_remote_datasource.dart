@@ -252,11 +252,18 @@ class ShopRemoteDataSource implements IShopRemoteDataSource {
     final data = response.data;
     List<dynamic> list = [];
     if (data is Map<String, dynamic>) {
-      list = data['data'] ?? data['orders'] ?? [];
+      final payload = data['data'];
+      if (payload is List) {
+        list = payload;
+      } else if (payload is Map<String, dynamic>) {
+        list = payload['items'] ?? payload['orders'] ?? payload['data'] ?? [];
+      } else {
+        list = data['items'] ?? data['orders'] ?? [];
+      }
     } else if (data is List) {
       list = data;
     }
-    return list.cast<Map<String, dynamic>>();
+    return list.whereType<Map<String, dynamic>>().toList();
   }
 
   @override

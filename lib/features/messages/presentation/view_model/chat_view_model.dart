@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/token_service.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class ChatConversation {
   final String participantId;
@@ -160,6 +162,7 @@ final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>((
   return ChatViewModel(
     apiClient: ref.read(apiClientProvider),
     sessionService: ref.read(userSessionServiceProvider),
+    tokenService: ref.read(tokenServiceProvider),
   );
 });
 
@@ -168,16 +171,80 @@ final chatNotifierProvider = chatViewModelProvider;
 class ChatViewModel extends StateNotifier<ChatState> {
   final ApiClient _apiClient;
   final UserSessionService _sessionService;
+  final TokenService _tokenService;
+  io.Socket? _socket;
+  bool _socketReady = false;
+  Future<void>? _socketConnectFuture;
 
   ChatViewModel({
     required ApiClient apiClient,
     required UserSessionService sessionService,
+    required TokenService tokenService,
   }) : _apiClient = apiClient,
        _sessionService = sessionService,
+       _tokenService = tokenService,
        super(const ChatState());
 
   String get currentUserId => _sessionService.getUserId() ?? '';
   String get currentUserRole => _sessionService.getRole() ?? 'user';
+
+  Future<void> _ensureSocketConnection() async {
+    if (!_sessionService.isLoggedIn()) return;
+    if (_socketReady && _socket?.connected == true) return;
+    if (_socketConnectFuture != null) {
+      await _socketConnectFuture;
+      return;
+    }
+
+    _socketConnectFuture = _connectSocket();
+    try {
+      await _socketConnectFuture;
+    } finally {
+      _socketConnectFuture = null;
+    }
+  }
+
+  Future<void> _connectSocket() async {
+    final token = await _tokenService.getToken();
+    if (token == null || token.isEmpty) return;
+
+    _socket?.dispose();
+    _socketReady = false;
+
+    final socket = io.io(
+      ApiEndpoints.socketUrl,
+      io.OptionBuilder()
+          .setTransports(['websocket'])
+          .disableAutoConnect()
+          .setAuth({'token': token})
+          .setPath('/socket.io')
+          .enableReconnection()
+          .setReconnectionAttempts(30)
+          .setReconnectionDelay(1000)
+          .build(),
+    );
+
+    socket.onConnect((_) {
+      _socketReady = true;
+    });
+
+    socket.onDisconnect((_) {
+      _socketReady = false;
+    });
+
+    socket.on('chat:message', (payload) {
+      if (payload is! Map) return;
+      final mapped = payload.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+      final incoming = ChatMessageItem.fromJson(mapped);
+      if (incoming.id.isEmpty) return;
+      _insertIncomingMessage(incoming);
+    });
+
+    socket.connect();
+    _socket = socket;
+  }
 
   List<dynamic> _extractList(dynamic data, {String? listKey}) {
     if (data is List) return data;
@@ -201,6 +268,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
   Future<void> loadConversations({int page = 1, int limit = 50}) async {
     state = state.copyWith(isLoadingConversations: true, clearError: true);
     try {
+      await _ensureSocketConnection();
       final response = await _apiClient.get(
         ApiEndpoints.chatConversations,
         queryParameters: {'page': page, 'limit': limit},
@@ -231,6 +299,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
   Future<void> loadContacts() async {
     state = state.copyWith(isLoadingContacts: true, clearError: true);
     try {
+      await _ensureSocketConnection();
       final response = await _apiClient.get(ApiEndpoints.chatContacts);
       final list = _extractList(response.data);
       final contacts = list
@@ -253,7 +322,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
     required String participantId,
     required String participantRole,
     int page = 1,
-    int limit = 100,
+    int limit = 50,
   }) async {
     state = state.copyWith(
       isLoadingMessages: true,
@@ -262,6 +331,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
       currentParticipantRole: participantRole,
     );
     try {
+      await _ensureSocketConnection();
       final response = await _apiClient.get(
         '${ApiEndpoints.chatMessages}/$participantId',
         queryParameters: {
@@ -302,6 +372,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
     state = state.copyWith(isSending: true, clearError: true);
     try {
+      await _ensureSocketConnection();
       final response = await _apiClient.post(
         '${ApiEndpoints.chatMessages}/$participantId',
         queryParameters: {'participantRole': participantRole},
@@ -330,45 +401,95 @@ class ChatViewModel extends StateNotifier<ChatState> {
               createdAt: DateTime.now(),
             );
 
-      final updatedMessages = [...state.messages, newMessage];
-      final existingConversationIndex = state.conversations.indexWhere(
-        (item) =>
-            item.participantId == participantId &&
-            item.participantRole == participantRole,
-      );
-
-      final updatedConversations = [...state.conversations];
-      if (existingConversationIndex >= 0) {
-        final existing = updatedConversations.removeAt(
-          existingConversationIndex,
-        );
-        updatedConversations.insert(
-          0,
-          ChatConversation(
-            participantId: existing.participantId,
-            participantRole: existing.participantRole,
-            participantName: existing.participantName,
-            participantImage: existing.participantImage,
-            participantSubtitle: existing.participantSubtitle,
-            lastMessage: newMessage.content,
-            lastMessageAt: newMessage.createdAt ?? DateTime.now(),
-            lastMessageSenderId: newMessage.senderId,
-            lastMessageSenderRole: newMessage.senderRole,
-          ),
-        );
-      }
-
-      state = state.copyWith(
-        isSending: false,
-        messages: updatedMessages,
-        conversations: updatedConversations.isEmpty
-            ? state.conversations
-            : updatedConversations,
-      );
+      _insertIncomingMessage(newMessage);
+      state = state.copyWith(isSending: false);
       return true;
     } catch (e) {
       state = state.copyWith(isSending: false, error: e.toString());
       return false;
     }
+  }
+
+  void _insertIncomingMessage(ChatMessageItem message) {
+    final exists = state.messages.any((item) => item.id == message.id);
+    final inCurrentThread = _belongsToCurrentConversation(message);
+
+    var updatedMessages = state.messages;
+    if (inCurrentThread && !exists) {
+      updatedMessages = [...state.messages, message]
+        ..sort((a, b) {
+          final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
+          final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
+          return aTime.compareTo(bTime);
+        });
+    }
+
+    final participantId = message.senderId == currentUserId
+        ? message.receiverId
+        : message.senderId;
+    final participantRole = message.senderId == currentUserId
+        ? message.receiverRole
+        : message.senderRole;
+
+    final idx = state.conversations.indexWhere(
+      (item) =>
+          item.participantId == participantId &&
+          item.participantRole == participantRole,
+    );
+    var updatedConversations = [...state.conversations];
+
+    if (idx >= 0) {
+      final existing = updatedConversations.removeAt(idx);
+      updatedConversations.insert(
+        0,
+        ChatConversation(
+          participantId: existing.participantId,
+          participantRole: existing.participantRole,
+          participantName: existing.participantName,
+          participantImage: existing.participantImage,
+          participantSubtitle: existing.participantSubtitle,
+          lastMessage: message.content,
+          lastMessageAt: message.createdAt ?? DateTime.now(),
+          lastMessageSenderId: message.senderId,
+          lastMessageSenderRole: message.senderRole,
+        ),
+      );
+    } else if (!state.isLoadingConversations) {
+      loadConversations();
+    }
+
+    state = state.copyWith(
+      messages: updatedMessages,
+      conversations: updatedConversations,
+    );
+  }
+
+  bool _belongsToCurrentConversation(ChatMessageItem message) {
+    final participantId = state.currentParticipantId;
+    final participantRole = state.currentParticipantRole;
+    if (participantId == null || participantRole == null) {
+      return false;
+    }
+
+    final outgoing =
+        message.senderId == currentUserId &&
+        message.senderRole == currentUserRole &&
+        message.receiverId == participantId &&
+        message.receiverRole == participantRole;
+
+    final incoming =
+        message.receiverId == currentUserId &&
+        message.receiverRole == currentUserRole &&
+        message.senderId == participantId &&
+        message.senderRole == participantRole;
+
+    return outgoing || incoming;
+  }
+
+  @override
+  void dispose() {
+    _socket?.dispose();
+    _socket = null;
+    super.dispose();
   }
 }

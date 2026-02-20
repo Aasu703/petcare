@@ -99,6 +99,7 @@ dependencies:
   # Local Notifications
   flutter_local_notifications: ^18.0.1
   timezone: ^0.10.0
+  socket_io_client: ^3.1.4
   
   
 

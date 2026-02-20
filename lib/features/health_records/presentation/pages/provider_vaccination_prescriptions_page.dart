@@ -62,7 +62,20 @@ class _ProviderVaccinationPrescriptionsPageState
       return;
     }
 
-    final petIds = bookings
+    final eligibleBookings = bookings.where((booking) {
+      return booking.status == 'confirmed' || booking.status == 'completed';
+    }).toList();
+
+    if (eligibleBookings.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _items = const [];
+        _error = null;
+      });
+      return;
+    }
+
+    final petIds = eligibleBookings
         .map((booking) => booking.petId)
         .whereType<String>()
         .where((petId) => petId.isNotEmpty)
@@ -86,7 +99,7 @@ class _ProviderVaccinationPrescriptionsPageState
             }
 
             final bookingContext = _findBestBookingForRecord(
-              bookings: bookings,
+              bookings: eligibleBookings,
               record: record,
               providerId: providerId,
             );

@@ -36,6 +36,38 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
   }) : _apiClient = apiClient,
        _sessionService = sessionService;
 
+  List<dynamic> _extractBookingsList(dynamic data) {
+    if (data is List) {
+      return data;
+    }
+
+    if (data is! Map<String, dynamic>) {
+      return const [];
+    }
+
+    final directBookings = data['bookings'];
+    if (directBookings is List) {
+      return directBookings;
+    }
+
+    final inner = data['data'];
+    if (inner is List) {
+      return inner;
+    }
+    if (inner is Map<String, dynamic>) {
+      final innerBookings = inner['bookings'];
+      if (innerBookings is List) {
+        return innerBookings;
+      }
+      final nestedData = inner['data'];
+      if (nestedData is List) {
+        return nestedData;
+      }
+    }
+
+    return const [];
+  }
+
   @override
   Future<BookingModel> createBooking(BookingModel booking) async {
     final response = await _apiClient.post(
@@ -66,15 +98,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
       '${ApiEndpoints.bookingByUser}/$userId',
       queryParameters: {'page': page, 'limit': limit},
     );
-    final data = response.data;
-    List<dynamic> bookingsList = [];
-    if (data is Map<String, dynamic>) {
-      bookingsList = data['bookings'] ?? data['data'] ?? [];
-    } else if (data is List) {
-      bookingsList = data;
-    }
+    final bookingsList = _extractBookingsList(response.data);
     return bookingsList
-        .map((item) => BookingModel.fromJson(item as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map((item) => BookingModel.fromJson(item))
         .toList();
   }
 
@@ -87,22 +114,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
       ApiEndpoints.providerBookings,
       queryParameters: {'page': page, 'limit': limit},
     );
-    final data = response.data;
-    List<dynamic> bookingsList = [];
-    if (data is Map<String, dynamic>) {
-      final inner = data['data'];
-      if (inner is Map<String, dynamic>) {
-        bookingsList = inner['bookings'] ?? inner['data'] ?? [];
-      } else if (inner is List) {
-        bookingsList = inner;
-      } else {
-        bookingsList = data['bookings'] ?? [];
-      }
-    } else if (data is List) {
-      bookingsList = data;
-    }
+    final bookingsList = _extractBookingsList(response.data);
     return bookingsList
-        .map((item) => BookingModel.fromJson(item as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map((item) => BookingModel.fromJson(item))
         .toList();
   }
 

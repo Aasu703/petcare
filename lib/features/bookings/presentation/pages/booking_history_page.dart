@@ -26,107 +26,145 @@ class _BookingHistoryPageState extends ConsumerState<BookingHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userBookingProvider);
-    final filters = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
+    final upcomingBookings = _sortBookings(
+      state.bookings.where(_isUpcomingBooking).toList(),
+    );
+    final historyBookings = _sortBookings(
+      state.bookings.where((booking) => !_isUpcomingBooking(booking)).toList(),
+    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Bookings'),
-        backgroundColor: AppColors.iconPrimaryColor,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // Filter chips
-          SizedBox(
-            height: 56,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: filters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final filter = filters[index];
-                final isSelected = state.selectedFilter == filter;
-                return ChoiceChip(
-                  label: Text(filter[0].toUpperCase() + filter.substring(1)),
-                  selected: isSelected,
-                  selectedColor: AppColors.iconPrimaryColor.withOpacity(0.2),
-                  onSelected: (_) {
-                    ref.read(userBookingProvider.notifier).setFilter(filter);
-                  },
-                );
-              },
-            ),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Appointments'),
+          backgroundColor: AppColors.iconPrimaryColor,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Upcoming'),
+              Tab(text: 'History'),
+            ],
           ),
-          // Content
-          Expanded(
-            child: state.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : state.error != null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 48,
-                          color: Colors.red.shade300,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(state.error!, textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            final userId =
-                                ref
-                                    .read(userSessionServiceProvider)
-                                    .getUserId() ??
-                                '';
-                            ref
-                                .read(userBookingProvider.notifier)
-                                .loadBookings(userId);
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
+        ),
+        body: state.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : state.error != null
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red.shade300,
                     ),
-                  )
-                : state.filteredBookings.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.event_busy, size: 64, color: Colors.grey),
-                        SizedBox(height: 12),
-                        Text(
-                          'No bookings found',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+                    Text(state.error!, textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _reloadBookings,
+                      child: const Text('Retry'),
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      final userId =
-                          ref.read(userSessionServiceProvider).getUserId() ??
-                          '';
-                      await ref
-                          .read(userBookingProvider.notifier)
-                          .loadBookings(userId);
-                    },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: state.filteredBookings.length,
-                      itemBuilder: (context, index) {
-                        return _BookingCard(
-                          booking: state.filteredBookings[index],
-                        );
-                      },
-                    ),
+                  ],
+                ),
+              )
+            : TabBarView(
+                children: [
+                  _BookingList(
+                    bookings: upcomingBookings,
+                    emptyMessage: 'No upcoming appointments',
+                    onRefresh: _reloadBookings,
                   ),
-          ),
-        ],
+                  _BookingList(
+                    bookings: historyBookings,
+                    emptyMessage: 'No booking history yet',
+                    onRefresh: _reloadBookings,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Future<void> _reloadBookings() async {
+    final userId = ref.read(userSessionServiceProvider).getUserId() ?? '';
+    await ref.read(userBookingProvider.notifier).loadBookings(userId);
+  }
+
+  List<BookingEntity> _sortBookings(List<BookingEntity> bookings) {
+    final sorted = [...bookings];
+    sorted.sort((a, b) {
+      final aDate = DateTime.tryParse(a.startTime);
+      final bDate = DateTime.tryParse(b.startTime);
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return bDate.compareTo(aDate);
+    });
+    return sorted;
+  }
+
+  bool _isUpcomingBooking(BookingEntity booking) {
+    final status = booking.status.toLowerCase();
+    if (status == 'completed' ||
+        status == 'cancelled' ||
+        status == 'rejected') {
+      return false;
+    }
+
+    if (status != 'pending' && status != 'confirmed') {
+      return false;
+    }
+
+    final startDate = DateTime.tryParse(booking.startTime);
+    if (startDate == null) {
+      return true;
+    }
+
+    final now = DateTime.now();
+    return startDate.isAfter(now);
+  }
+}
+
+class _BookingList extends StatelessWidget {
+  final List<BookingEntity> bookings;
+  final String emptyMessage;
+  final Future<void> Function() onRefresh;
+
+  const _BookingList({
+    required this.bookings,
+    required this.emptyMessage,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (bookings.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.event_busy, size: 64, color: Colors.grey),
+            const SizedBox(height: 12),
+            Text(
+              emptyMessage,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: bookings.length,
+        itemBuilder: (context, index) {
+          return _BookingCard(booking: bookings[index]);
+        },
       ),
     );
   }

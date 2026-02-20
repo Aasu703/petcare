@@ -12,6 +12,7 @@ import 'package:petcare/features/health_records/presentation/view_model/vaccinat
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
+import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
 import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
@@ -630,6 +631,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       label: 'Appointments',
                       color: _kPetShopColor,
                       delay: 100,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const BookingHistoryPage(),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 12),
                     _buildStatCard(
@@ -1334,6 +1343,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required String label,
     required Color color,
     required int delay,
+    VoidCallback? onTap,
   }) {
     return Expanded(
       child: TweenAnimationBuilder<double>(
@@ -1347,58 +1357,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             scale: animationValue,
             child: Opacity(
               opacity: animationValue,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onTap,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade100, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            color.withOpacity(0.2),
-                            color.withOpacity(0.1),
-                          ],
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.grey.shade100,
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 15,
+                          offset: const Offset(0, 6),
                         ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(icon, color: color, size: 22),
+                      ],
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      value,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                color.withOpacity(0.2),
+                                color.withOpacity(0.1),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(icon, color: color, size: 22),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          value,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          label,
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

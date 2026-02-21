@@ -13,6 +13,9 @@ class ProviderRegisterUsecaseParams extends Equatable {
   final String address;
   final String phone;
   final String providerType;
+  final double? locationLatitude;
+  final double? locationLongitude;
+  final String? locationAddress;
 
   const ProviderRegisterUsecaseParams({
     required this.email,
@@ -22,6 +25,9 @@ class ProviderRegisterUsecaseParams extends Equatable {
     required this.address,
     required this.phone,
     required this.providerType,
+    this.locationLatitude,
+    this.locationLongitude,
+    this.locationAddress,
   });
 
   @override
@@ -33,6 +39,9 @@ class ProviderRegisterUsecaseParams extends Equatable {
     address,
     phone,
     providerType,
+    locationLatitude,
+    locationLongitude,
+    locationAddress,
   ];
 }
 
@@ -55,6 +64,9 @@ class ProviderRegisterUsecase
       providerType: params.providerType,
       email: params.email,
       password: params.password,
+      locationLatitude: params.locationLatitude,
+      locationLongitude: params.locationLongitude,
+      locationAddress: params.locationAddress,
     );
 
     return _repository.register(entity, params.confirmPassword);

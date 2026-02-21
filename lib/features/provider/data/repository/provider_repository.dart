@@ -179,6 +179,12 @@ class ProviderRepositoryImpl implements IProviderRepository {
           email: apiModel.email ?? '',
           password: apiModel.password ?? '',
           confirmPassword: confirmPassword,
+          locationLatitude: apiModel.locationLatitude,
+          locationLongitude: apiModel.locationLongitude,
+          locationAddress: apiModel.locationAddress,
+          locationVerified: apiModel.locationVerified,
+          pawcareVerified: apiModel.pawcareVerified,
+          status: apiModel.status,
         );
         await _remoteDataSource.register(apiModelWithConfirm);
         return const Right(true);

@@ -7,6 +7,7 @@ import 'package:petcare/features/provider/di/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
 import 'package:petcare/core/widget/mytextformfield.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/provider/presentation/screens/provider_location_picker_screen.dart';
 
 class ProviderSetupScreen extends ConsumerStatefulWidget {
   final String email;
@@ -31,6 +32,9 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   String? _selectedProviderType;
+  double? _locationLatitude;
+  double? _locationLongitude;
+  String _locationNote = '';
 
   final FocusNode _businessNameFocusNode = FocusNode();
   final FocusNode _addressFocusNode = FocusNode();
@@ -68,6 +72,25 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
       return;
     }
 
+    final requiresPinnedLocation =
+        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
+    if (requiresPinnedLocation &&
+        (_locationLatitude == null || _locationLongitude == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please pin your clinic/shop location on map to continue',
+          ),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
     final usecase = ref.read(providerRegisterUsecaseProvider);
     final result = await usecase(
       ProviderRegisterUsecaseParams(
@@ -78,6 +101,11 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
         providerType: _selectedProviderType!,
+        locationLatitude: _locationLatitude,
+        locationLongitude: _locationLongitude,
+        locationAddress: _locationNote.trim().isEmpty
+            ? null
+            : _locationNote.trim(),
       ),
     );
 
@@ -102,8 +130,35 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
     );
   }
 
+  Future<void> _pickLocationOnMap() async {
+    final result = await Navigator.of(context).push<ProviderLocationPickResult>(
+      MaterialPageRoute(
+        builder: (_) => ProviderLocationPickerScreen(
+          title: _selectedProviderType == 'vet'
+              ? 'Pin Clinic Location'
+              : 'Pin Shop Location',
+          initialLatitude: _locationLatitude,
+          initialLongitude: _locationLongitude,
+          initialNote: _locationNote,
+        ),
+      ),
+    );
+
+    if (!mounted || result == null) return;
+    setState(() {
+      _locationLatitude = result.latitude;
+      _locationLongitude = result.longitude;
+      _locationNote = result.locationNote;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final requiresPinnedLocation =
+        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
+    final hasPinnedLocation =
+        _locationLatitude != null && _locationLongitude != null;
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -193,6 +248,77 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                                 ? 'Select provider type'
                                 : null,
                           ),
+                          if (requiresPinnedLocation) ...[
+                            SizedBox(height: 14),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceColor,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: hasPinnedLocation
+                                      ? const Color(0xFFB7E4C7)
+                                      : const Color(0xFFFFE0B2),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedProviderType == 'vet'
+                                        ? 'Clinic map location'
+                                        : 'Shop map location',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    hasPinnedLocation
+                                        ? '${_locationLatitude!.toStringAsFixed(6)}, ${_locationLongitude!.toStringAsFixed(6)}'
+                                        : 'No map pin selected yet.',
+                                    style: TextStyle(
+                                      color: hasPinnedLocation
+                                          ? const Color(0xFF2E7D32)
+                                          : const Color(0xFF7A4E00),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (_locationNote.trim().isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Text(
+                                        _locationNote.trim(),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF6B7280),
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _pickLocationOnMap,
+                                      icon: Icon(
+                                        hasPinnedLocation
+                                            ? Icons.edit_location_alt_rounded
+                                            : Icons.map_outlined,
+                                      ),
+                                      label: Text(
+                                        hasPinnedLocation
+                                            ? 'Update Pin on Map'
+                                            : 'Pin on Map',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           SizedBox(height: 18),
                           _field(
                             controller: _businessNameController,

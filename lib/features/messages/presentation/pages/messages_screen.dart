@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/core/services/storage/recent_activity_service.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/messages/presentation/pages/chat_conversation_screen.dart';
 import 'package:petcare/features/messages/presentation/view_model/chat_view_model.dart';
@@ -21,6 +22,19 @@ class MessagesScreen extends ConsumerStatefulWidget {
 }
 
 class _MessagesScreenState extends ConsumerState<MessagesScreen> {
+  Future<void> _trackChatOpen(String participantName) async {
+    final userId = ref.read(userSessionServiceProvider).getUserId();
+    if (userId == null || userId.isEmpty) return;
+    await ref
+        .read(recentActivityServiceProvider)
+        .pushActivity(
+          userId: userId,
+          title: 'Chat',
+          subtitle: 'Opened chat with $participantName',
+          kind: 'chat',
+        );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +52,8 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
     required String participantName,
     String? participantSubtitle,
   }) async {
+    await _trackChatOpen(participantName);
+    if (!mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute(

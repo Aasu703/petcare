@@ -5,6 +5,7 @@ import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/pet/data/datasource/pet_datasource.dart';
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
+import 'package:petcare/features/pet/data/models/pet_care_api_model.dart';
 
 final petRemoteDatasourceProvider = Provider<IPetRemoteDataSource>((ref) {
   return PetRemoteDatabase(
@@ -133,6 +134,42 @@ class PetRemoteDatabase implements IPetRemoteDataSource {
       return PetApiModel.fromJson(data);
     } else {
       throw Exception(response.data['message'] ?? 'Failed to update pet');
+    }
+  }
+
+  @override
+  Future<PetCareApiModel> getPetCare(String petId) async {
+    final response = await _apiClient.get(ApiEndpoints.petCareById(petId));
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'];
+      if (data is! Map<String, dynamic>) {
+        return const PetCareApiModel();
+      }
+      return PetCareApiModel.fromJson(data);
+    } else {
+      throw Exception(response.data['message'] ?? 'Failed to fetch pet care');
+    }
+  }
+
+  @override
+  Future<PetCareApiModel> updatePetCare(
+    String petId,
+    PetCareApiModel care,
+  ) async {
+    final response = await _apiClient.put(
+      ApiEndpoints.petCareById(petId),
+      data: care.toJson(),
+    );
+
+    if (response.data['success'] == true) {
+      final data = response.data['data'];
+      if (data is! Map<String, dynamic>) {
+        throw Exception('Invalid care data format');
+      }
+      return PetCareApiModel.fromJson(data);
+    } else {
+      throw Exception(response.data['message'] ?? 'Failed to update pet care');
     }
   }
 

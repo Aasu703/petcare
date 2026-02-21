@@ -1,6 +1,8 @@
 import 'package:petcare/core/services/connectivity/network_info.dart';
 import 'package:petcare/features/pet/data/datasource/pet_datasource.dart';
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
+import 'package:petcare/features/pet/data/models/pet_care_api_model.dart';
+import 'package:petcare/features/pet/domain/entities/pet_care_entity.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
 
@@ -79,6 +81,27 @@ class PetRepositoryImpl implements IPetRepository {
       );
 
       return updatedPet.toEntity();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<PetCareEntity> getPetCare(String petId) async {
+    if (await _networkInfo.isConnected) {
+      final careModel = await _remoteDataSource.getPetCare(petId);
+      return careModel.toEntity();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<PetCareEntity> updatePetCare(String petId, PetCareEntity care) async {
+    if (await _networkInfo.isConnected) {
+      final careModel = PetCareApiModel.fromEntity(care);
+      final updated = await _remoteDataSource.updatePetCare(petId, careModel);
+      return updated.toEntity();
     } else {
       throw Exception('No internet connection');
     }

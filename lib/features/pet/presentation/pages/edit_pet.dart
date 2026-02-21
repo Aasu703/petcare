@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -154,6 +153,10 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
     final imageUrl = widget.pet.imageUrl;
+    final resolvedImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(imageUrl)
+        : null;
+    final hasNetworkImage = _imageFile == null && resolvedImageUrl != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -204,22 +207,55 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
                               radius: 58,
                               backgroundColor: AppColors.primaryColor
                                   .withOpacity(0.1),
-                              backgroundImage: _imageFile != null
-                                  ? FileImage(_imageFile!)
-                                  : (imageUrl != null && imageUrl.isNotEmpty)
-                                  ? CachedNetworkImageProvider(
-                                      ApiEndpoints.resolveMediaUrl(imageUrl),
+                              child: _imageFile != null
+                                  ? ClipOval(
+                                      child: Image.file(
+                                        _imageFile!,
+                                        width: 116,
+                                        height: 116,
+                                        fit: BoxFit.cover,
+                                      ),
                                     )
-                                  : null,
-                              child:
-                                  (_imageFile == null &&
-                                      (imageUrl == null || imageUrl.isEmpty))
-                                  ? const Icon(
+                                  : hasNetworkImage
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        resolvedImageUrl,
+                                        width: 116,
+                                        height: 116,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (
+                                              context,
+                                              child,
+                                              loadingProgress,
+                                            ) => loadingProgress == null
+                                            ? child
+                                            : Center(
+                                                child: SizedBox(
+                                                  width: 22,
+                                                  height: 22,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: AppColors
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(
+                                                  Icons.pets,
+                                                  size: 48,
+                                                  color: AppColors.primaryColor,
+                                                ),
+                                      ),
+                                    )
+                                  : const Icon(
                                       Icons.pets,
                                       size: 48,
                                       color: AppColors.primaryColor,
-                                    )
-                                  : null,
+                                    ),
                             ),
                           ),
                           Positioned(

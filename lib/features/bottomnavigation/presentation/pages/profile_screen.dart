@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -145,6 +144,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final themeMode = ref.watch(themeModeProvider);
 
     final avatar = profileState.user?.avatar;
+    final resolvedAvatarUrl = (avatar != null && avatar.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(avatar)
+        : null;
+    final hasAvatarImage = resolvedAvatarUrl != null;
     final displayName = session.getFirstName() ?? 'User';
     final displayEmail = session.getEmail() ?? '';
 
@@ -239,21 +242,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     backgroundColor: Colors.white.withOpacity(
                                       0.2,
                                     ),
-                                    backgroundImage:
-                                        avatar != null && avatar.isNotEmpty
-                                        ? CachedNetworkImageProvider(
-                                            ApiEndpoints.resolveMediaUrl(
-                                              avatar,
+                                    child: hasAvatarImage
+                                        ? ClipOval(
+                                            child: Image.network(
+                                              resolvedAvatarUrl,
+                                              width: 110,
+                                              height: 110,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder:
+                                                  (
+                                                    context,
+                                                    child,
+                                                    loadingProgress,
+                                                  ) => loadingProgress == null
+                                                  ? child
+                                                  : Center(
+                                                      child: SizedBox(
+                                                        width: 22,
+                                                        height: 22,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                      ),
+                                                    ),
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
+                                                    Icons.person_rounded,
+                                                    size: 55,
+                                                    color: Colors.white,
+                                                  ),
                                             ),
                                           )
-                                        : null,
-                                    child: avatar == null || avatar.isEmpty
-                                        ? const Icon(
+                                        : const Icon(
                                             Icons.person_rounded,
                                             size: 55,
                                             color: Colors.white,
-                                          )
-                                        : null,
+                                          ),
                                   ),
                                 ),
                               ),

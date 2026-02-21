@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -133,6 +132,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _existingImageUrl = user.avatar;
       _didPrefill = true;
     }
+    final resolvedExistingImageUrl =
+        (_existingImageUrl != null && _existingImageUrl!.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(_existingImageUrl!)
+        : null;
+    final hasNetworkImage =
+        _localImage == null && resolvedExistingImageUrl != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -176,26 +181,55 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             child: CircleAvatar(
                               radius: 48,
                               backgroundColor: context.surfaceColor,
-                              backgroundImage: _localImage != null
-                                  ? FileImage(_localImage!)
-                                  : (_existingImageUrl != null &&
-                                        _existingImageUrl!.isNotEmpty)
-                                  ? CachedNetworkImageProvider(
-                                      ApiEndpoints.resolveMediaUrl(
-                                        _existingImageUrl!,
+                              child: _localImage != null
+                                  ? ClipOval(
+                                      child: Image.file(
+                                        _localImage!,
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
                                       ),
                                     )
-                                  : null,
-                              child:
-                                  (_localImage == null &&
-                                      (_existingImageUrl == null ||
-                                          _existingImageUrl!.isEmpty))
-                                  ? Icon(
+                                  : hasNetworkImage
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        resolvedExistingImageUrl,
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (
+                                              context,
+                                              child,
+                                              loadingProgress,
+                                            ) => loadingProgress == null
+                                            ? child
+                                            : Center(
+                                                child: SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: AppColors
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                                  Icons.person,
+                                                  size: 40,
+                                                  color: context.textSecondary,
+                                                ),
+                                      ),
+                                    )
+                                  : Icon(
                                       Icons.person,
                                       size: 40,
                                       color: context.textSecondary,
-                                    )
-                                  : null,
+                                    ),
                             ),
                           ),
                           Positioned(

@@ -5,6 +5,7 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/edit_pet.dart';
+import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/pet/presentation/widgets/my_pet_card.dart';
 import 'package:petcare/features/pet/presentation/widgets/my_pet_empty_state.dart';
@@ -102,6 +103,16 @@ class _MyPetState extends ConsumerState<MyPet> {
     }
   }
 
+  Future<void> _onCareTap(PetEntity pet) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PetCareScreen(pet: pet)),
+    );
+    if (updated == true) {
+      await _refresh();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
@@ -132,6 +143,7 @@ class _MyPetState extends ConsumerState<MyPet> {
                   return MyPetCard(
                     pet: pet,
                     onTap: () => _onPetTap(pet),
+                    onCare: () => _onCareTap(pet),
                     onDelete: () => _deletePet(pet.petId ?? ''),
                   );
                 },

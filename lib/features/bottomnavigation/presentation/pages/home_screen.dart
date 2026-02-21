@@ -10,6 +10,7 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/health_records/presentation/view_model/vaccination_reminder_view_model.dart';
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
+import 'package:petcare/core/services/storage/recent_activity_service.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
@@ -48,6 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   bool isInTest = false;
   bool _isRequestingLocation = false;
   LatLng? _mapPreviewCenter;
+  List<UserRecentActivity> _recentActivities = const [];
+  bool _isLoadingRecentActivity = true;
 
   @override
   void initState() {
@@ -111,6 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ref.read(userBookingProvider.notifier).loadBookings(userId);
       }
       ref.read(petNotifierProvider.notifier).getAllPets();
+      _loadRecentActivities();
     });
   }
 
@@ -120,6 +124,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _cardController.dispose();
     _servicesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadRecentActivities() async {
+    final userId = ref.read(userSessionServiceProvider).getUserId();
+    if (userId == null || userId.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _recentActivities = const [];
+        _isLoadingRecentActivity = false;
+      });
+      return;
+    }
+
+    final items = ref
+        .read(recentActivityServiceProvider)
+        .getActivities(userId, limit: 4);
+    if (!mounted) return;
+    setState(() {
+      _recentActivities = items;
+      _isLoadingRecentActivity = false;
+    });
+  }
+
+  Future<void> _trackRecentActivity({
+    required String title,
+    required String subtitle,
+    String kind = 'page',
+  }) async {
+    final userId = ref.read(userSessionServiceProvider).getUserId();
+    if (userId == null || userId.isEmpty) return;
+
+    await ref
+        .read(recentActivityServiceProvider)
+        .pushActivity(
+          userId: userId,
+          title: title,
+          subtitle: subtitle,
+          kind: kind,
+        );
+    await _loadRecentActivities();
+  }
+
+  IconData _recentIconForKind(String kind) {
+    switch (kind) {
+      case 'chat':
+        return Icons.chat_bubble_rounded;
+      default:
+        return Icons.open_in_new_rounded;
+    }
   }
 
   @override
@@ -631,7 +684,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       label: 'Appointments',
                       color: _kPetShopColor,
                       delay: 100,
-                      onTap: () {
+                      onTap: () async {
+                        await _trackRecentActivity(
+                          title: 'Appointments',
+                          subtitle: 'Opened booking history',
+                        );
+                        if (!context.mounted) return;
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -763,7 +821,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () {
+                        onTap: () async {
+                          await _trackRecentActivity(
+                            title: 'Services',
+                            subtitle: 'Viewed all services',
+                          );
+                          if (!context.mounted) return;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -839,7 +902,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               const Color(0xFFFF8E8E),
                             ],
                             delay: 0,
-                            onTap: () {
+                            onTap: () async {
+                              await _trackRecentActivity(
+                                title: 'Veterinary',
+                                subtitle: 'Opened health care services',
+                              );
+                              if (!context.mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -861,7 +929,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               const Color(0xFFFFC078),
                             ],
                             delay: 100,
-                            onTap: () {
+                            onTap: () async {
+                              await _trackRecentActivity(
+                                title: 'Grooming',
+                                subtitle: 'Opened beauty care services',
+                              );
+                              if (!context.mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -887,7 +960,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               const Color(0xFF74C0FC),
                             ],
                             delay: 200,
-                            onTap: () {
+                            onTap: () async {
+                              await _trackRecentActivity(
+                                title: 'Pet Shop',
+                                subtitle: 'Opened food & toy services',
+                              );
+                              if (!context.mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -909,7 +987,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               const Color(0xFF69DB7C),
                             ],
                             delay: 300,
-                            onTap: () {
+                            onTap: () async {
+                              await _trackRecentActivity(
+                                title: 'Boarding',
+                                subtitle: 'Opened day care services',
+                              );
+                              if (!context.mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -965,69 +1048,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-            // Empty State with Illustration
+            // Recent Activity Content
             SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: context.borderColor, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppColors.primaryColor.withOpacity(0.15),
-                            AppColors.primaryColor.withOpacity(0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      child: Icon(
-                        Icons.pets_rounded,
-                        size: 48,
-                        color: AppColors.primaryColor.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'No pets added yet',
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add your first pet to start tracking\ntheir health and activities.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: 14,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSecondaryButton(),
-                  ],
-                ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _buildRecentActivityContent(),
               ),
             ),
 
@@ -1040,6 +1065,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _openMessages() async {
     HapticFeedback.lightImpact();
+    await _trackRecentActivity(
+      title: 'Messages',
+      subtitle: 'Opened chats',
+      kind: 'chat',
+    );
+    if (!mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const MessagesScreen()),
@@ -1086,6 +1117,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       setState(() {
         _mapPreviewCenter = LatLng(position.latitude, position.longitude);
       });
+      await _trackRecentActivity(
+        title: 'Nearby Map',
+        subtitle: 'Enabled location preview',
+        kind: 'page',
+      );
+      if (!mounted) return;
       _showHomeSnack(
         'Nearby map enabled on home. Tap Open Full Map for details.',
       );
@@ -1106,6 +1143,149 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Widget _buildRecentActivityContent() {
+    if (_isLoadingRecentActivity) {
+      return Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: context.borderColor, width: 1.5),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.4),
+          ),
+        ),
+      );
+    }
+
+    if (_recentActivities.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: context.borderColor, width: 1.5),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Icon(
+                Icons.history_rounded,
+                size: 42,
+                color: AppColors.primaryColor.withOpacity(0.75),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No recent activity',
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Open a page or chat to see it here.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.borderColor, width: 1.5),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < _recentActivities.length; i++) ...[
+            _buildRecentActivityTile(_recentActivities[i]),
+            if (i < _recentActivities.length - 1)
+              Divider(height: 16, color: context.borderColor),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityTile(UserRecentActivity activity) {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            _recentIconForKind(activity.kind),
+            color: AppColors.primaryColor,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                activity.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                activity.subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          DateFormat('MMM d, h:mm a').format(activity.openedAt),
+          style: TextStyle(
+            color: context.textSecondary,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _openFullNearbyMap() async {
     final center = _mapPreviewCenter;
     if (center == null) {
@@ -1113,6 +1293,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return;
     }
 
+    await _trackRecentActivity(
+      title: 'Nearby Map',
+      subtitle: 'Opened map view',
+      kind: 'page',
+    );
+    if (!mounted) return;
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1190,8 +1376,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             HapticFeedback.lightImpact();
+            await _trackRecentActivity(
+              title: 'Add Pet',
+              subtitle: 'Opened add pet page',
+            );
+            if (!mounted) return;
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddPet()),
@@ -1250,8 +1441,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             HapticFeedback.lightImpact();
+            await _trackRecentActivity(
+              title: 'My Pets',
+              subtitle: 'Opened pet list',
+            );
+            if (!mounted) return;
             Navigator.push(context, MaterialPageRoute(builder: (_) => MyPet()));
           },
           borderRadius: BorderRadius.circular(16),
@@ -1272,61 +1468,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     color: AppColors.primaryColor,
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryButton() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primaryColor.withOpacity(0.1),
-            AppColors.primaryColor.withOpacity(0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryColor.withOpacity(0.2),
-          width: 1.5,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddPet()),
-            );
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.add_rounded,
-                  color: AppColors.primaryColor,
-                  size: 20,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Add Your First Pet',
-                  style: TextStyle(
-                    color: AppColors.primaryColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
                   ),
                 ),
               ],

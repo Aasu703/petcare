@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
@@ -8,12 +7,14 @@ import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 class MyPetCard extends StatelessWidget {
   final PetEntity pet;
   final VoidCallback onTap;
+  final VoidCallback onCare;
   final VoidCallback onDelete;
 
   const MyPetCard({
     super.key,
     required this.pet,
     required this.onTap,
+    required this.onCare,
     required this.onDelete,
   });
 
@@ -70,16 +71,19 @@ class MyPetCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: (imageUrl != null && imageUrl.isNotEmpty)
-                    ? CachedNetworkImage(
-                        imageUrl: ApiEndpoints.resolveMediaUrl(imageUrl),
+                    ? Image.network(
+                        ApiEndpoints.resolveMediaUrl(imageUrl),
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Center(
+                        loadingBuilder: (context, child, loadingProgress) =>
+                            loadingProgress == null
+                            ? child
+                            : Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.primaryColor,
+                                ),
+                              ),
+                        errorBuilder: (context, error, stackTrace) => Center(
                           child: Text(
                             _getSpeciesEmoji(pet.species),
                             style: const TextStyle(fontSize: 26),
@@ -194,14 +198,28 @@ class MyPetCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: AppColors.errorColor,
-                size: 22,
-              ),
-              onPressed: onDelete,
-              tooltip: 'Delete pet',
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.favorite_outline,
+                    color: AppColors.primaryColor,
+                    size: 22,
+                  ),
+                  onPressed: onCare,
+                  tooltip: 'Pet care plan',
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.errorColor,
+                    size: 22,
+                  ),
+                  onPressed: onDelete,
+                  tooltip: 'Delete pet',
+                ),
+              ],
             ),
           ],
         ),

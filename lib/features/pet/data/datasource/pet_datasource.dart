@@ -1,4 +1,5 @@
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
+import 'package:petcare/features/pet/data/models/pet_care_api_model.dart';
 
 abstract interface class IPetRemoteDataSource {
   Future<PetApiModel> addPet(PetApiModel pet, {String? imagePath});
@@ -9,5 +10,7 @@ abstract interface class IPetRemoteDataSource {
     PetApiModel pet, {
     String? imagePath,
   });
+  Future<PetCareApiModel> getPetCare(String petId);
+  Future<PetCareApiModel> updatePetCare(String petId, PetCareApiModel care);
   Future<bool> deletePet(String petId);
 }

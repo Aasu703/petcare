@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:petcare/features/pet/domain/entities/pet_care_entity.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/delete_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_all_pets_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_pet_care_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/update_pet_care_usecase.dart';
 
 // Pet State
 class PetState {
@@ -11,12 +14,14 @@ class PetState {
   final List<PetEntity> pets;
   final String? error;
   final PetEntity? recentlyAddedPet; // For showing success message
+  final PetCareEntity? activeCare;
 
   const PetState({
     this.isLoading = false,
     this.pets = const [],
     this.error,
     this.recentlyAddedPet,
+    this.activeCare,
   });
 
   PetState copyWith({
@@ -24,8 +29,10 @@ class PetState {
     List<PetEntity>? pets,
     String? error,
     PetEntity? recentlyAddedPet,
+    PetCareEntity? activeCare,
     bool clearError = false,
     bool clearRecentPet = false,
+    bool clearActiveCare = false,
   }) {
     return PetState(
       isLoading: isLoading ?? this.isLoading,
@@ -34,6 +41,7 @@ class PetState {
       recentlyAddedPet: clearRecentPet
           ? null
           : (recentlyAddedPet ?? this.recentlyAddedPet),
+      activeCare: clearActiveCare ? null : (activeCare ?? this.activeCare),
     );
   }
 }
@@ -44,16 +52,22 @@ class PetNotifier extends StateNotifier<PetState> {
   final GetAllUserPetsUsecase _getAllPetsUsecase;
   final UpdatePetUsecase _updatePetUsecase;
   final DeletePetUsecase _deletePetUsecase;
+  final GetPetCareUsecase _getPetCareUsecase;
+  final UpdatePetCareUsecase _updatePetCareUsecase;
 
   PetNotifier({
     required AddPetUsecase addPetUsecase,
     required GetAllUserPetsUsecase getAllPetsUsecase,
     required UpdatePetUsecase updatePetUsecase,
     required DeletePetUsecase deletePetUsecase,
+    required GetPetCareUsecase getPetCareUsecase,
+    required UpdatePetCareUsecase updatePetCareUsecase,
   }) : _addPetUsecase = addPetUsecase,
        _getAllPetsUsecase = getAllPetsUsecase,
        _updatePetUsecase = updatePetUsecase,
        _deletePetUsecase = deletePetUsecase,
+       _getPetCareUsecase = getPetCareUsecase,
+       _updatePetCareUsecase = updatePetCareUsecase,
        super(const PetState());
 
   // Add a new pet
@@ -140,6 +154,44 @@ class PetNotifier extends StateNotifier<PetState> {
     );
   }
 
+  Future<PetCareEntity?> getPetCare(String petId) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    final result = await _getPetCareUsecase.call(
+      GetPetCareParams(petId: petId),
+    );
+
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return null;
+      },
+      (care) {
+        state = state.copyWith(isLoading: false, activeCare: care);
+        return care;
+      },
+    );
+  }
+
+  Future<bool> updatePetCare(String petId, PetCareEntity care) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    final result = await _updatePetCareUsecase.call(
+      UpdatePetCareParams(petId: petId, care: care),
+    );
+
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return false;
+      },
+      (updated) {
+        state = state.copyWith(isLoading: false, activeCare: updated);
+        return true;
+      },
+    );
+  }
+
   // Clear recent pet (after showing success message)
   void clearRecentPet() {
     state = state.copyWith(clearRecentPet: true);
@@ -148,5 +200,9 @@ class PetNotifier extends StateNotifier<PetState> {
   // Clear error message
   void clearError() {
     state = state.copyWith(clearError: true);
+  }
+
+  void clearActiveCare() {
+    state = state.copyWith(clearActiveCare: true);
   }
 }

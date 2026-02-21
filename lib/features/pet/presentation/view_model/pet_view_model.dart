@@ -8,7 +8,9 @@ import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/delete_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_all_pets_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_pet_care_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/update_pet_care_usecase.dart';
 
 final petRepositoryProvider = Provider<IPetRepository>((ref) {
   return PetRepositoryImpl(
@@ -33,6 +35,14 @@ final deletePetUsecaseProvider = Provider<DeletePetUsecase>((ref) {
   return DeletePetUsecase(repository: ref.read(petRepositoryProvider));
 });
 
+final getPetCareUsecaseProvider = Provider<GetPetCareUsecase>((ref) {
+  return GetPetCareUsecase(repository: ref.read(petRepositoryProvider));
+});
+
+final updatePetCareUsecaseProvider = Provider<UpdatePetCareUsecase>((ref) {
+  return UpdatePetCareUsecase(repository: ref.read(petRepositoryProvider));
+});
+
 final petViewModelProvider = StateNotifierProvider<PetNotifier, PetState>((
   ref,
 ) {
@@ -41,6 +51,8 @@ final petViewModelProvider = StateNotifierProvider<PetNotifier, PetState>((
     getAllPetsUsecase: ref.read(getAllPetsUsecaseProvider),
     updatePetUsecase: ref.read(updatePetUsecaseProvider),
     deletePetUsecase: ref.read(deletePetUsecaseProvider),
+    getPetCareUsecase: ref.read(getPetCareUsecaseProvider),
+    updatePetCareUsecase: ref.read(updatePetCareUsecaseProvider),
   );
 });
 

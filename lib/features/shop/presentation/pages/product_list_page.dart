@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
 import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
@@ -17,12 +19,78 @@ class ProductListPage extends ConsumerStatefulWidget {
 }
 
 class _ProductListPageState extends ConsumerState<ProductListPage> {
+  bool _isOpeningMap = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(shopProvider.notifier).loadProducts();
     });
+  }
+
+  Future<void> _openNearbyShopMap() async {
+    if (_isOpeningMap) return;
+    setState(() => _isOpeningMap = true);
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Enable location service to view nearby shops map.'),
+          ),
+        );
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission is required to view nearby shops map.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 0,
+        ),
+      );
+
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NearbyMapScreen(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            initialMode: NearbyMapMode.petShop,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open nearby shops map.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningMap = false);
+      }
+    }
   }
 
   @override
@@ -47,6 +115,20 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         actions: [
+          IconButton(
+            tooltip: 'Nearby Shops Map',
+            icon: _isOpeningMap
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.map_outlined),
+            onPressed: _isOpeningMap ? null : _openNearbyShopMap,
+          ),
           IconButton(
             tooltip: 'My Orders',
             icon: const Icon(Icons.receipt_long_rounded),

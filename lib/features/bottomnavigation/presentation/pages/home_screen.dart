@@ -1305,6 +1305,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         builder: (_) => NearbyMapScreen(
           latitude: center.latitude,
           longitude: center.longitude,
+          initialMode: NearbyMapMode.vetHospital,
         ),
       ),
     );

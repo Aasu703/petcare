@@ -70,6 +70,7 @@ class ApiEndpoints {
   static const String providerProfile = 'provider/profile';
   static const String providerSetType = 'provider/set-type';
   static const String providerCertificateUpload = 'upload/provider-certificate';
+  static const String providerVerifiedLocations = 'provider/verified-locations';
 
   static const String providerGetAll = 'provider';
   static const String providerById = 'provider';

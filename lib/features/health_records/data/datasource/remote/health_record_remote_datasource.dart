@@ -1,17 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/features/health_records/data/datasource/health_record.dart';
 import 'package:petcare/features/health_records/data/models/health_record_model.dart';
-
-abstract interface class IHealthRecordRemoteDataSource {
-  Future<List<HealthRecordModel>> getByPetId(String petId);
-  Future<HealthRecordModel> createRecord(HealthRecordModel record);
-  Future<HealthRecordModel> updateRecord(
-    String recordId,
-    HealthRecordModel record,
-  );
-  Future<bool> deleteRecord(String recordId);
-}
 
 final healthRecordRemoteDatasourceProvider =
     Provider<IHealthRecordRemoteDataSource>(

@@ -25,7 +25,7 @@ const _kVeterinaryColor = Color(0xFFFF6B6B);
 const _kGroomingColor = Color(0xFFFFA94D);
 const _kPetShopColor = Color(0xFF4DABF7);
 const _kBoardingColor = Color(0xFF51CF66);
-const _kAccentColor = Color(0xFFFF6584);
+const _kAccentColor = AppColors.accentColor;
 
 class HomeScreen extends ConsumerStatefulWidget {
   final String firstName;
@@ -173,6 +173,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       default:
         return Icons.open_in_new_rounded;
     }
+  }
+
+  String _greetingLabel() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
   @override

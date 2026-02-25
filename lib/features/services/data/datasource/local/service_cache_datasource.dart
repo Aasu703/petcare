@@ -2,18 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/providers/shared_prefs_provider.dart';
+import 'package:petcare/features/services/data/datasource/services_datasource.dart';
 import 'package:petcare/features/services/data/models/service_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-abstract interface class IServiceCacheDataSource {
-  Future<void> saveServices(List<ServiceModel> services);
-  Future<List<ServiceModel>> getCachedServices();
-  Future<bool> hasFreshCache({Duration maxAge});
-  Future<void> clear();
-}
-
 final serviceCacheDatasourceProvider = Provider<IServiceCacheDataSource>((ref) {
-  return ServiceCacheDataSource(sharedPreferences: ref.read(sharedPrefsProvider));
+  return ServiceCacheDataSource(
+    sharedPreferences: ref.read(sharedPrefsProvider),
+  );
 });
 
 class ServiceCacheDataSource implements IServiceCacheDataSource {

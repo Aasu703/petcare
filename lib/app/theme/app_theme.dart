@@ -236,13 +236,16 @@ ThemeData _buildTheme({
     chipTheme: base.chipTheme.copyWith(
       backgroundColor: scheme.surface,
       selectedColor: scheme.primary.withOpacity(0.14),
-      disabledColor: (isDark ? AppColors.disabledColorDark : AppColors.disabledColor)
-          .withOpacity(0.6),
+      disabledColor:
+          (isDark ? AppColors.disabledColorDark : AppColors.disabledColor)
+              .withOpacity(0.6),
       side: BorderSide(
         color: isDark ? AppColors.borderColorDark : AppColors.borderColor,
       ),
       labelStyle: textTheme.labelMedium?.copyWith(color: scheme.onSurface),
-      secondaryLabelStyle: textTheme.labelMedium?.copyWith(color: scheme.primary),
+      secondaryLabelStyle: textTheme.labelMedium?.copyWith(
+        color: scheme.primary,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -261,14 +264,14 @@ ThemeData _buildTheme({
       backgroundColor: scheme.surface.withOpacity(0.96),
       surfaceTintColor: Colors.transparent,
       indicatorColor: scheme.primary.withOpacity(0.14),
-      iconTheme: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return IconThemeData(color: scheme.primary);
         }
         return IconThemeData(color: scheme.onSurfaceVariant);
       }),
-      labelTextStyle: MaterialStateProperty.resolveWith((states) {
-        final selected = states.contains(MaterialState.selected);
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
         return textTheme.labelSmall?.copyWith(
           color: selected ? scheme.primary : scheme.onSurfaceVariant,
           fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
@@ -283,7 +286,9 @@ ThemeData _buildTheme({
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: isDark ? AppColors.overlayColorDark : AppColors.overlayColor,
+      backgroundColor: isDark
+          ? AppColors.overlayColorDark
+          : AppColors.overlayColor,
       contentTextStyle: textTheme.bodyMedium?.copyWith(
         color: AppColors.buttonTextColor,
       ),

@@ -183,7 +183,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final category = categories[index];
                       final selected = category == _selectedCategory;
@@ -301,9 +301,9 @@ class _ServiceCard extends StatelessWidget {
           children: [
             Text(
               service.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             if ((service.description ?? '').isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -311,9 +311,9 @@ class _ServiceCard extends StatelessWidget {
                 service.description!,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: context.textSecondary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: context.textSecondary),
               ),
             ],
             const SizedBox(height: 12),
@@ -366,17 +366,17 @@ class _ServiceCard extends StatelessWidget {
                 Text(
                   '\$${service.price.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: context.primaryColor,
-                      ),
+                    fontWeight: FontWeight.w800,
+                    color: context.primaryColor,
+                  ),
                 ),
                 const Spacer(),
                 Text(
                   'per session',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

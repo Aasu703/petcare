@@ -95,10 +95,7 @@ class _DashboardState extends State<Dashboard> {
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    context.primaryColor,
-                    context.accentColor,
-                  ],
+                  colors: [context.primaryColor, context.accentColor],
                 )
               : null,
           color: isSelected ? null : Colors.transparent,

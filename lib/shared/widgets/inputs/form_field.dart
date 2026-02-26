@@ -120,13 +120,19 @@ class FormTextField extends StatelessWidget {
               color: hintColor ?? AppColors.textHintColor,
             ),
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon,
-                    color: AppColors.iconSecondaryColor, size: 22)
+                ? Icon(
+                    prefixIcon,
+                    color: AppColors.iconSecondaryColor,
+                    size: 22,
+                  )
                 : null,
             suffixIcon: suffixIcon != null
                 ? IconButton(
-                    icon: Icon(suffixIcon,
-                        color: AppColors.iconSecondaryColor, size: 22),
+                    icon: Icon(
+                      suffixIcon,
+                      color: AppColors.iconSecondaryColor,
+                      size: 22,
+                    ),
                     onPressed: onSuffixIconPressed,
                   )
                 : null,
@@ -153,8 +159,10 @@ class FormTextField extends StatelessWidget {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderRadius),
-              borderSide:
-                  const BorderSide(color: AppColors.errorColor, width: 2),
+              borderSide: const BorderSide(
+                color: AppColors.errorColor,
+                width: 2,
+              ),
             ),
           ),
         ),
@@ -207,13 +215,11 @@ class FormDropdownField<T> extends StatelessWidget {
             fillColor: fillColor ?? AppColors.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderRadius),
-              borderSide:
-                  const BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderRadius),
-              borderSide:
-                  const BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderRadius),

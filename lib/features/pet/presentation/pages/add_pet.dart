@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/core/widget/app_button.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
-import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/pet/presentation/widgets/pet_form_field_widgets.dart';
+import 'package:petcare/shared/widgets/app_snackbar.dart';
 
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
@@ -57,7 +60,10 @@ class _AddPetState extends ConsumerState<AddPet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.photo_library, color: AppColors.primaryColor),
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Choose from gallery'),
               onTap: () {
                 Navigator.pop(context);
@@ -65,7 +71,10 @@ class _AddPetState extends ConsumerState<AddPet> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt, color: AppColors.primaryColor),
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppColors.primaryColor,
+              ),
               title: const Text('Take a photo'),
               onTap: () {
                 Navigator.pop(context);
@@ -105,12 +114,7 @@ class _AddPetState extends ConsumerState<AddPet> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Pet added successfully'),
-          backgroundColor: AppColors.successColor,
-        ),
-      );
+      AppSnackBar.showSuccess(context, 'Pet added successfully');
       final createdPet = ref.read(petNotifierProvider).recentlyAddedPet;
       if (createdPet != null) {
         await Navigator.push(
@@ -124,12 +128,7 @@ class _AddPetState extends ConsumerState<AddPet> {
       Navigator.pop(context, true);
     } else {
       final error = ref.read(petNotifierProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Failed to add pet'),
-          backgroundColor: AppColors.errorColor,
-        ),
-      );
+      AppSnackBar.showError(context, error ?? 'Failed to add pet');
     }
   }
 
@@ -160,7 +159,6 @@ class _AddPetState extends ConsumerState<AddPet> {
                 ),
                 child: Column(
                   children: [
-                    // Pet Image
                     GestureDetector(
                       onTap: _showImagePicker,
                       child: Stack(
@@ -171,13 +169,15 @@ class _AddPetState extends ConsumerState<AddPet> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppColors.primaryColor.withOpacity(0.3),
+                                color: AppColors.primaryColor.withValues(
+                                  alpha: 0.3,
+                                ),
                                 width: 3,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryColor.withOpacity(
-                                    0.1,
+                                  color: AppColors.primaryColor.withValues(
+                                    alpha: 0.1,
                                   ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 8),
@@ -187,12 +187,12 @@ class _AddPetState extends ConsumerState<AddPet> {
                             child: CircleAvatar(
                               radius: 58,
                               backgroundColor: AppColors.primaryColor
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               backgroundImage: _imageFile != null
                                   ? FileImage(_imageFile!)
                                   : null,
                               child: _imageFile == null
-                                  ? Icon(
+                                  ? const Icon(
                                       Icons.pets,
                                       size: 48,
                                       color: AppColors.primaryColor,
@@ -232,17 +232,14 @@ class _AddPetState extends ConsumerState<AddPet> {
                       ),
                     ),
                     const SizedBox(height: 32),
-
-                    // Form
                     Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Pet Name
-                          _buildLabel('Pet Name'),
+                          const PetFormLabel(text: 'Pet Name'),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          PetFormTextField(
                             controller: _nameController,
                             hintText: 'Enter pet name',
                             prefixIcon: Icons.pets,
@@ -254,33 +251,32 @@ class _AddPetState extends ConsumerState<AddPet> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Species
-                          _buildLabel('Species'),
+                          const PetFormLabel(text: 'Species'),
                           const SizedBox(height: 8),
-                          _buildSpeciesSelector(),
+                          PetSpeciesSelector(
+                            selectedSpecies: _selectedSpecies,
+                            onChanged: (value) {
+                              setState(() => _selectedSpecies = value);
+                            },
+                          ),
                           const SizedBox(height: 20),
-
-                          // Breed
-                          _buildLabel('Breed (Optional)'),
+                          const PetFormLabel(text: 'Breed (Optional)'),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          PetFormTextField(
                             controller: _breedController,
                             hintText: 'Enter breed',
                             prefixIcon: Icons.category_outlined,
                           ),
                           const SizedBox(height: 20),
-
-                          // Age and Weight
                           Row(
                             children: [
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildLabel('Age (years)'),
+                                    const PetFormLabel(text: 'Age (years)'),
                                     const SizedBox(height: 8),
-                                    _buildTextField(
+                                    PetFormTextField(
                                       controller: _ageController,
                                       hintText: '0',
                                       prefixIcon: Icons.cake_outlined,
@@ -294,9 +290,9 @@ class _AddPetState extends ConsumerState<AddPet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _buildLabel('Weight (kg)'),
+                                    const PetFormLabel(text: 'Weight (kg)'),
                                     const SizedBox(height: 8),
-                                    _buildTextField(
+                                    PetFormTextField(
                                       controller: _weightController,
                                       hintText: '0.0',
                                       prefixIcon: Icons.monitor_weight_outlined,
@@ -315,167 +311,24 @@ class _AddPetState extends ConsumerState<AddPet> {
                 ),
               ),
             ),
-
-            // Add Button
             Padding(
               padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
+              child: AppPrimaryButton(
+                text: 'Add Pet',
+                onPressed: _submit,
+                isLoading: petState.isLoading,
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: petState.isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonPrimaryColor,
-                    foregroundColor: AppColors.buttonTextColor,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: AppColors.disabledColor
-                        .withOpacity(0.5),
-                  ),
-                  child: petState.isLoading
-                      ? SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.buttonTextColor,
-                            ),
-                          ),
-                        )
-                      : const Text(
-                          'Add Pet',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
+                borderRadius: 12,
+                backgroundColor: AppColors.buttonPrimaryColor,
+                foregroundColor: AppColors.buttonTextColor,
+                disabledBackgroundColor: AppColors.disabledColor.withValues(
+                  alpha: 0.5,
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: context.textPrimary,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    IconData? prefixIcon,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: TextStyle(fontSize: 15, color: context.textPrimary),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(fontSize: 15, color: AppColors.textHintColor),
-        prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: AppColors.iconSecondaryColor, size: 22)
-            : null,
-        filled: true,
-        fillColor: AppColors.surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.borderColor.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.errorColor),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSpeciesSelector() {
-    final species = [
-      {'value': 'dog', 'label': 'Dog', 'icon': '🐕'},
-      {'value': 'cat', 'label': 'Cat', 'icon': '🐈'},
-      {'value': 'bird', 'label': 'Bird', 'icon': '🦜'},
-      {'value': 'other', 'label': 'Other', 'icon': '🐾'},
-    ];
-
-    return Row(
-      children: species.map((item) {
-        final isSelected = _selectedSpecies == item['value'];
-        return Expanded(
-          child: GestureDetector(
-            onTap: () =>
-                setState(() => _selectedSpecies = item['value'] as String),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primaryColor.withOpacity(0.1)
-                    : AppColors.surfaceColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.primaryColor
-                      : AppColors.borderColor.withOpacity(0.3),
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    item['icon'] as String,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item['label'] as String,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? AppColors.primaryColor
-                          : context.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }

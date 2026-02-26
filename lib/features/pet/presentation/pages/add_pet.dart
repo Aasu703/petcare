@@ -5,12 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/core/widget/app_button.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/pet/presentation/widgets/pet_form_field_widgets.dart';
-import 'package:petcare/shared/widgets/app_snackbar.dart';
+import 'package:petcare/shared/widgets/index.dart';
 
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
@@ -313,7 +312,7 @@ class _AddPetState extends ConsumerState<AddPet> {
             ),
             Padding(
               padding: const EdgeInsets.all(20),
-              child: AppPrimaryButton(
+              child: PrimaryButton(
                 text: 'Add Pet',
                 onPressed: _submit,
                 isLoading: petState.isLoading,
@@ -321,9 +320,6 @@ class _AddPetState extends ConsumerState<AddPet> {
                 borderRadius: 12,
                 backgroundColor: AppColors.buttonPrimaryColor,
                 foregroundColor: AppColors.buttonTextColor,
-                disabledBackgroundColor: AppColors.disabledColor.withValues(
-                  alpha: 0.5,
-                ),
               ),
             ),
           ],

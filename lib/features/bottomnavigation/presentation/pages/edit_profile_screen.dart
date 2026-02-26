@@ -6,10 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/widget/app_button.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
-import 'package:petcare/shared/widgets/app_form_field.dart';
-import 'package:petcare/shared/widgets/app_snackbar.dart';
+import 'package:petcare/shared/widgets/index.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -262,13 +260,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AppFormLabel(
+                          FormLabel(
                             text: 'First Name',
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
-                          AppFormTextField(
+                          FormTextField(
                             controller: _firstNameController,
                             hintText: 'Enter your first name',
                             borderRadius: 5,
@@ -283,13 +281,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          AppFormLabel(
+                          FormLabel(
                             text: 'Last Name',
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
-                          AppFormTextField(
+                          FormTextField(
                             controller: _lastNameController,
                             hintText: 'Enter your last name',
                             borderRadius: 5,
@@ -298,13 +296,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             borderColor: context.borderColor,
                           ),
                           const SizedBox(height: 20),
-                          AppFormLabel(
+                          FormLabel(
                             text: 'Email',
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
-                          AppFormTextField(
+                          FormTextField(
                             controller: _emailController,
                             hintText: 'Enter your email',
                             keyboardType: TextInputType.emailAddress,
@@ -320,13 +318,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          AppFormLabel(
+                          FormLabel(
                             text: 'Phone',
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
-                          AppFormTextField(
+                          FormTextField(
                             controller: _phoneController,
                             hintText: 'Enter your phone number',
                             keyboardType: TextInputType.phone,
@@ -345,7 +343,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(20),
-              child: AppPrimaryButton(
+              child: PrimaryButton(
                 text: 'SAVE CHANGES',
                 onPressed: _submit,
                 isLoading: profileState.isLoading,
@@ -353,7 +351,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 borderRadius: 5,
                 backgroundColor: AppColors.buttonPrimaryColor,
                 foregroundColor: AppColors.buttonTextColor,
-                disabledBackgroundColor: Theme.of(context).disabledColor,
               ),
             ),
           ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/shared/widgets/app_form_field.dart';
+import 'package:petcare/shared/widgets/index.dart';
 
 class PetFormLabel extends StatelessWidget {
   final String text;
@@ -10,7 +10,7 @@ class PetFormLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppFormLabel(text: text);
+    return FormLabel(text: text);
   }
 }
 
@@ -32,7 +32,7 @@ class PetFormTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppFormTextField(
+    return FormTextField(
       controller: controller,
       hintText: hintText,
       prefixIcon: prefixIcon,

@@ -5,10 +5,7 @@ import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
 import 'package:petcare/features/services/presentation/view_model/service_view_model.dart';
-import 'package:petcare/shared/widgets/app_empty_state.dart';
-import 'package:petcare/shared/widgets/app_error_state.dart';
-import 'package:petcare/shared/widgets/app_loading_indicator.dart';
-// import 'package:petcare/load'
+import 'package:petcare/shared/widgets/index.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -213,12 +210,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               if (state.isLoading && state.services.isEmpty)
                 const SliverFillRemaining(
                   hasScrollBody: false,
-                  child: AppLoadingIndicator(message: 'Loading services...'),
+                  child: LoadingIndicator(message: 'Loading services...'),
                 )
               else if (state.error != null && state.services.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: AppErrorState(
+                  child: ErrorState(
                     message: state.error!,
                     onRetry: () =>
                         ref.read(serviceProvider.notifier).loadServices(),
@@ -227,7 +224,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               else if (filtered.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: AppEmptyState(
+                  child: EmptyState(
                     title: 'No services found',
                     subtitle: 'Try a different search or category.',
                     icon: Icons.search_off_rounded,

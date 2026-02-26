@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider/domain/utils/provider_access.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_dashboard_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_profile_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_dashboard_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_profile_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 import 'package:petcare/features/shop/presentation/pages/manage_inventory_page.dart';
 

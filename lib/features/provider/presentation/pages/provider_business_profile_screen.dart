@@ -6,7 +6,7 @@ import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider/domain/utils/provider_access.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_location_picker_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_location_picker_screen.dart';
 
 class ProviderBusinessProfileScreen extends ConsumerStatefulWidget {
   const ProviderBusinessProfileScreen({super.key});

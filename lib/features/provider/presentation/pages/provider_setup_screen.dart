@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/provider/di/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_location_picker_screen.dart';
-import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_location_picker_screen.dart';
+import 'package:petcare/shared/widgets/index.dart' hide OutlinedButton;
 
 class ProviderSetupScreen extends ConsumerStatefulWidget {
   final String email;

@@ -6,7 +6,7 @@ import 'package:petcare/features/bookings/presentation/pages/manage_appointments
 import 'package:petcare/features/bookings/presentation/pages/earnings_dashboard_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/provider_calendar_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_messages_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_messages_screen.dart';
 import 'package:petcare/features/provider/domain/utils/provider_access.dart';
 import 'package:petcare/features/provider/presentation/widgets/provider_dashboard_components.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';

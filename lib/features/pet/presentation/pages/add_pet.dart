@@ -8,9 +8,12 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
-import 'package:petcare/features/pet/presentation/widgets/pet_form_field_widgets.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_image_picker.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_form_section.dart';
 import 'package:petcare/shared/widgets/index.dart';
 
+/// Add new pet screen
+/// Allows users to create a new pet profile with image, name, species, and details
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
 
@@ -24,10 +27,10 @@ class _AddPetState extends ConsumerState<AddPet> {
   final _breedController = TextEditingController();
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
+  final _imagePicker = ImagePicker();
 
   String _selectedSpecies = 'dog';
   File? _imageFile;
-  final _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -49,41 +52,9 @@ class _AddPetState extends ConsumerState<AddPet> {
   }
 
   void _showImagePicker() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(
-                Icons.photo_library,
-                color: AppColors.primaryColor,
-              ),
-              title: const Text('Choose from gallery'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.camera_alt,
-                color: AppColors.primaryColor,
-              ),
-              title: const Text('Take a photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+    ImagePickerModal.show(
+      context,
+      onSourceSelected: _pickImage,
     );
   }
 
@@ -134,6 +105,7 @@ class _AddPetState extends ConsumerState<AddPet> {
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -158,158 +130,31 @@ class _AddPetState extends ConsumerState<AddPet> {
                 ),
                 child: Column(
                   children: [
-                    GestureDetector(
+                    // Image Picker
+                    PetImagePicker(
+                      imageFile: _imageFile,
                       onTap: _showImagePicker,
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryColor.withValues(
-                                  alpha: 0.3,
-                                ),
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryColor.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: CircleAvatar(
-                              radius: 58,
-                              backgroundColor: AppColors.primaryColor
-                                  .withValues(alpha: 0.1),
-                              backgroundImage: _imageFile != null
-                                  ? FileImage(_imageFile!)
-                                  : null,
-                              child: _imageFile == null
-                                  ? const Icon(
-                                      Icons.pets,
-                                      size: 48,
-                                      color: AppColors.primaryColor,
-                                    )
-                                  : null,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.backgroundColor,
-                                  width: 3,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                size: 20,
-                                color: AppColors.buttonTextColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add pet photo',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: context.textSecondary,
-                      ),
                     ),
                     const SizedBox(height: 32),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const PetFormLabel(text: 'Pet Name'),
-                          const SizedBox(height: 8),
-                          PetFormTextField(
-                            controller: _nameController,
-                            hintText: 'Enter pet name',
-                            prefixIcon: Icons.pets,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Pet name is required';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          const PetFormLabel(text: 'Species'),
-                          const SizedBox(height: 8),
-                          PetSpeciesSelector(
-                            selectedSpecies: _selectedSpecies,
-                            onChanged: (value) {
-                              setState(() => _selectedSpecies = value);
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          const PetFormLabel(text: 'Breed (Optional)'),
-                          const SizedBox(height: 8),
-                          PetFormTextField(
-                            controller: _breedController,
-                            hintText: 'Enter breed',
-                            prefixIcon: Icons.category_outlined,
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const PetFormLabel(text: 'Age (years)'),
-                                    const SizedBox(height: 8),
-                                    PetFormTextField(
-                                      controller: _ageController,
-                                      hintText: '0',
-                                      prefixIcon: Icons.cake_outlined,
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const PetFormLabel(text: 'Weight (kg)'),
-                                    const SizedBox(height: 8),
-                                    PetFormTextField(
-                                      controller: _weightController,
-                                      hintText: '0.0',
-                                      prefixIcon: Icons.monitor_weight_outlined,
-                                      keyboardType: TextInputType.number,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
+
+                    // Form Section
+                    PetFormSection(
+                      formKey: _formKey,
+                      nameController: _nameController,
+                      breedController: _breedController,
+                      ageController: _ageController,
+                      weightController: _weightController,
+                      selectedSpecies: _selectedSpecies,
+                      onSpeciesChanged: (value) {
+                        setState(() => _selectedSpecies = value);
+                      },
                     ),
                   ],
                 ),
               ),
             ),
+
+            // Action Button
             Padding(
               padding: const EdgeInsets.all(20),
               child: PrimaryButton(

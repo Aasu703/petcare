@@ -17,8 +17,8 @@ import 'package:petcare/features/onboarding/presentation/pages/service_onboardin
 import 'package:petcare/features/onboarding/presentation/pages/vet_onboarding_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_login_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_login_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_main_dashboard.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
 import 'package:petcare/features/splash/presentation/pages/Splash_screen.dart';
 import 'package:petcare/shared/navigation/user_shell.dart';

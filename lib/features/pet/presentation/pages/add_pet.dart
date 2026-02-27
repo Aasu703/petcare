@@ -11,6 +11,7 @@ import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/pet/presentation/widgets/common/pet_image_picker.dart';
 import 'package:petcare/features/pet/presentation/widgets/common/pet_form_section.dart';
 import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
 /// Add new pet screen
 /// Allows users to create a new pet profile with image, name, species, and details
@@ -52,10 +53,7 @@ class _AddPetState extends ConsumerState<AddPet> {
   }
 
   void _showImagePicker() {
-    ImagePickerModal.show(
-      context,
-      onSourceSelected: _pickImage,
-    );
+    ImagePickerModal.show(context, onSourceSelected: _pickImage);
   }
 
   Future<void> _submit() async {
@@ -84,7 +82,10 @@ class _AddPetState extends ConsumerState<AddPet> {
     if (!mounted) return;
 
     if (success) {
-      AppSnackBar.showSuccess(context, 'Pet added successfully');
+      SnackbarService.success(
+        context: context,
+        message: 'Pet added successfully',
+      );
       final createdPet = ref.read(petNotifierProvider).recentlyAddedPet;
       if (createdPet != null) {
         await Navigator.push(
@@ -98,7 +99,10 @@ class _AddPetState extends ConsumerState<AddPet> {
       Navigator.pop(context, true);
     } else {
       final error = ref.read(petNotifierProvider).error;
-      AppSnackBar.showError(context, error ?? 'Failed to add pet');
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to add pet',
+      );
     }
   }
 

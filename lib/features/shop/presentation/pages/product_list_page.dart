@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
-import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
-import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
+import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
-import 'package:petcare/features/shop/presentation/widgets/product_list/product_list_body.dart';
+import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -18,8 +13,6 @@ class ProductListPage extends ConsumerStatefulWidget {
 }
 
 class _ProductListPageState extends ConsumerState<ProductListPage> {
-  bool _isOpeningMap = false;
-
   @override
   void initState() {
     super.initState();
@@ -28,39 +21,16 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     });
   }
 
-  Future<void> _openNearbyShopMap() async {
-    if (_isOpeningMap) return;
-    setState(() => _isOpeningMap = true);
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(shopProvider);
 
-    try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Enable location service to view nearby shops map.'),
-          ),
-        );
-        return;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          body: ProductListBody(
-            isLoading: state.isLoading,
-            error: state.error,
-            products: state.products,
-          ),
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open nearby shops map.')),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Shop'), elevation: 0),
+      body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
+          ? Center(child: Text('Error: ${state.error}'))
           : state.products.isEmpty
           ? const Center(
               child: Column(

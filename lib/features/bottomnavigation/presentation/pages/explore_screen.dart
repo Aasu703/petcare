@@ -216,8 +216,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(
-                    message: state.error!,
-                    onRetry: () =>
+                    title: 'Error loading services',
+                    message: state.error,
+                    actionLabel: 'Retry',
+                    onAction: () =>
                         ref.read(serviceProvider.notifier).loadServices(),
                   ),
                 )

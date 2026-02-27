@@ -11,7 +11,7 @@ class BaseCard extends StatelessWidget {
   final EdgeInsetsGeometry margin;
   final double elevation;
   final VoidCallback? onTap;
-  final Border? border;
+  final BorderSide? border;
 
   const BaseCard({
     super.key,

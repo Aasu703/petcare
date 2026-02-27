@@ -8,6 +8,7 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -105,11 +106,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (!mounted) return;
 
     if (success) {
-      AppSnackBar.showSuccess(context, 'Profile updated successfully');
+      SnackbarService.success(
+        context: context,
+        message: 'Profile updated successfully',
+      );
       Navigator.pop(context, true);
     } else {
       final error = ref.read(profileViewModelProvider).errorMessage;
-      AppSnackBar.showError(context, error ?? 'Failed to update profile');
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to update profile',
+      );
     }
   }
 

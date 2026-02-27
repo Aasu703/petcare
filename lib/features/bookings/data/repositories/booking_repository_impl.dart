@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
-import 'package:petcare/features/bookings/data/datasource/booking_datasource.dart';
+import 'package:petcare/features/bookings/data/datasources/booking_datasource.dart';
 import 'package:petcare/features/bookings/data/models/booking_model.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/domain/repositories/booking_repository.dart';

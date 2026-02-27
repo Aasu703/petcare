@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
 import 'package:petcare/core/services/session/pet_session.dart';
-import 'package:petcare/features/pet/data/datasource/remote/pet_remote_database.dart';
+import 'package:petcare/features/pet/data/datasources/remote/pet_remote_database.dart';
 import 'package:petcare/features/pet/data/repository/pet_rempository_impl.dart';
 import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
 import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';

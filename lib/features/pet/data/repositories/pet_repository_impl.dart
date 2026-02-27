@@ -1,5 +1,5 @@
 import 'package:petcare/core/services/connectivity/network_info.dart';
-import 'package:petcare/features/pet/data/datasource/pet_datasource.dart';
+import 'package:petcare/features/pet/data/datasources/pet_datasource.dart';
 import 'package:petcare/features/pet/data/models/pet_api_model.dart';
 import 'package:petcare/features/pet/data/models/pet_care_api_model.dart';
 import 'package:petcare/features/pet/domain/entities/pet_care_entity.dart';

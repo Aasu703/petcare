@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/providers/shared_prefs_provider.dart';
-import 'package:petcare/features/services/data/datasource/services_datasource.dart';
+import 'package:petcare/features/services/data/datasources/services_datasource.dart';
 import 'package:petcare/features/services/data/models/service_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

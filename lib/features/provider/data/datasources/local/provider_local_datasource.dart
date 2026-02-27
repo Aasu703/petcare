@@ -1,5 +1,5 @@
 import 'package:petcare/core/services/hive/hive_service.dart';
-import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
+import 'package:petcare/features/provider/data/datasources/provider_datasource.dart';
 import 'package:petcare/features/provider/data/model/provider_hive_model.dart';
 
 class ProviderLocalDatasource implements IProviderDatasource {

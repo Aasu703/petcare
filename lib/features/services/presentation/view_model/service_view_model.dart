@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:petcare/features/services/di/service_providers.dart';
+import 'package:petcare/features/services/service_providers.dart';
 import 'package:petcare/features/services/domain/usecases/get_services_usecase.dart';
 import 'package:petcare/features/services/presentation/state/service_state.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
-import 'package:petcare/features/shop/data/datasource/shop_datasource.dart';
+import 'package:petcare/features/shop/data/datasources/shop_datasource.dart';
 import 'package:petcare/features/shop/data/models/product_model.dart';
 
 final shopRemoteDatasourceProvider = Provider<IShopRemoteDataSource>((ref) {

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/features/auth/di/auth_providers.dart';
+import 'package:petcare/features/auth/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
 import 'package:petcare/features/auth/presentation/widgets/common/auth_background.dart';
 import 'package:petcare/features/auth/presentation/widgets/common/auth_animated_header.dart';
@@ -65,11 +65,11 @@ class _SignupState extends ConsumerState<Signup>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
@@ -141,7 +141,8 @@ class _SignupState extends ConsumerState<Signup>
                         onTogglePassword: () =>
                             setState(() => _showPassword = !_showPassword),
                         onToggleConfirmPassword: () => setState(
-                            () => _showConfirmPassword = !_showConfirmPassword),
+                          () => _showConfirmPassword = !_showConfirmPassword,
+                        ),
                       ),
                       const SizedBox(height: 28),
 
@@ -182,18 +183,18 @@ class _SignupState extends ConsumerState<Signup>
           Text(
             'Create Account',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 32,
-                  letterSpacing: -0.5,
-                ),
+              fontWeight: FontWeight.w900,
+              fontSize: 32,
+              letterSpacing: -0.5,
+            ),
           ),
           const SizedBox(height: 10),
           Text(
             'Join PawCare today',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  fontSize: 16,
-                ),
+              color: Colors.black.withValues(alpha: 0.5),
+              fontSize: 16,
+            ),
           ),
         ],
       ),
@@ -251,9 +252,7 @@ class _SignupState extends ConsumerState<Signup>
         content: Text(message),
         backgroundColor: Colors.red.shade400,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -264,9 +263,7 @@ class _SignupState extends ConsumerState<Signup>
         content: const Text('Account created successfully. Please log in.'),
         backgroundColor: Colors.green.shade400,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

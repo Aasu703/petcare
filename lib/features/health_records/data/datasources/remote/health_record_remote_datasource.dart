@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/features/health_records/data/datasource/health_record.dart';
+import 'package:petcare/features/health_records/data/datasources/health_record.dart';
 import 'package:petcare/features/health_records/data/models/health_record_model.dart';
 
 final healthRecordRemoteDatasourceProvider =

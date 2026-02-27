@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/features/provider_service/data/datasource/provider_service_datasource.dart';
+import 'package:petcare/features/provider_service/data/datasources/provider_service_datasource.dart';
 import 'package:petcare/features/provider_service/data/models/provider_service_model.dart';
 
 final providerServiceRemoteDatasourceProvider =

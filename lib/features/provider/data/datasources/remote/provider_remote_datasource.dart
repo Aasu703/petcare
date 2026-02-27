@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
-import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
+import 'package:petcare/features/provider/data/datasources/provider_datasource.dart';
 import 'package:petcare/features/provider/data/model/provider_api_model.dart';
 import 'package:petcare/core/services/storage/token_service.dart';
 

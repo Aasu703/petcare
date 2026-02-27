@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/provider/di/provider_providers.dart';
+import 'package:petcare/features/provider/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/shared/widgets/index.dart';

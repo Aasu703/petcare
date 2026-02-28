@@ -68,8 +68,9 @@ class HomeViewModel extends Notifier<HomeState> {
 
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled)
+      if (!serviceEnabled) {
         return 'Location services are off. Please enable GPS to open nearby map.';
+      }
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {

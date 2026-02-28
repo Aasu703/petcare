@@ -118,46 +118,146 @@ class _MyPetState extends ConsumerState<MyPet> {
     final petState = ref.watch(petNotifierProvider);
 
     return Scaffold(
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: context.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('My Pets', style: Theme.of(context).textTheme.titleLarge),
+        title: Text(
+          'My Pets',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         centerTitle: true,
+        backgroundColor: context.surfaceColor,
+        surfaceTintColor: Colors.transparent,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         color: AppColors.primaryColor,
+        backgroundColor: context.surfaceColor,
         child: petState.isLoading && petState.pets.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
+              )
             : petState.pets.isEmpty
             ? const MyPetEmptyState()
-            : ListView.separated(
-                padding: const EdgeInsets.all(20),
-                itemCount: petState.pets.length,
-                separatorBuilder: (_, index) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final pet = petState.pets[index];
-                  return MyPetCard(
-                    pet: pet,
-                    onTap: () => _onPetTap(pet),
-                    onCare: () => _onCareTap(pet),
-                    onDelete: () => _deletePet(pet.petId ?? ''),
-                  );
-                },
+            : CustomScrollView(
+                slivers: [
+                  // Header Section with Pet Count
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primaryColor.withValues(
+                                    alpha: 0.08,
+                                  ),
+                                  AppColors.accentColor.withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.primaryColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Pet Family',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: context.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${petState.pets.length} ${petState.pets.length == 1 ? 'pet' : 'pets'}',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primaryColor.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.primaryColor.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.pets,
+                                      color: AppColors.primaryColor,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Pet List
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                    sliver: SliverList.separated(
+                      itemCount: petState.pets.length,
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final pet = petState.pets[index];
+                        return MyPetCard(
+                          pet: pet,
+                          onTap: () => _onPetTap(pet),
+                          onCare: () => _onCareTap(pet),
+                          onDelete: () => _deletePet(pet.petId ?? ''),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _onAddPetTap,
         backgroundColor: AppColors.primaryColor,
         foregroundColor: AppColors.buttonTextColor,
-        elevation: 4,
+        elevation: 6,
         icon: const Icon(Icons.add),
         label: const Text(
           'Add Pet',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),
     );

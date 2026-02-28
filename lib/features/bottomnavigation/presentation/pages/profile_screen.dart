@@ -985,9 +985,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(ctx);
-                        await ref
-                            .read(sessionProvider.notifier)
-                            .clearSession();
+                        await ref.read(sessionProvider.notifier).clearSession();
                         if (!context.mounted) return;
                         context.go(RoutePaths.login);
                       },

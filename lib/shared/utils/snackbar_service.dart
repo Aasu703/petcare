@@ -6,8 +6,7 @@ import 'package:flutter/material.dart'
         SnackBar,
         Text,
         SnackBarBehavior,
-        Colors,
-        TextStyle;
+        Colors;
 
 /// Utility service for displaying snackbars across the app
 /// Replaces the old common/mysnackbar.dart

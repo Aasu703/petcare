@@ -48,13 +48,13 @@ class SessionState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLoggedIn,
-        userId,
-        firstName,
-        lastName,
-        email,
-        role,
-        providerType,
-        profilePic,
-      ];
+    isLoggedIn,
+    userId,
+    firstName,
+    lastName,
+    email,
+    role,
+    providerType,
+    profilePic,
+  ];
 }

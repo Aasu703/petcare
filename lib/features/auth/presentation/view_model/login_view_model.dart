@@ -26,19 +26,23 @@ class LoginViewModel extends StateNotifier<ProfileState> {
     final result = await _loginUsecase(
       LoginUsecaseParams(email: email, password: password),
     );
-    result.fold(
-      (failure) {
+
+    // Handle result outside fold to properly await async operations
+    if (result.isRight()) {
+      final user = result.getOrElse(() => throw StateError('unreachable'));
+      await _sessionNotifier.setSession(
+        userId: user.userId,
+        firstName: user.FirstName,
+        lastName: user.LastName,
+        email: user.email,
+      );
+      state = state.copyWith(isLoading: false, user: user);
+    } else {
+      result.fold((failure) {
         state = state.copyWith(isLoading: false, errorMessage: failure.message);
-      },
-      (user) async {
-        await _sessionNotifier.setSession(
-          userId: user.userId,
-          firstName: user.FirstName,
-          email: user.email,
-        );
-        state = state.copyWith(isLoading: false, user: user);
-      },
-    );
+      }, (_) {});
+    }
+
     return result;
   }
 }

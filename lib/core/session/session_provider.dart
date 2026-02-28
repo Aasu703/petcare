@@ -7,8 +7,9 @@ import 'package:petcare/core/session/session_state.dart';
 /// Central session provider — the single source of truth for auth state.
 ///
 /// All routing guards and UI that depend on login / role should watch this.
-final sessionProvider =
-    NotifierProvider<SessionNotifier, SessionState>(SessionNotifier.new);
+final sessionProvider = NotifierProvider<SessionNotifier, SessionState>(
+  SessionNotifier.new,
+);
 
 class SessionNotifier extends Notifier<SessionState> {
   late final UserSessionService _sessionService;

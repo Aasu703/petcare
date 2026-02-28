@@ -143,6 +143,45 @@ class _MyPetState extends ConsumerState<MyPet> {
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.primaryColor),
               )
+            : petState.error != null && petState.pets.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 42,
+                        color: AppColors.errorColor,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Failed to load pets',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        petState.error!,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: context.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _refresh,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             : petState.pets.isEmpty
             ? const MyPetEmptyState()
             : CustomScrollView(

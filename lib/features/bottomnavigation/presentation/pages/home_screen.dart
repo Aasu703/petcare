@@ -11,7 +11,7 @@ import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/health_records/presentation/view_model/vaccination_reminder_view_model.dart';
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
 import 'package:petcare/core/services/storage/recent_activity_service.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
@@ -98,18 +98,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     ).animate(CurvedAnimation(parent: _cardController, curve: Curves.easeOut));
 
     _headerController.forward();
-    Future.delayed(
-      const Duration(milliseconds: 200),
-      () => _cardController.forward(),
-    );
-    Future.delayed(
-      const Duration(milliseconds: 500),
-      () => _servicesController.forward(),
-    );
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _cardController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _servicesController.forward();
+    });
 
     // Load user bookings for upcoming appointments widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = ref.read(userSessionServiceProvider).getUserId();
+      final userId = ref.read(sessionProvider).userId;
       if (userId != null) {
         ref.read(userBookingProvider.notifier).loadBookings(userId);
       }
@@ -127,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Future<void> _loadRecentActivities() async {
-    final userId = ref.read(userSessionServiceProvider).getUserId();
+    final userId = ref.read(sessionProvider).userId;
     if (userId == null || userId.isEmpty) {
       if (!mounted) return;
       setState(() {
@@ -152,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required String subtitle,
     String kind = 'page',
   }) async {
-    final userId = ref.read(userSessionServiceProvider).getUserId();
+    final userId = ref.read(sessionProvider).userId;
     if (userId == null || userId.isEmpty) return;
 
     await ref

@@ -135,9 +135,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.home,
-                builder: (context, state) => HomeScreen(
-                  firstName: session.firstName ?? 'User',
-                ),
+                builder: (context, state) =>
+                    HomeScreen(firstName: session.firstName ?? 'User'),
               ),
             ],
           ),
@@ -197,9 +196,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) {
       return Scaffold(
         appBar: AppBar(title: const Text('Not Found')),
-        body: Center(
-          child: Text('Route not found: ${state.uri.toString()}'),
-        ),
+        body: Center(child: Text('Route not found: ${state.uri.toString()}')),
       );
     },
   );

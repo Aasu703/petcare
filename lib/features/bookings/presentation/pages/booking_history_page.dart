@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/bookings/presentation/widgets/booking_history_widget.dart';
@@ -17,8 +17,10 @@ class _BookingHistoryPageState extends ConsumerState<BookingHistoryPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = ref.read(userSessionServiceProvider).getUserId() ?? '';
-      ref.read(userBookingProvider.notifier).loadBookings(userId);
+      final userId = ref.read(sessionProvider).userId ?? '';
+      if (userId.isNotEmpty) {
+        ref.read(userBookingProvider.notifier).loadBookings(userId);
+      }
     });
   }
 
@@ -42,8 +44,10 @@ class _BookingHistoryPageState extends ConsumerState<BookingHistoryPage> {
   }
 
   Future<void> _reloadBookings() async {
-    final userId = ref.read(userSessionServiceProvider).getUserId() ?? '';
-    await ref.read(userBookingProvider.notifier).loadBookings(userId);
+    final userId = ref.read(sessionProvider).userId ?? '';
+    if (userId.isNotEmpty) {
+      await ref.read(userBookingProvider.notifier).loadBookings(userId);
+    }
   }
 
   List<BookingEntity> _sortBookings(List<BookingEntity> bookings) {
@@ -67,7 +71,9 @@ class _BookingHistoryPageState extends ConsumerState<BookingHistoryPage> {
 
   bool _isUpcomingBooking(BookingEntity booking) {
     final status = booking.status.toLowerCase();
-    if (status == 'completed' || status == 'cancelled' || status == 'rejected') {
+    if (status == 'completed' ||
+        status == 'cancelled' ||
+        status == 'rejected') {
       return false;
     }
     if (status != 'pending' && status != 'confirmed') {

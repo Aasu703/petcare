@@ -1,13 +1,14 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/providers/session_providers.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
+import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -31,9 +32,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final session = ref.read(sessionStateProvider);
-    _firstNameController.text = session.firstName ?? '';
-    _emailController.text = session.email ?? '';
     Future.microtask(
       () => ref.read(profileViewModelProvider.notifier).loadProfile(),
     );
@@ -108,14 +106,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+      SnackbarService.success(
+        context: context,
+        message: 'Profile updated successfully',
       );
       Navigator.pop(context, true);
     } else {
       final error = ref.read(profileViewModelProvider).errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error ?? 'Failed to update profile')),
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to update profile',
       );
     }
   }
@@ -136,118 +136,231 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _existingImageUrl = user.avatar;
       _didPrefill = true;
     }
+
+    final resolvedExistingImageUrl =
+        (_existingImageUrl != null && _existingImageUrl!.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(_existingImageUrl!)
+        : null;
+    final hasNetworkImage =
+        _localImage == null && resolvedExistingImageUrl != null;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
-        backgroundColor: AppColors.backgroundColor,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Edit Profile',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         elevation: 0,
+        centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _showImagePicker,
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 48,
-                      backgroundColor: AppColors.iconPrimaryColor.withOpacity(
-                        0.1,
-                      ),
-                      backgroundImage: _localImage != null
-                          ? FileImage(_localImage!)
-                          : (_existingImageUrl != null &&
-                                _existingImageUrl!.isNotEmpty)
-                          ? CachedNetworkImageProvider(
-                              '${ApiEndpoints.mediaServerUrl}${_existingImageUrl!}',
-                            )
-                          : null,
-                      child:
-                          (_localImage == null &&
-                              (_existingImageUrl == null ||
-                                  _existingImageUrl!.isEmpty))
-                          ? const Icon(Icons.person, size: 36)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.edit, size: 18),
-                      ),
-                    ),
-                  ],
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _firstNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'First name',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'First name is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _lastNameController,
-                      decoration: const InputDecoration(labelText: 'Last name'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: profileState.isLoading ? null : _submit,
-                        child: profileState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                    GestureDetector(
+                      onTap: _showImagePicker,
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: context.borderColor.withValues(
+                                  alpha: 0.3,
                                 ),
-                              )
-                            : const Text('Save changes'),
+                                width: 3,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 48,
+                              backgroundColor: context.surfaceColor,
+                              child: _localImage != null
+                                  ? ClipOval(
+                                      child: Image.file(
+                                        _localImage!,
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : hasNetworkImage
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        resolvedExistingImageUrl,
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (
+                                              context,
+                                              child,
+                                              loadingProgress,
+                                            ) => loadingProgress == null
+                                            ? child
+                                            : const Center(
+                                                child: SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: AppColors
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                                  Icons.person,
+                                                  size: 40,
+                                                  color: context.textSecondary,
+                                                ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.person,
+                                      size: 40,
+                                      color: context.textSecondary,
+                                    ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: context.backgroundColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: AppColors.buttonTextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FormLabel(
+                            text: 'First Name',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
+                          const SizedBox(height: 8),
+                          FormTextField(
+                            controller: _firstNameController,
+                            hintText: 'Enter your first name',
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'First name is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          FormLabel(
+                            text: 'Last Name',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
+                          const SizedBox(height: 8),
+                          FormTextField(
+                            controller: _lastNameController,
+                            hintText: 'Enter your last name',
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
+                          ),
+                          const SizedBox(height: 20),
+                          FormLabel(
+                            text: 'Email',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
+                          const SizedBox(height: 8),
+                          FormTextField(
+                            controller: _emailController,
+                            hintText: 'Enter your email',
+                            keyboardType: TextInputType.emailAddress,
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Email is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          FormLabel(
+                            text: 'Phone',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
+                          const SizedBox(height: 8),
+                          FormTextField(
+                            controller: _phoneController,
+                            hintText: 'Enter your phone number',
+                            keyboardType: TextInputType.phone,
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: PrimaryButton(
+                text: 'SAVE CHANGES',
+                onPressed: _submit,
+                isLoading: profileState.isLoading,
+                height: 56,
+                borderRadius: 5,
+                backgroundColor: AppColors.buttonPrimaryColor,
+                foregroundColor: AppColors.buttonTextColor,
+              ),
+            ),
+          ],
         ),
       ),
     );

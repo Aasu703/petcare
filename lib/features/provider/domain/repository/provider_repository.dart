@@ -13,4 +13,9 @@ abstract interface class IProviderRepository {
   Future<Either<Failure, bool>> createProvider(ProviderEntity entity);
   Future<Either<Failure, bool>> updateProvider(ProviderEntity entity);
   Future<Either<Failure, bool>> deleteProvider(String providerId);
+  Future<Either<Failure, ProviderEntity>> login(String email, String password);
+  Future<Either<Failure, bool>> register(
+    ProviderEntity entity,
+    String confirmPassword,
+  );
 }

@@ -1,569 +1,393 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/app/theme/app_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:petcare/app/routes/route_paths.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/services/domain/entities/service_entity.dart';
+import 'package:petcare/features/services/presentation/view_model/service_view_model.dart';
+import 'package:petcare/shared/widgets/index.dart';
 
-class ExploreScreen extends StatelessWidget {
+class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
 
   @override
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
+  final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
+  String _query = '';
+  String _selectedCategory = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+    Future.microtask(() => ref.read(serviceProvider.notifier).loadServices());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final threshold = _scrollController.position.maxScrollExtent - 220;
+    if (_scrollController.position.pixels >= threshold) {
+      ref.read(serviceProvider.notifier).loadMore();
+    }
+  }
+
+  List<String> _categories(List<ServiceEntity> services) {
+    final values =
+        services
+            .map((service) => service.category?.trim())
+            .whereType<String>()
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+    return ['All', ...values];
+  }
+
+  List<ServiceEntity> _applyFilters(List<ServiceEntity> services) {
+    return services.where((service) {
+      final matchesQuery =
+          _query.isEmpty ||
+          service.title.toLowerCase().contains(_query.toLowerCase()) ||
+          (service.description ?? '').toLowerCase().contains(
+            _query.toLowerCase(),
+          );
+      final matchesCategory =
+          _selectedCategory == 'All' || service.category == _selectedCategory;
+      return matchesQuery && matchesCategory;
+    }).toList();
+  }
+
+  void _openBooking(ServiceEntity service) {
+    final route = Uri(
+      path: RoutePaths.bookingNew,
+      queryParameters: {
+        if (service.providerId != null) 'providerId': service.providerId,
+        if (service.serviceId != null) 'serviceId': service.serviceId,
+        'price': service.price.toString(),
+      },
+    ).toString();
+    context.push(route);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(serviceProvider);
+    final categories = _categories(state.services);
+    final filtered = _applyFilters(state.services);
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  'Explore',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+      backgroundColor: context.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go(RoutePaths.home);
+            }
+          },
+        ),
+        title: Text(
+          'Explore Services',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
+        ),
+        actions: [
+          if (_selectedCategory != 'All' || _query.isNotEmpty)
+            IconButton(
+              tooltip: 'Clear filters',
+              onPressed: () {
+                setState(() {
+                  _selectedCategory = 'All';
+                  _searchController.clear();
+                  _query = '';
+                });
+              },
+              icon: const Icon(Icons.filter_alt_off_rounded),
+            ),
+          IconButton(
+            tooltip: 'Book Appointment',
+            onPressed: () => context.push(RoutePaths.bookingNew),
+            icon: const Icon(Icons.calendar_month_rounded),
+          ),
+        ],
+      ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              context.backgroundColor,
+              context.surfaceColor.withOpacity(context.isDark ? 0.35 : 0.85),
+            ],
+          ),
+        ),
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(serviceProvider.notifier).loadServices(),
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() => _query = value.trim()),
+                    decoration: InputDecoration(
+                      hintText: 'Search by service name or description',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                      filled: true,
+                      fillColor: context.surfaceColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 46,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final selected = category == _selectedCategory;
+                      return ChoiceChip(
+                        label: Text(category),
+                        selected: selected,
+                        showCheckmark: false,
+                        selectedColor: context.primaryColor.withOpacity(0.14),
+                        backgroundColor: context.surfaceColor,
+                        side: BorderSide(color: context.borderColor),
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? context.primaryColor
+                              : context.textSecondary,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                        ),
+                        onSelected: (_) {
+                          setState(() => _selectedCategory = category);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+              if (state.isLoading && state.services.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: LoadingIndicator(message: 'Loading services...'),
+                )
+              else if (state.error != null && state.services.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ErrorState(
+                    title: 'Error loading services',
+                    message: state.error,
+                    actionLabel: 'Retry',
+                    onAction: () =>
+                        ref.read(serviceProvider.notifier).loadServices(),
+                  ),
+                )
+              else if (filtered.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: EmptyState(
+                    title: 'No services found',
+                    subtitle: 'Try a different search or category.',
+                    icon: Icons.search_off_rounded,
+                    onAction: () {
+                      _searchController.clear();
+                      setState(() {
+                        _query = '';
+                        _selectedCategory = 'All';
+                      });
+                    },
+                    actionLabel: 'Clear filters',
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  sliver: SliverList.builder(
+                    itemCount: filtered.length + (state.isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == filtered.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final service = filtered[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _ServiceCard(
+                          service: service,
+                          onBook: () => _openBooking(service),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-            // Search Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
+class _ServiceCard extends StatelessWidget {
+  final ServiceEntity service;
+  final VoidCallback onBook;
+
+  const _ServiceCard({required this.service, required this.onBook});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: context.primaryColor.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: -14,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              service.title,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            if ((service.description ?? '').isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                service.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: context.textSecondary),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                    horizontal: 10,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceColor,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.grey.shade200),
+                    color: context.primaryColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: Colors.grey.shade500),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Search services, vets, shops...',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    service.category ?? 'General',
+                    style: TextStyle(
+                      color: context.primaryColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-            ),
-
-            // Categories
-            SliverToBoxAdapter(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Row(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.iconPrimaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.iconPrimaryColor),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.apps, size: 18, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'All',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.accentColor.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${service.durationMinutes} min',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
-                    Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.local_hospital,
-                            size: 18,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Vets',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.content_cut,
-                            size: 18,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Groomers',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.store,
-                            size: 18,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Shops',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-
-            // Featured Section Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                child: Text(
-                  'Featured',
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Text(
+                  '\$${service.price.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
+                    color: context.primaryColor,
                   ),
                 ),
-              ),
-            ),
-
-            // Featured Cards
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 160,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.blue.shade400,
-                            Colors.blue.shade400.withOpacity(0.7),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Text(
-                            'Premium Care',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Coming soon',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.purple.shade400,
-                            Colors.purple.shade400.withOpacity(0.7),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Text(
-                            'Pet Training',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Coming soon',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 200,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.teal.shade400,
-                            Colors.teal.shade400.withOpacity(0.7),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Text(
-                            'Health Check',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Coming soon',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Nearby Section Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                child: Text(
-                  'Nearby',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                const Spacer(),
+                Text(
+                  'per session',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: onBook,
+                icon: const Icon(Icons.calendar_today_rounded),
+                label: const Text('Book'),
               ),
             ),
-
-            // Nearby List
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade400.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.local_hospital_rounded,
-                              color: Colors.red.shade400,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'PetCare Clinic',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Veterinary • 0.5 km',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.amber, size: 18),
-                              SizedBox(width: 4),
-                              Text(
-                                '4.8',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.orange.shade400.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.content_cut_rounded,
-                              color: Colors.orange.shade400,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Happy Paws Grooming',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Grooming • 1.2 km',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.amber, size: 18),
-                              SizedBox(width: 4),
-                              Text(
-                                '4.6',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceColor,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade400.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.store_rounded,
-                              color: Colors.blue.shade400,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Pet World Store',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Pet Shop • 0.8 km',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.amber, size: 18),
-                              SizedBox(width: 4),
-                              Text(
-                                '4.5',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),

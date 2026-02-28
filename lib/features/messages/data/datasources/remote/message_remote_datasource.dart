@@ -1,0 +1,144 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/core/api/api_client.dart';
+import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/features/messages/data/datasources/messages_datasource.dart';
+import 'package:petcare/features/messages/data/models/message_model.dart';
+
+final messageRemoteDatasourceProvider = Provider<IMessageRemoteDataSource>((
+  ref,
+) {
+  return MessageRemoteDataSource(
+    apiClient: ref.read(apiClientProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
+});
+
+class MessageRemoteDataSource implements IMessageRemoteDataSource {
+  final ApiClient _apiClient;
+  final UserSessionService _sessionService;
+
+  MessageRemoteDataSource({
+    required ApiClient apiClient,
+    required UserSessionService sessionService,
+  }) : _apiClient = apiClient,
+       _sessionService = sessionService;
+
+  List<dynamic> _extractListFromResponse(dynamic data) {
+    if (data is List) {
+      return data;
+    }
+
+    if (data is Map<String, dynamic>) {
+      final payload = data['data'];
+      if (payload is List) {
+        return payload;
+      }
+      if (payload is Map<String, dynamic>) {
+        final nestedList =
+            payload['messages'] ?? payload['data'] ?? payload['items'];
+        if (nestedList is List) {
+          return nestedList;
+        }
+      }
+
+      final rootList = data['messages'] ?? data['items'];
+      if (rootList is List) {
+        return rootList;
+      }
+    }
+
+    return [];
+  }
+
+  @override
+  Future<List<MessageModel>> getAllMessages({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.messageList,
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    final data = response.data;
+    final list = _extractListFromResponse(data);
+    return list
+        .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<List<MessageModel>> getMyMessages() async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.get(ApiEndpoints.messageMy);
+    final data = response.data;
+    final list = _extractListFromResponse(data);
+    return list
+        .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<MessageModel> createMessage(String content) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.post(
+      ApiEndpoints.messageList,
+      data: {'content': content},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final messageData = data['data'] ?? data;
+      if (messageData is Map<String, dynamic>) {
+        return MessageModel.fromJson(messageData);
+      }
+    }
+    throw Exception('Failed to create message');
+  }
+
+  @override
+  Future<MessageModel?> getMessageById(String messageId) async {
+    final response = await _apiClient.get(
+      '${ApiEndpoints.messageById}/$messageId',
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final messageData = data['data'] ?? data;
+      if (messageData is Map<String, dynamic>) {
+        return MessageModel.fromJson(messageData);
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<MessageModel> updateMessage(String messageId, String content) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    final response = await _apiClient.put(
+      '${ApiEndpoints.messageById}/$messageId',
+      data: {'content': content},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final messageData = data['data'] ?? data;
+      if (messageData is Map<String, dynamic>) {
+        return MessageModel.fromJson(messageData);
+      }
+    }
+    throw Exception('Failed to update message');
+  }
+
+  @override
+  Future<bool> deleteMessage(String messageId) async {
+    if (!_sessionService.isLoggedIn()) {
+      throw Exception('User not authenticated');
+    }
+    await _apiClient.delete('${ApiEndpoints.messageById}/$messageId');
+    return true;
+  }
+}

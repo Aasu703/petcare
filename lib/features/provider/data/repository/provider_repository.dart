@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
-import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
+import 'package:petcare/features/provider/data/datasources/provider_datasource.dart';
 import 'package:petcare/features/provider/data/model/provider_api_model.dart';
 import 'package:petcare/features/provider/data/model/provider_hive_model.dart';
 import 'package:petcare/features/provider/domain/entities/provider_entity.dart';
@@ -128,6 +128,71 @@ class ProviderRepositoryImpl implements IProviderRepository {
           return const Right(true);
         }
         return Left(LocalDatabaseFailure(message: 'Failed to update Provider'));
+      }
+    } catch (e) {
+      return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ProviderEntity>> login(
+    String email,
+    String password,
+  ) async {
+    try {
+      if (await _networkInfo.isConnected) {
+        // Online: use remote API
+        final apiModel = await _remoteDataSource.login(email, password);
+        if (apiModel != null) {
+          return Right(apiModel.toEntity());
+        }
+        return Left(ServerFailure(message: 'Invalid email or password'));
+      } else {
+        // Offline: fallback to local Hive - not implemented for auth
+        return Left(
+          LocalDatabaseFailure(message: 'Offline login not supported'),
+        );
+      }
+    } catch (e) {
+      return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> register(
+    ProviderEntity entity,
+    String confirmPassword,
+  ) async {
+    try {
+      if (await _networkInfo.isConnected) {
+        // Online: use remote API
+        final apiModel = ProviderApiModel.fromEntity(entity);
+        // Add confirmPassword to the model for API
+        final apiModelWithConfirm = ProviderApiModel(
+          providerId: apiModel.providerId,
+          businessName: apiModel.businessName,
+          userId: apiModel.userId,
+          address: apiModel.address,
+          phone: apiModel.phone,
+          rating: apiModel.rating,
+          providerType: apiModel.providerType,
+          email: apiModel.email ?? '',
+          password: apiModel.password ?? '',
+          confirmPassword: confirmPassword,
+          locationLatitude: apiModel.locationLatitude,
+          locationLongitude: apiModel.locationLongitude,
+          locationAddress: apiModel.locationAddress,
+          locationVerified: apiModel.locationVerified,
+          pawcareVerified: apiModel.pawcareVerified,
+          status: apiModel.status,
+        );
+        await _remoteDataSource.register(apiModelWithConfirm);
+        return const Right(true);
+      } else {
+        // Offline: fallback to local Hive - not implemented for auth
+        return Left(
+          LocalDatabaseFailure(message: 'Offline register not supported'),
+        );
       }
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));

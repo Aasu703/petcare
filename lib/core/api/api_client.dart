@@ -1,167 +1,215 @@
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/providers/session_providers.dart';
-import 'package:petcare/core/services/session/session_service.dart';
+import 'package:petcare/core/services/storage/token_service.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final sessionService = ref.read(sessionServiceProvider);
-  return ApiClient(sessionService: sessionService);
+  return ApiClient(
+    tokenService: ref.read(tokenServiceProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class ApiClient {
-  final Dio _dio;
-  final SessionService _sessionService;
+  final TokenService? _tokenService;
+  final UserSessionService? _sessionService;
+  late final Dio _dio;
 
-  ApiClient({required SessionService sessionService})
-    : _sessionService = sessionService,
-      _dio = Dio(
-        BaseOptions(
-          baseUrl: ApiEndpoints.baseUrl,
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        ),
-      ) {
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // Add JWT token to all requests
-          final token = _sessionService.getToken();
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-
-          // For multipart/form-data, don't override Content-Type
-          if (options.data is FormData) {
-            options.headers.remove('Content-Type');
-          }
-
-          print('📤 REQUEST[${options.method}] => ${options.path}');
-          print('Headers: ${options.headers}');
-
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print(
-            '📥 RESPONSE[${response.statusCode}] => ${response.requestOptions.path}',
-          );
-          return handler.next(response);
-        },
-        onError: (error, handler) {
-          print(
-            '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.path}',
-          );
-          print('Error: ${error.message}');
-          print('Response: ${error.response?.data}');
-          return handler.next(error);
+  ApiClient({TokenService? tokenService, UserSessionService? sessionService})
+    : _tokenService = tokenService,
+      _sessionService = sessionService {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: ApiEndpoints.baseUrl,
+        connectTimeout: ApiEndpoints.connectionTimeout,
+        receiveTimeout: ApiEndpoints.receiveTimeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       ),
     );
+
+    // Add interceptors if needed (e.g., for logging, authentication)
+    _dio.interceptors.add(
+      _AuthInterceptor(
+        tokenService: _tokenService,
+        sessionService: _sessionService,
+      ),
+    );
+
+    // Auto retry on network errors
+    _dio.interceptors.add(
+      RetryInterceptor(
+        dio: _dio,
+        retries: 3,
+        retryDelays: const [
+          Duration(seconds: 1),
+          Duration(seconds: 2),
+          Duration(seconds: 3),
+        ],
+        // Retry on DioErrorType.other which includes network errors
+        retryEvaluator: (error, attempt) {
+          return error.type == DioExceptionType.connectionTimeout ||
+              error.type == DioExceptionType.sendTimeout ||
+              error.type == DioExceptionType.receiveTimeout ||
+              error.type == DioExceptionType.connectionError;
+        },
+      ),
+    );
+
+    // Only add logger in debug mode
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        PrettyDioLogger(
+          request: true,
+          requestBody: true,
+          responseBody: true,
+          responseHeader: false,
+          error: true,
+          compact: true,
+        ),
+      );
+    }
   }
 
-  // GET request
+  Dio get dio => _dio;
+
+  // Get Request
   Future<Response> get(
-    String endpoint, {
+    String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    try {
-      final response = await _dio.get(
-        endpoint,
-        queryParameters: queryParameters,
-        options: options,
-      );
-      return response;
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _dio.get(path, queryParameters: queryParameters, options: options);
   }
 
-  // POST request
+  // Post Request
   Future<Response> post(
-    String endpoint, {
+    String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    try {
-      final response = await _dio.post(
-        endpoint,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-      return response;
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _dio.post(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
-  // PUT request
+  // Put Request
+
   Future<Response> put(
-    String endpoint, {
+    String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    try {
-      final response = await _dio.put(
-        endpoint,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-      return response;
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _dio.put(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
-  // DELETE request
+  // Delete Request
   Future<Response> delete(
-    String endpoint, {
+    String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    try {
-      final response = await _dio.delete(
-        endpoint,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
-      return response;
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    return _dio.delete(
+      path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+    );
   }
 
-  // Error handling
-  Exception _handleError(DioException error) {
-    String message = 'An error occurred';
+  // Multipart Request (e.g., for file uploads)
+  Future<Response> uploadFile(
+    String path, {
+    required FormData formData,
+    Options? options,
+    ProgressCallback? onSendProgress,
+  }) async {
+    return _dio.post(
+      path,
+      data: formData,
+      options: options,
+      onSendProgress: onSendProgress,
+    );
+  }
+}
 
-    if (error.response != null) {
-      // Server responded with an error
-      final data = error.response!.data;
-      if (data is Map<String, dynamic> && data['message'] != null) {
-        message = data['message'].toString();
+// Auth interceptor to add token to headers
+class _AuthInterceptor extends Interceptor {
+  final TokenService? _tokenService;
+  final UserSessionService? _sessionService;
+
+  _AuthInterceptor({
+    TokenService? tokenService,
+    UserSessionService? sessionService,
+  }) : _tokenService = tokenService,
+       _sessionService = sessionService;
+
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    // Skip auth for public endpoints
+    final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userRegister];
+    final isPublicEndpoint =
+        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
+
+    if (!isPublicEndpoint) {
+      final token = _tokenService != null
+          ? await _tokenService.getToken()
+          : (await SharedPreferences.getInstance()).getString('auth_token');
+      if (token != null && token.isNotEmpty) {
+        final bearerToken =
+            token.startsWith('Bearer ') ? token : 'Bearer $token';
+        options.headers['Authorization'] = bearerToken;
+        print('Added token for request to ${options.path}');
       } else {
-        message = 'Server error: ${error.response!.statusCode}';
+        print('No token found for request to ${options.path}');
+        // Session is stale if user is marked logged in but token is missing.
+        final session = _sessionService;
+        if (session != null && session.isLoggedIn()) {
+          await session.clearSession();
+        }
       }
-    } else if (error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout) {
-      message = 'Connection timeout';
-    } else if (error.type == DioExceptionType.connectionError) {
-      message = 'No internet connection';
-    } else {
-      message = error.message ?? 'Unknown error';
     }
+    handler.next(options);
+  }
 
-    return Exception(message);
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    // Handle unauthorized errors (e.g., token expired)
+    if (err.response?.statusCode == 401) {
+      if (_tokenService != null) {
+        _tokenService.deleteToken();
+      } else {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.remove('auth_token');
+        });
+      }
+      final session = _sessionService;
+      if (session != null) {
+        session.clearSession();
+      }
+    }
+    handler.next(err);
   }
 }

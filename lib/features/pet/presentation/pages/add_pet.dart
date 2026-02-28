@@ -4,9 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/pet/domain/usecase/add_pet_usecase.dart';
+import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_image_picker.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_form_section.dart';
+import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
+/// Add new pet screen
+/// Allows users to create a new pet profile with image, name, species, and details
 class AddPet extends ConsumerStatefulWidget {
   const AddPet({super.key});
 
@@ -20,10 +28,10 @@ class _AddPetState extends ConsumerState<AddPet> {
   final _breedController = TextEditingController();
   final _ageController = TextEditingController();
   final _weightController = TextEditingController();
+  final _imagePicker = ImagePicker();
 
   String _selectedSpecies = 'dog';
   File? _imageFile;
-  final _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -42,6 +50,10 @@ class _AddPetState extends ConsumerState<AddPet> {
     if (image != null) {
       setState(() => _imageFile = File(image.path));
     }
+  }
+
+  void _showImagePicker() {
+    ImagePickerModal.show(context, onSourceSelected: _pickImage);
   }
 
   Future<void> _submit() async {
@@ -70,127 +82,96 @@ class _AddPetState extends ConsumerState<AddPet> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Pet added successfully')));
+      SnackbarService.success(
+        context: context,
+        message: 'Pet added successfully',
+      );
+      final createdPet = ref.read(petNotifierProvider).recentlyAddedPet;
+      if (createdPet != null) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PetCareScreen(pet: createdPet),
+          ),
+        );
+      }
+      if (!mounted) return;
       Navigator.pop(context, true);
     } else {
       final error = ref.read(petNotifierProvider).error;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error ?? 'Failed to add pet')));
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to add pet',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('Add Pet'),
-        backgroundColor: AppColors.backgroundColor,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Add New Pet',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         elevation: 0,
+        centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => _pickImage(ImageSource.gallery),
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: AppColors.iconPrimaryColor.withOpacity(0.1),
-                  backgroundImage: _imageFile != null
-                      ? FileImage(_imageFile!)
-                      : null,
-                  child: _imageFile == null
-                      ? const Icon(Icons.pets, size: 32)
-                      : null,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Form(
-                key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Pet name'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required';
-                        }
-                        return null;
+                    // Image Picker
+                    PetImagePicker(
+                      imageFile: _imageFile,
+                      onTap: _showImagePicker,
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Form Section
+                    PetFormSection(
+                      formKey: _formKey,
+                      nameController: _nameController,
+                      breedController: _breedController,
+                      ageController: _ageController,
+                      weightController: _weightController,
+                      selectedSpecies: _selectedSpecies,
+                      onSpeciesChanged: (value) {
+                        setState(() => _selectedSpecies = value);
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedSpecies,
-                      decoration: const InputDecoration(labelText: 'Species'),
-                      items: const [
-                        DropdownMenuItem(value: 'dog', child: Text('Dog')),
-                        DropdownMenuItem(value: 'cat', child: Text('Cat')),
-                        DropdownMenuItem(value: 'bird', child: Text('Bird')),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _selectedSpecies = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _breedController,
-                      decoration: const InputDecoration(
-                        labelText: 'Breed (optional)',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _ageController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'Age'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _weightController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Weight (kg)',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: petState.isLoading ? null : _submit,
-                        child: petState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Save Pet'),
-                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Action Button
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: PrimaryButton(
+                text: 'Add Pet',
+                onPressed: _submit,
+                isLoading: petState.isLoading,
+                height: 56,
+                borderRadius: 12,
+                backgroundColor: AppColors.buttonPrimaryColor,
+                foregroundColor: AppColors.buttonTextColor,
+              ),
+            ),
+          ],
         ),
       ),
     );

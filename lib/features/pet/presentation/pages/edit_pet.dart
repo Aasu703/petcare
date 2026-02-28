@@ -4,10 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_image_picker.dart';
+import 'package:petcare/features/pet/presentation/widgets/common/pet_form_section.dart';
+import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
+/// Edit existing pet screen
+/// Allows users to update pet profile details
 class EditPetScreen extends ConsumerStatefulWidget {
   final PetEntity pet;
 
@@ -23,10 +31,10 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
   late final TextEditingController _breedController;
   late final TextEditingController _ageController;
   late final TextEditingController _weightController;
+  final _imagePicker = ImagePicker();
 
   late String _selectedSpecies;
   File? _imageFile;
-  final _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -61,6 +69,10 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
     }
   }
 
+  void _showImagePicker() {
+    ImagePickerModal.show(context, onSourceSelected: _pickImage);
+  }
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
@@ -90,127 +102,88 @@ class _EditPetScreenState extends ConsumerState<EditPetScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Pet updated successfully')));
+      SnackbarService.success(
+        context: context,
+        message: 'Pet updated successfully',
+      );
       Navigator.pop(context, true);
     } else {
       final error = ref.read(petNotifierProvider).error;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error ?? 'Failed to update pet')));
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to update pet',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
+    final imageUrl = widget.pet.imageUrl;
+    final resolvedImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(imageUrl)
+        : null;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Pet'),
-        backgroundColor: AppColors.backgroundColor,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text('Edit Pet', style: Theme.of(context).textTheme.titleLarge),
         elevation: 0,
+        centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => _pickImage(ImageSource.gallery),
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: AppColors.iconPrimaryColor.withOpacity(0.1),
-                  backgroundImage: _imageFile != null
-                      ? FileImage(_imageFile!)
-                      : null,
-                  child: _imageFile == null
-                      ? const Icon(Icons.pets, size: 32)
-                      : null,
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Form(
-                key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Pet name'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required';
-                        }
-                        return null;
+                    // Image Picker
+                    PetImagePicker(
+                      imageFile: _imageFile,
+                      networkImageUrl: resolvedImageUrl,
+                      onTap: _showImagePicker,
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Form Section
+                    PetFormSection(
+                      formKey: _formKey,
+                      nameController: _nameController,
+                      breedController: _breedController,
+                      ageController: _ageController,
+                      weightController: _weightController,
+                      selectedSpecies: _selectedSpecies,
+                      onSpeciesChanged: (value) {
+                        setState(() => _selectedSpecies = value);
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedSpecies,
-                      decoration: const InputDecoration(labelText: 'Species'),
-                      items: const [
-                        DropdownMenuItem(value: 'dog', child: Text('Dog')),
-                        DropdownMenuItem(value: 'cat', child: Text('Cat')),
-                        DropdownMenuItem(value: 'bird', child: Text('Bird')),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _selectedSpecies = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _breedController,
-                      decoration: const InputDecoration(
-                        labelText: 'Breed (optional)',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _ageController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'Age'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _weightController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Weight (kg)',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: petState.isLoading ? null : _submit,
-                        child: petState.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Update Pet'),
-                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Action Button
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: PrimaryButton(
+                text: 'Update Pet',
+                onPressed: _submit,
+                isLoading: petState.isLoading,
+                height: 56,
+                borderRadius: 12,
+                backgroundColor: AppColors.buttonPrimaryColor,
+                foregroundColor: AppColors.buttonTextColor,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,12 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/edit_pet.dart';
+import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
+import 'package:petcare/features/pet/presentation/widgets/my_pet_card.dart';
+import 'package:petcare/features/pet/presentation/widgets/my_pet_empty_state.dart';
 
 class MyPet extends ConsumerStatefulWidget {
   const MyPet({super.key});
@@ -30,15 +32,32 @@ class _MyPetState extends ConsumerState<MyPet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete pet'),
-        content: const Text('Are you sure you want to delete this pet?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Delete Pet',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        content: const Text(
+          'Are you sure you want to delete this pet? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.textSecondary),
+            ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorColor,
+              foregroundColor: context.textPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -53,138 +72,232 @@ class _MyPetState extends ConsumerState<MyPet> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success ? 'Pet deleted' : 'Failed to delete pet')),
+      SnackBar(
+        content: Text(
+          success ? 'Pet deleted successfully' : 'Failed to delete pet',
+        ),
+        backgroundColor: success
+            ? AppColors.successColor
+            : AppColors.errorColor,
+      ),
     );
+  }
+
+  Future<void> _onPetTap(PetEntity pet) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditPetScreen(pet: pet)),
+    );
+    if (updated == true) {
+      await _refresh();
+    }
+  }
+
+  Future<void> _onAddPetTap() async {
+    final added = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddPet()),
+    );
+    if (added == true) {
+      await _refresh();
+    }
+  }
+
+  Future<void> _onCareTap(PetEntity pet) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PetCareScreen(pet: pet)),
+    );
+    if (updated == true) {
+      await _refresh();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final petState = ref.watch(petNotifierProvider);
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('My Pets'),
-        backgroundColor: AppColors.backgroundColor,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'My Pets',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final added = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddPet()),
-              );
-              if (added == true) {
-                await _refresh();
-              }
-            },
-          ),
-        ],
+        centerTitle: true,
+        backgroundColor: context.surfaceColor,
+        surfaceTintColor: Colors.transparent,
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
-        child: petState.pets.isEmpty
-            ? ListView(
-                children: const [
-                  SizedBox(height: 80),
-                  Center(child: Text('No pets found')),
-                ],
+        color: AppColors.primaryColor,
+        backgroundColor: context.surfaceColor,
+        child: petState.isLoading && petState.pets.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
               )
-            : ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: petState.pets.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final pet = petState.pets[index];
-                  return _PetCard(
-                    pet: pet,
-                    onEdit: () async {
-                      final updated = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditPetScreen(pet: pet),
+            : petState.error != null && petState.pets.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 42,
+                        color: AppColors.errorColor,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Failed to load pets',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        petState.error!,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: context.textSecondary,
                         ),
-                      );
-                      if (updated == true) {
-                        await _refresh();
-                      }
-                    },
-                    onDelete: () => _deletePet(pet.petId ?? ''),
-                  );
-                },
-              ),
-      ),
-    );
-  }
-}
-
-class _PetCard extends StatelessWidget {
-  final PetEntity pet;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  const _PetCard({
-    required this.pet,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl = pet.imageUrl;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.iconPrimaryColor.withOpacity(0.1),
-            backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
-                ? CachedNetworkImageProvider(
-                    '${ApiEndpoints.mediaServerUrl}$imageUrl',
-                  )
-                : null,
-            child: (imageUrl == null || imageUrl.isEmpty)
-                ? const Icon(Icons.pets)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  pet.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _refresh,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${pet.species}${pet.breed != null ? ' • ${pet.breed}' : ''}',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-          IconButton(icon: const Icon(Icons.edit), onPressed: onEdit),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.redAccent),
-            onPressed: onDelete,
-          ),
-        ],
+              )
+            : petState.pets.isEmpty
+            ? const MyPetEmptyState()
+            : CustomScrollView(
+                slivers: [
+                  // Header Section with Pet Count
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primaryColor.withValues(
+                                    alpha: 0.08,
+                                  ),
+                                  AppColors.accentColor.withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.primaryColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Pet Family',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: context.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${petState.pets.length} ${petState.pets.length == 1 ? 'pet' : 'pets'}',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primaryColor.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.primaryColor.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.pets,
+                                      color: AppColors.primaryColor,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Pet List
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                    sliver: SliverList.separated(
+                      itemCount: petState.pets.length,
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final pet = petState.pets[index];
+                        return MyPetCard(
+                          pet: pet,
+                          onTap: () => _onPetTap(pet),
+                          onCare: () => _onCareTap(pet),
+                          onDelete: () => _deletePet(pet.petId ?? ''),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _onAddPetTap,
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.buttonTextColor,
+        elevation: 6,
+        icon: const Icon(Icons.add),
+        label: const Text(
+          'Add Pet',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
       ),
     );
   }

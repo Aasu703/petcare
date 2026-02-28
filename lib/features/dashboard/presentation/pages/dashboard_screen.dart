@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:petcare/features/bottomnavigation/presentation/pages/discover_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
-import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 
 class Dashboard extends StatefulWidget {
   final String firstName;
@@ -18,8 +18,8 @@ class _DashboardState extends State<Dashboard> {
   List<Widget> get _screens => [
     HomeScreen(firstName: widget.firstName),
     const ExploreScreen(),
-    const DiscoverScreen(),
-    ProfileScreen(firstName: widget.firstName, email: widget.email),
+    const ProductListPage(),
+    const ProfileScreen(),
   ];
   final List<_NavItem> _navItems = const [
     _NavItem(
@@ -33,9 +33,9 @@ class _DashboardState extends State<Dashboard> {
       label: 'Explore',
     ),
     _NavItem(
-      icon: Icons.search_rounded,
-      activeIcon: Icons.search_rounded,
-      label: 'Discover',
+      icon: Icons.store_outlined,
+      activeIcon: Icons.store_rounded,
+      label: 'Shop',
     ),
     _NavItem(
       icon: Icons.person_outline_rounded,
@@ -46,28 +46,30 @@ class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: context.backgroundColor,
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              color: context.surfaceColor.withOpacity(0.96),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withOpacity(0.14),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -12,
+                ),
+              ],
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(
-                _navItems.length,
-                (index) => _buildNavItem(index),
-              ),
+              children: List.generate(_navItems.length, _buildNavItem),
             ),
           ),
         ),
@@ -82,32 +84,39 @@ class _DashboardState extends State<Dashboard> {
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 14 : 12,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.iconPrimaryColor.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [context.primaryColor, context.accentColor],
+                )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isSelected ? item.activeIcon : item.icon,
-              color: isSelected
-                  ? AppColors.iconPrimaryColor
-                  : AppColors.iconSecondaryColor,
-              size: 24,
+              color: isSelected ? Colors.white : context.iconSecondaryColor,
+              size: 22,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 item.label,
                 style: TextStyle(
-                  color: AppColors.iconPrimaryColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
             ],

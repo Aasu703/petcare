@@ -7,7 +7,7 @@ import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
@@ -985,9 +985,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(ctx);
-                        await ref
-                            .read(userSessionNotifierProvider.notifier)
-                            .clearSession();
+                        await ref.read(sessionProvider.notifier).clearSession();
                         if (!context.mounted) return;
                         context.go(RoutePaths.login);
                       },

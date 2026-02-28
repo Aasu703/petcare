@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/bookings/presentation/widgets/book_appointment_widget.dart';
@@ -103,7 +103,9 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
       return;
     }
     final providerId =
-        _selectedProviderId ?? _selectedService?.providerId ?? widget.providerId;
+        _selectedProviderId ??
+        _selectedService?.providerId ??
+        widget.providerId;
     if (providerId == null || providerId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -116,8 +118,21 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
 
     setState(() => _isSubmitting = true);
 
-    final session = ref.read(userSessionServiceProvider);
-    final userId = session.getUserId() ?? '';
+    final session = ref.read(sessionProvider);
+    final userId = session.userId;
+
+    if (userId == null || userId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session expired. Please log in again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      setState(() => _isSubmitting = false);
+      return;
+    }
 
     final startDT = DateTime(
       _selectedDate.year,
@@ -176,7 +191,9 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
         .toList();
 
     if (_selectedService == null && _selectedServiceId != null) {
-      final match = services.where((service) => service.serviceId == _selectedServiceId);
+      final match = services.where(
+        (service) => service.serviceId == _selectedServiceId,
+      );
       if (match.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) {
@@ -184,7 +201,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
           }
           setState(() {
             _selectedService = match.first;
-            if (!_durationManuallySet && _selectedService!.durationMinutes > 0) {
+            if (!_durationManuallySet &&
+                _selectedService!.durationMinutes > 0) {
               _durationMinutes = _selectedService!.durationMinutes;
             }
             if (_selectedProviderId == null || _selectedProviderId!.isEmpty) {

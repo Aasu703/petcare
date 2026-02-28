@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petcare/core/error/failures.dart';
-import 'package:petcare/features/services/di/service_providers.dart';
+import 'package:petcare/features/services/service_providers.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
 import 'package:petcare/features/services/domain/repositories/service_repository.dart';
 import 'package:petcare/features/services/domain/usecases/get_services_usecase.dart';

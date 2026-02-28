@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -62,14 +62,12 @@ class _SplashScreenState extends State<SplashScreen>
     _hasNavigated = true;
 
     final container = ProviderScope.containerOf(context);
-    final session = container.read(userSessionServiceProvider);
+    final session = container.read(sessionProvider);
 
-    final loggedIn = session.isLoggedIn();
+    final loggedIn = session.isLoggedIn;
     if (!mounted) return;
     if (loggedIn) {
-      final role = session.getRole() ?? '';
-
-      if (role.toLowerCase() == 'provider') {
+      if (session.isProvider) {
         context.go(RoutePaths.providerDashboard);
       } else {
         context.go(RoutePaths.home);

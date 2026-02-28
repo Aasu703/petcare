@@ -7,6 +7,8 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
+import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/shared/utils/snackbar_service.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -104,14 +106,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+      SnackbarService.success(
+        context: context,
+        message: 'Profile updated successfully',
       );
       Navigator.pop(context, true);
     } else {
       final error = ref.read(profileViewModelProvider).errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error ?? 'Failed to update profile')),
+      SnackbarService.error(
+        context: context,
+        message: error ?? 'Failed to update profile',
       );
     }
   }
@@ -132,6 +136,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _existingImageUrl = user.avatar;
       _didPrefill = true;
     }
+
     final resolvedExistingImageUrl =
         (_existingImageUrl != null && _existingImageUrl!.isNotEmpty)
         ? ApiEndpoints.resolveMediaUrl(_existingImageUrl!)
@@ -163,7 +168,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Profile Image
                     GestureDetector(
                       onTap: _showImagePicker,
                       child: Stack(
@@ -174,7 +178,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: context.borderColor.withOpacity(0.3),
+                                color: context.borderColor.withValues(
+                                  alpha: 0.3,
+                                ),
                                 width: 3,
                               ),
                             ),
@@ -204,7 +210,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                               loadingProgress,
                                             ) => loadingProgress == null
                                             ? child
-                                            : Center(
+                                            : const Center(
                                                 child: SizedBox(
                                                   width: 20,
                                                   height: 20,
@@ -256,19 +262,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-
-                    // Form
                     Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // First Name
-                          _buildLabel('First Name'),
+                          FormLabel(
+                            text: 'First Name',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          FormTextField(
                             controller: _firstNameController,
                             hintText: 'Enter your first name',
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'First name is required';
@@ -277,23 +288,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Last Name
-                          _buildLabel('Last Name'),
+                          FormLabel(
+                            text: 'Last Name',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          FormTextField(
                             controller: _lastNameController,
                             hintText: 'Enter your last name',
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
                           ),
                           const SizedBox(height: 20),
-
-                          // Email
-                          _buildLabel('Email'),
+                          FormLabel(
+                            text: 'Email',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          FormTextField(
                             controller: _emailController,
                             hintText: 'Enter your email',
                             keyboardType: TextInputType.emailAddress,
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email is required';
@@ -302,14 +325,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          // Phone
-                          _buildLabel('Phone'),
+                          FormLabel(
+                            text: 'Phone',
+                            fontWeight: FontWeight.w500,
+                            color: context.textSecondary,
+                          ),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          FormTextField(
                             controller: _phoneController,
                             hintText: 'Enter your phone number',
                             keyboardType: TextInputType.phone,
+                            borderRadius: 5,
+                            fillColor: context.surfaceColor,
+                            hintColor: context.hintColor,
+                            borderColor: context.borderColor,
                           ),
                           const SizedBox(height: 20),
                         ],
@@ -319,102 +348,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
               ),
             ),
-
-            // Save Button
             Padding(
               padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
+              child: PrimaryButton(
+                text: 'SAVE CHANGES',
+                onPressed: _submit,
+                isLoading: profileState.isLoading,
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: profileState.isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonPrimaryColor,
-                    foregroundColor: AppColors.buttonTextColor,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    disabledBackgroundColor: Theme.of(context).disabledColor,
-                  ),
-                  child: profileState.isLoading
-                      ? SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.buttonTextColor,
-                            ),
-                          ),
-                        )
-                      : const Text(
-                          'SAVE CHANGES',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                ),
+                borderRadius: 5,
+                backgroundColor: AppColors.buttonPrimaryColor,
+                foregroundColor: AppColors.buttonTextColor,
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: context.textSecondary,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: TextStyle(fontSize: 15, color: context.textPrimary),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(fontSize: 15, color: context.hintColor),
-        filled: true,
-        fillColor: context.surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: context.borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: context.borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: AppColors.errorColor),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
         ),
       ),
     );

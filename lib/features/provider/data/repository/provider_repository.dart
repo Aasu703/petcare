@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
-import 'package:petcare/features/provider/data/datasource/provider_datasource.dart';
+import 'package:petcare/features/provider/data/datasources/provider_datasource.dart';
 import 'package:petcare/features/provider/data/model/provider_api_model.dart';
 import 'package:petcare/features/provider/data/model/provider_hive_model.dart';
 import 'package:petcare/features/provider/domain/entities/provider_entity.dart';

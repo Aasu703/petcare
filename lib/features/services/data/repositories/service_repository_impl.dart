@@ -1,8 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
-import 'package:petcare/features/services/data/datasource/local/service_cache_datasource.dart';
-import 'package:petcare/features/services/data/datasource/remote/service_remote_datasource.dart';
+import 'package:petcare/features/services/data/datasources/services_datasource.dart';
 import 'package:petcare/features/services/data/models/service_model.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
 import 'package:petcare/features/services/domain/repositories/service_repository.dart';
@@ -32,7 +31,9 @@ class ServiceRepositoryImpl implements IServiceRepository {
         final cached = await _cacheDataSource.getCachedServices();
         if (cached.isEmpty) {
           return const Left(
-            NetworkFailure(message: 'No internet connection and no cached data'),
+            NetworkFailure(
+              message: 'No internet connection and no cached data',
+            ),
           );
         }
         return Right(ServiceModel.toEntityList(cached));

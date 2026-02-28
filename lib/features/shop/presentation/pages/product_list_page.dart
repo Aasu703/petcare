@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
-import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
-import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
-import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
+import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -19,8 +13,6 @@ class ProductListPage extends ConsumerStatefulWidget {
 }
 
 class _ProductListPageState extends ConsumerState<ProductListPage> {
-  bool _isOpeningMap = false;
-
   @override
   void initState() {
     super.initState();
@@ -29,147 +21,16 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     });
   }
 
-  Future<void> _openNearbyShopMap() async {
-    if (_isOpeningMap) return;
-    setState(() => _isOpeningMap = true);
-
-    try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Enable location service to view nearby shops map.'),
-          ),
-        );
-        return;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Location permission is required to view nearby shops map.',
-            ),
-          ),
-        );
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 0,
-        ),
-      );
-
-      if (!mounted) return;
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => NearbyMapScreen(
-            latitude: position.latitude,
-            longitude: position.longitude,
-            initialMode: NearbyMapMode.petShop,
-          ),
-        ),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open nearby shops map.')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isOpeningMap = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(shopProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              context.go(RoutePaths.home);
-            }
-          },
-        ),
-        title: const Text('Pet Shop'),
-        backgroundColor: AppColors.iconPrimaryColor,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            tooltip: 'Nearby Shops Map',
-            icon: _isOpeningMap
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.map_outlined),
-            onPressed: _isOpeningMap ? null : _openNearbyShopMap,
-          ),
-          IconButton(
-            tooltip: 'My Orders',
-            icon: const Icon(Icons.receipt_long_rounded),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyOrdersPage()),
-            ),
-          ),
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartPage()),
-                ),
-              ),
-              if (state.cart.itemCount > 0)
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${state.cart.itemCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Shop'), elevation: 0),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
+          ? Center(child: Text('Error: ${state.error}'))
           : state.products.isEmpty
           ? const Center(
               child: Column(

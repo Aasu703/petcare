@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_notifications_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_notifications_screen.dart';
 
 class ProviderDashboardFeature {
   final String title;

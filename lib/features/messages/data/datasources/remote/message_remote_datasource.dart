@@ -2,16 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/features/messages/data/datasources/messages_datasource.dart';
 import 'package:petcare/features/messages/data/models/message_model.dart';
-
-abstract interface class IMessageRemoteDataSource {
-  Future<List<MessageModel>> getAllMessages({int page, int limit});
-  Future<List<MessageModel>> getMyMessages();
-  Future<MessageModel> createMessage(String content);
-  Future<MessageModel?> getMessageById(String messageId);
-  Future<MessageModel> updateMessage(String messageId, String content);
-  Future<bool> deleteMessage(String messageId);
-}
 
 final messageRemoteDatasourceProvider = Provider<IMessageRemoteDataSource>((
   ref,

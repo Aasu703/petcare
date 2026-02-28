@@ -93,7 +93,9 @@ class _LoginState extends ConsumerState<Login>
         );
       },
       (_) {
-        context.go(RoutePaths.home);
+        // Router redirect handles navigation automatically via refreshListenable.
+        // Explicit go is a fallback for immediate navigation.
+        if (mounted) context.go(RoutePaths.home);
       },
     );
 

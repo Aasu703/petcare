@@ -2,16 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/features/posts/data/datasources/post_datasource.dart';
 import 'package:petcare/features/posts/data/models/post_model.dart';
-
-abstract interface class IPostRemoteDataSource {
-  Future<List<PostModel>> getAllPosts({int page = 1, int limit = 20});
-  Future<PostModel> createPost(PostModel post);
-  Future<List<PostModel>> getMyPosts();
-  Future<PostModel?> getPostById(String postId);
-  Future<PostModel> updatePost(String postId, PostModel post);
-  Future<bool> deletePost(String postId);
-}
 
 final postRemoteDatasourceProvider = Provider<IPostRemoteDataSource>((ref) {
   return PostRemoteDataSource(

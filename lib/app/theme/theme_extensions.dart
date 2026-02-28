@@ -10,23 +10,19 @@ extension ThemeColorsExtension on BuildContext {
 
   bool get isDark => theme.brightness == Brightness.dark;
 
-  Color get primaryColor => AppColors.primaryColor;
+  Color get primaryColor => colorScheme.primary;
 
-  Color get accentColor => AppColors.accentColor;
+  Color get accentColor => colorScheme.secondary;
 
-  Color get backgroundColor =>
-      isDark ? AppColors.backgroundColorDark : AppColors.backgroundColor;
+  Color get backgroundColor => theme.scaffoldBackgroundColor;
 
-  Color get surfaceColor =>
-      isDark ? AppColors.surfaceColorDark : AppColors.surfaceColor;
+  Color get surfaceColor => colorScheme.surface;
 
-  Color get cardColor => isDark ? AppColors.cardColorDark : AppColors.cardColor;
+  Color get cardColor => theme.cardColor;
 
-  Color get textPrimary =>
-      isDark ? AppColors.textPrimaryColorDark : AppColors.textPrimaryColor;
+  Color get textPrimary => colorScheme.onSurface;
 
-  Color get textSecondary =>
-      isDark ? AppColors.textSecondaryColorDark : AppColors.textSecondaryColor;
+  Color get textSecondary => colorScheme.onSurfaceVariant;
 
   Color get textLight =>
       isDark ? AppColors.textLightColorDark : AppColors.textLightColor;
@@ -34,26 +30,23 @@ extension ThemeColorsExtension on BuildContext {
   Color get hintColor =>
       isDark ? AppColors.textHintColorDark : AppColors.textHintColor;
 
-  Color get borderColor =>
-      isDark ? AppColors.borderColorDark : AppColors.borderColor;
+  Color get borderColor => colorScheme.outline;
 
-  Color get dividerColor =>
-      isDark ? AppColors.dividerColorDark : AppColors.dividerColor;
+  Color get dividerColor => theme.dividerColor;
 
   Color get successColor => AppColors.successColor;
 
-  Color get errorColor => AppColors.errorColor;
+  Color get errorColor => colorScheme.error;
 
   Color get warningColor => AppColors.warningColor;
 
   Color get infoColor => AppColors.infoColor;
 
-  Color get buttonPrimaryColor => AppColors.buttonPrimaryColor;
+  Color get buttonPrimaryColor => colorScheme.primary;
 
-  Color get buttonTextColor => AppColors.buttonTextColor;
+  Color get buttonTextColor => colorScheme.onPrimary;
 
-  Color get iconPrimaryColor => AppColors.iconPrimaryColor;
+  Color get iconPrimaryColor => colorScheme.primary;
 
-  Color get iconSecondaryColor =>
-      isDark ? AppColors.iconSecondaryColorDark : AppColors.iconSecondaryColor;
+  Color get iconSecondaryColor => colorScheme.onSurfaceVariant;
 }

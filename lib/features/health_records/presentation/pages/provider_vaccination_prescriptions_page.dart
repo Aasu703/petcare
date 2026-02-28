@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
-import 'package:petcare/features/health_records/di/health_record_providers.dart';
+import 'package:petcare/features/health_records/health_record_providers.dart';
 import 'package:petcare/features/health_records/domain/entities/health_record_entity.dart';
 import 'package:petcare/features/health_records/domain/usecases/get_health_records_by_pet_usecase.dart';
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';

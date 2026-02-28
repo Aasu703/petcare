@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
-import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/core/session/session_provider.dart';
+import 'package:petcare/core/session/router_notifier.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/pages/provider_signup.dart';
 import 'package:petcare/features/auth/presentation/pages/signup.dart';
@@ -17,14 +18,15 @@ import 'package:petcare/features/onboarding/presentation/pages/service_onboardin
 import 'package:petcare/features/onboarding/presentation/pages/vet_onboarding_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_login_screen.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_main_dashboard.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_login_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_main_dashboard.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
-import 'package:petcare/features/splash/presentation/pages/Splash_screen.dart';
+import 'package:petcare/features/splash/presentation/pages/splash_screen.dart';
 import 'package:petcare/shared/navigation/user_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final sessionService = ref.watch(userSessionServiceProvider);
+  final session = ref.watch(sessionProvider);
+  final notifier = ref.watch(routerNotifierProvider);
 
   bool isAuthRoute(String location) {
     return location == RoutePaths.login ||
@@ -50,27 +52,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: RoutePaths.splash,
     debugLogDiagnostics: false,
+    refreshListenable: notifier,
     redirect: (context, state) {
       final location = state.matchedLocation;
-      final isAuthenticated = sessionService.isLoggedIn();
-      final role = (sessionService.getRole() ?? '').toLowerCase();
+      final isAuthenticated = session.isLoggedIn;
+      final role = (session.role ?? '').toLowerCase();
 
+      // Unauthenticated users trying to access protected routes → login
       if (!isAuthenticated && isProtectedRoute(location)) {
         return RoutePaths.login;
       }
 
+      // Authenticated users on auth routes → redirect to appropriate home
       if (isAuthenticated && isAuthRoute(location)) {
         return role == 'provider'
             ? RoutePaths.providerDashboard
             : RoutePaths.home;
       }
 
+      // Non-provider users trying to access provider routes → user home
       if (isAuthenticated &&
           role != 'provider' &&
           location.startsWith(RoutePaths.providerDashboard)) {
         return RoutePaths.home;
       }
 
+      // Provider users trying to access user-only routes → provider dashboard
       if (isAuthenticated &&
           role == 'provider' &&
           (location.startsWith(RoutePaths.home) ||
@@ -128,9 +135,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: RoutePaths.home,
-                builder: (context, state) => HomeScreen(
-                  firstName: sessionService.getFirstName() ?? 'User',
-                ),
+                builder: (context, state) =>
+                    HomeScreen(firstName: session.firstName ?? 'User'),
               ),
             ],
           ),
@@ -190,9 +196,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) {
       return Scaffold(
         appBar: AppBar(title: const Text('Not Found')),
-        body: Center(
-          child: Text('Route not found: ${state.uri.toString()}'),
-        ),
+        body: Center(child: Text('Route not found: ${state.uri.toString()}')),
       );
     },
   );

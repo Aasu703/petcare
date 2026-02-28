@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:petcare/features/provider/di/provider_providers.dart';
+import 'package:petcare/features/provider/provider_providers.dart';
 import 'package:petcare/features/provider/presentation/state/provider_state.dart';
 
 class ProviderNotifier extends StateNotifier<ProviderState> {

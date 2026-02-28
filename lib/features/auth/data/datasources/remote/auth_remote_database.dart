@@ -58,9 +58,9 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
   @override
   Future<AuthApiModel?> login(String email, String password) async {
     // Validate input parameters
-    if (email == null || email.trim().isEmpty) {}
+    if (email.trim().isEmpty) {}
 
-    if (password == null || password.trim().isEmpty) {}
+    if (password.trim().isEmpty) {}
 
     try {
       final requestData = {'email': email.trim(), 'password': password.trim()};

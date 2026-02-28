@@ -51,6 +51,8 @@
 	<string>This app requires microphone access for recording audio notes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires photo library access to select images for pet profiles.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to show nearby vets and pet places on the map.</string>
 	
 </dict>
 </plist>

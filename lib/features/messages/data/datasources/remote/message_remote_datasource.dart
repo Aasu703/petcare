@@ -2,16 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
+import 'package:petcare/features/messages/data/datasources/messages_datasource.dart';
 import 'package:petcare/features/messages/data/models/message_model.dart';
-
-abstract interface class IMessageRemoteDataSource {
-  Future<List<MessageModel>> getAllMessages({int page, int limit});
-  Future<List<MessageModel>> getMyMessages();
-  Future<MessageModel> createMessage(String content);
-  Future<MessageModel?> getMessageById(String messageId);
-  Future<MessageModel> updateMessage(String messageId, String content);
-  Future<bool> deleteMessage(String messageId);
-}
 
 final messageRemoteDatasourceProvider = Provider<IMessageRemoteDataSource>((
   ref,
@@ -32,6 +24,33 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   }) : _apiClient = apiClient,
        _sessionService = sessionService;
 
+  List<dynamic> _extractListFromResponse(dynamic data) {
+    if (data is List) {
+      return data;
+    }
+
+    if (data is Map<String, dynamic>) {
+      final payload = data['data'];
+      if (payload is List) {
+        return payload;
+      }
+      if (payload is Map<String, dynamic>) {
+        final nestedList =
+            payload['messages'] ?? payload['data'] ?? payload['items'];
+        if (nestedList is List) {
+          return nestedList;
+        }
+      }
+
+      final rootList = data['messages'] ?? data['items'];
+      if (rootList is List) {
+        return rootList;
+      }
+    }
+
+    return [];
+  }
+
   @override
   Future<List<MessageModel>> getAllMessages({
     int page = 1,
@@ -42,12 +61,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
       queryParameters: {'page': page, 'limit': limit},
     );
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['data'] ?? data['messages'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    final list = _extractListFromResponse(data);
     return list
         .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -60,12 +74,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
     }
     final response = await _apiClient.get(ApiEndpoints.messageMy);
     final data = response.data;
-    List<dynamic> list = [];
-    if (data is Map<String, dynamic>) {
-      list = data['data'] ?? [];
-    } else if (data is List) {
-      list = data;
-    }
+    final list = _extractListFromResponse(data);
     return list
         .map((item) => MessageModel.fromJson(item as Map<String, dynamic>))
         .toList();

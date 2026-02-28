@@ -4,14 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/explore_screen.dart';
-import 'package:petcare/features/services/di/service_providers.dart';
+import 'package:petcare/features/services/service_providers.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
 import 'package:petcare/features/services/domain/repositories/service_repository.dart';
 import 'package:petcare/features/services/domain/usecases/get_services_usecase.dart';
 
 class _FakeServiceRepository implements IServiceRepository {
   @override
-  Future<Either<Failure, ServiceEntity>> getServiceById(String serviceId) async {
+  Future<Either<Failure, ServiceEntity>> getServiceById(
+    String serviceId,
+  ) async {
     return Left(ServerFailure(message: 'not implemented'));
   }
 
@@ -71,10 +73,7 @@ void main() {
     expect(find.text('Vet Consultation'), findsOneWidget);
     expect(find.text('Full Grooming'), findsOneWidget);
 
-    await tester.enterText(
-      find.byType(TextField),
-      'Vet',
-    );
+    await tester.enterText(find.byType(TextField), 'Vet');
     await tester.pump();
 
     expect(find.text('Vet Consultation'), findsOneWidget);

@@ -4,19 +4,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/token_service.dart';
+import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(tokenService: ref.read(tokenServiceProvider));
+  return ApiClient(
+    tokenService: ref.read(tokenServiceProvider),
+    sessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class ApiClient {
   final TokenService? _tokenService;
+  final UserSessionService? _sessionService;
   late final Dio _dio;
 
-  ApiClient({TokenService? tokenService}) : _tokenService = tokenService {
+  ApiClient({TokenService? tokenService, UserSessionService? sessionService})
+    : _tokenService = tokenService,
+      _sessionService = sessionService {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -30,7 +37,12 @@ class ApiClient {
     );
 
     // Add interceptors if needed (e.g., for logging, authentication)
-    _dio.interceptors.add(_AuthInterceptor(tokenService: _tokenService));
+    _dio.interceptors.add(
+      _AuthInterceptor(
+        tokenService: _tokenService,
+        sessionService: _sessionService,
+      ),
+    );
 
     // Auto retry on network errors
     _dio.interceptors.add(
@@ -143,8 +155,13 @@ class ApiClient {
 // Auth interceptor to add token to headers
 class _AuthInterceptor extends Interceptor {
   final TokenService? _tokenService;
+  final UserSessionService? _sessionService;
 
-  _AuthInterceptor({TokenService? tokenService}) : _tokenService = tokenService;
+  _AuthInterceptor({
+    TokenService? tokenService,
+    UserSessionService? sessionService,
+  }) : _tokenService = tokenService,
+       _sessionService = sessionService;
 
   @override
   void onRequest(
@@ -153,23 +170,25 @@ class _AuthInterceptor extends Interceptor {
   ) async {
     // Skip auth for public endpoints
     final publicEndpoints = [ApiEndpoints.userLogin, ApiEndpoints.userRegister];
-    final isPublicGet =
-        options.method == 'GET' &&
-        publicEndpoints.any((endpoints) => options.path.startsWith(endpoints));
+    final isPublicEndpoint =
+        publicEndpoints.any((endpoint) => options.path.startsWith(endpoint));
 
-    final isAuthEndpoint =
-        options.path == ApiEndpoints.userLogin ||
-        options.path == ApiEndpoints.user;
-
-    if (!isPublicGet && !isAuthEndpoint) {
+    if (!isPublicEndpoint) {
       final token = _tokenService != null
           ? await _tokenService.getToken()
           : (await SharedPreferences.getInstance()).getString('auth_token');
-      if (token != null) {
-        options.headers['authorization'] = token;
+      if (token != null && token.isNotEmpty) {
+        final bearerToken =
+            token.startsWith('Bearer ') ? token : 'Bearer $token';
+        options.headers['Authorization'] = bearerToken;
         print('Added token for request to ${options.path}');
       } else {
         print('No token found for request to ${options.path}');
+        // Session is stale if user is marked logged in but token is missing.
+        final session = _sessionService;
+        if (session != null && session.isLoggedIn()) {
+          await session.clearSession();
+        }
       }
     }
     handler.next(options);
@@ -185,6 +204,10 @@ class _AuthInterceptor extends Interceptor {
         SharedPreferences.getInstance().then((prefs) {
           prefs.remove('auth_token');
         });
+      }
+      final session = _sessionService;
+      if (session != null) {
+        session.clearSession();
       }
     }
     handler.next(err);

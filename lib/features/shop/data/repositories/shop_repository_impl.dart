@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
-import 'package:petcare/features/shop/data/datasource/remote/shop_remote_datasource.dart';
+import 'package:petcare/features/shop/data/datasources/shop_datasource.dart';
 import 'package:petcare/features/shop/data/models/product_model.dart';
 import 'package:petcare/features/shop/domain/entities/order_entity.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';

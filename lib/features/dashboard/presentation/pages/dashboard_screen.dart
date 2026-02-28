@@ -48,26 +48,28 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          boxShadow: [
-            BoxShadow(
-              color: context.textPrimary.withOpacity(0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              color: context.surfaceColor.withOpacity(0.96),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: context.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withOpacity(0.14),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -12,
+                ),
+              ],
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(
-                _navItems.length,
-                (index) => _buildNavItem(index),
-              ),
+              children: List.generate(_navItems.length, _buildNavItem),
             ),
           ),
         ),
@@ -82,32 +84,39 @@ class _DashboardState extends State<Dashboard> {
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 14 : 12,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? context.primaryColor.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isSelected
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [context.primaryColor, context.accentColor],
+                )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isSelected ? item.activeIcon : item.icon,
-              color: isSelected
-                  ? context.primaryColor
-                  : context.iconSecondaryColor,
-              size: 24,
+              color: isSelected ? Colors.white : context.iconSecondaryColor,
+              size: 22,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 item.label,
                 style: TextStyle(
-                  color: context.primaryColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
             ],

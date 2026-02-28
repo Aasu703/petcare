@@ -12,6 +12,10 @@ class AppPrimaryButton extends StatelessWidget {
     this.icon,
     this.width,
     this.height = 54,
+    this.backgroundColor = AppColors.iconPrimaryColor,
+    this.foregroundColor = Colors.white,
+    this.borderRadius = 14,
+    this.disabledBackgroundColor,
   });
 
   final String text;
@@ -20,6 +24,10 @@ class AppPrimaryButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final double height;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final double borderRadius;
+  final Color? disabledBackgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +37,14 @@ class AppPrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.iconPrimaryColor,
-          foregroundColor: Colors.white,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
-          disabledBackgroundColor: AppColors.iconPrimaryColor.withOpacity(0.6),
+          disabledBackgroundColor:
+              disabledBackgroundColor ?? backgroundColor.withValues(alpha: 0.6),
         ),
         child: isLoading
             ? const SizedBox(

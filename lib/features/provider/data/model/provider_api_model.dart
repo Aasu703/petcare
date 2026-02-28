@@ -11,6 +11,12 @@ class ProviderApiModel {
   final String? email;
   final String? password;
   final String? confirmPassword;
+  final double? locationLatitude;
+  final double? locationLongitude;
+  final String? locationAddress;
+  final bool locationVerified;
+  final bool pawcareVerified;
+  final String? status;
 
   ProviderApiModel({
     this.providerId,
@@ -23,6 +29,12 @@ class ProviderApiModel {
     this.email,
     this.password,
     this.confirmPassword,
+    this.locationLatitude,
+    this.locationLongitude,
+    this.locationAddress,
+    this.locationVerified = false,
+    this.pawcareVerified = false,
+    this.status,
   });
 
   // TO JSON (Send to API)
@@ -36,11 +48,39 @@ class ProviderApiModel {
     if (password != null) json["password"] = password;
     if (confirmPassword != null) json["confirmPassword"] = confirmPassword;
     if (providerType != null) json["providerType"] = providerType;
+    if (locationLatitude != null && locationLongitude != null) {
+      json["location"] = {
+        "latitude": locationLatitude,
+        "longitude": locationLongitude,
+        "address": locationAddress ?? "",
+      };
+    }
     return json;
   }
 
   // FROM JSON (From API)
   factory ProviderApiModel.fromJson(Map<String, dynamic> json) {
+    int parseRating(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.round();
+      if (value is num) return value.toInt();
+      if (value is String) {
+        final parsedInt = int.tryParse(value);
+        if (parsedInt != null) return parsedInt;
+        final parsedDouble = double.tryParse(value);
+        if (parsedDouble != null) return parsedDouble.round();
+      }
+      return 0;
+    }
+
+    double? parseCoordinate(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
     return ProviderApiModel(
       providerId: (json["_id"] ?? json["provider_id"])?.toString(),
       userId: (json["userId"] ?? json["user_id"])?.toString() ?? '',
@@ -48,10 +88,22 @@ class ProviderApiModel {
           (json["businessName"] ?? json["business_name"])?.toString() ?? '',
       address: json["address"]?.toString() ?? '',
       phone: json["phone"]?.toString() ?? '',
-      rating: json["rating"] ?? 0,
+      rating: parseRating(json["rating"]),
       providerType: json["providerType"]?.toString(),
       email: json["email"]?.toString(),
       password: json["password"]?.toString(),
+      locationLatitude: parseCoordinate(
+        (json["location"] as Map?)?["latitude"] ?? json["latitude"],
+      ),
+      locationLongitude: parseCoordinate(
+        (json["location"] as Map?)?["longitude"] ?? json["longitude"],
+      ),
+      locationAddress:
+          (json["location"] as Map?)?["address"]?.toString() ??
+          json["locationAddress"]?.toString(),
+      locationVerified: json["locationVerified"] == true,
+      pawcareVerified: json["pawcareVerified"] == true,
+      status: json["status"]?.toString(),
     );
   }
 
@@ -67,6 +119,12 @@ class ProviderApiModel {
       providerType: providerType,
       email: email,
       password: password,
+      locationLatitude: locationLatitude,
+      locationLongitude: locationLongitude,
+      locationAddress: locationAddress,
+      locationVerified: locationVerified,
+      pawcareVerified: pawcareVerified,
+      status: status,
     );
   }
 
@@ -82,6 +140,12 @@ class ProviderApiModel {
       providerType: entity.providerType,
       email: entity.email,
       password: entity.password,
+      locationLatitude: entity.locationLatitude,
+      locationLongitude: entity.locationLongitude,
+      locationAddress: entity.locationAddress,
+      locationVerified: entity.locationVerified,
+      pawcareVerified: entity.pawcareVerified,
+      status: entity.status,
     );
   }
 

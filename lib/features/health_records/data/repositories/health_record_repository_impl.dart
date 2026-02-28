@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
-import 'package:petcare/features/health_records/data/datasource/remote/health_record_remote_datasource.dart';
+import 'package:petcare/features/health_records/data/datasources/health_record.dart';
 import 'package:petcare/features/health_records/data/models/health_record_model.dart';
 import 'package:petcare/features/health_records/domain/entities/health_record_entity.dart';
 import 'package:petcare/features/health_records/domain/repositories/health_record_repository.dart';

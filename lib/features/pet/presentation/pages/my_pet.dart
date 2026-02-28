@@ -1,16 +1,17 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/core/api/api_endpoints.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/edit_pet.dart';
+import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
-import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/features/pet/presentation/widgets/my_pet_card.dart';
+import 'package:petcare/features/pet/presentation/widgets/my_pet_empty_state.dart';
 
 class MyPet extends ConsumerStatefulWidget {
-  MyPet({super.key});
+  const MyPet({super.key});
 
   @override
   ConsumerState<MyPet> createState() => _MyPetState();
@@ -36,7 +37,7 @@ class _MyPetState extends ConsumerState<MyPet> {
           'Delete Pet',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        content: Text(
+        content: const Text(
           'Are you sure you want to delete this pet? This action cannot be undone.',
         ),
         actions: [
@@ -57,7 +58,7 @@ class _MyPetState extends ConsumerState<MyPet> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text('Delete'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -82,302 +83,220 @@ class _MyPetState extends ConsumerState<MyPet> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final petState = ref.watch(petNotifierProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('My Pets', style: Theme.of(context).textTheme.titleLarge),
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        color: AppColors.primaryColor,
-        child: petState.isLoading && petState.pets.isEmpty
-            ? Center(child: CircularProgressIndicator())
-            : petState.pets.isEmpty
-            ? _buildEmptyState()
-            : ListView.separated(
-                padding: EdgeInsets.all(20),
-                itemCount: petState.pets.length,
-                separatorBuilder: (_, __) => SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final pet = petState.pets[index];
-                  return _PetCard(
-                    pet: pet,
-                    onTap: () async {
-                      final updated = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditPetScreen(pet: pet),
-                        ),
-                      );
-                      if (updated == true) {
-                        await _refresh();
-                      }
-                    },
-                    onDelete: () => _deletePet(pet.petId ?? ''),
-                  );
-                },
-              ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final added = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddPet()),
-          );
-          if (added == true) {
-            await _refresh();
-          }
-        },
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: AppColors.buttonTextColor,
-        elevation: 4,
-        icon: Icon(Icons.add),
-        label: Text('Add Pet', style: TextStyle(fontWeight: FontWeight.w600)),
-      ),
+  Future<void> _onPetTap(PetEntity pet) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditPetScreen(pet: pet)),
     );
+    if (updated == true) {
+      await _refresh();
+    }
   }
 
-  Widget _buildEmptyState() {
-    return ListView(
-      padding: EdgeInsets.all(40),
-      children: [
-        SizedBox(height: 80),
-        Icon(
-          Icons.pets,
-          size: 120,
-          color: context.textSecondary.withOpacity(0.3),
-        ),
-        SizedBox(height: 24),
-        Text(
-          'No Pets Yet',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: context.textPrimary,
-          ),
-        ),
-        SizedBox(height: 12),
-        Text(
-          'Start adding your beloved pets to keep track of their information and care.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: context.textSecondary,
-            height: 1.5,
-          ),
-        ),
-      ],
+  Future<void> _onAddPetTap() async {
+    final added = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddPet()),
     );
+    if (added == true) {
+      await _refresh();
+    }
   }
-}
 
-class _PetCard extends StatelessWidget {
-  final PetEntity pet;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
-  _PetCard({required this.pet, required this.onTap, required this.onDelete});
-
-  String _getSpeciesEmoji(String species) {
-    switch (species.toLowerCase()) {
-      case 'dog':
-        return '🐕';
-      case 'cat':
-        return '🐈';
-      case 'bird':
-        return '🦜';
-      default:
-        return '🐾';
+  Future<void> _onCareTap(PetEntity pet) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PetCareScreen(pet: pet)),
+    );
+    if (updated == true) {
+      await _refresh();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = pet.imageUrl;
+    final petState = ref.watch(petNotifierProvider);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: context.borderColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(context.isDark ? 0.25 : 0.06),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: context.textPrimary),
+          onPressed: () => Navigator.pop(context),
         ),
-        child: Row(
-          children: [
-            // Pet Image
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.1),
-                    AppColors.accentColor.withOpacity(0.1),
-                  ],
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: (imageUrl != null && imageUrl.isNotEmpty)
-                    ? CachedNetworkImage(
-                        imageUrl: ApiEndpoints.resolveMediaUrl(imageUrl!),
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Center(
-                          child: Text(
-                            _getSpeciesEmoji(pet.species),
-                            style: TextStyle(fontSize: 32),
-                          ),
-                        ),
-                      )
-                    : Center(
-                        child: Text(
-                          _getSpeciesEmoji(pet.species),
-                          style: TextStyle(fontSize: 32),
+        title: Text(
+          'My Pets',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: context.surfaceColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        color: AppColors.primaryColor,
+        backgroundColor: context.surfaceColor,
+        child: petState.isLoading && petState.pets.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
+              )
+            : petState.error != null && petState.pets.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 42,
+                        color: AppColors.errorColor,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Failed to load pets',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        petState.error!,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: context.textSecondary,
                         ),
                       ),
-              ),
-            ),
-            SizedBox(width: 16),
-
-            // Pet Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    pet.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: context.textPrimary,
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _refresh,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : petState.pets.isEmpty
+            ? const MyPetEmptyState()
+            : CustomScrollView(
+                slivers: [
+                  // Header Section with Pet Count
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primaryColor.withValues(
+                                    alpha: 0.08,
+                                  ),
+                                  AppColors.accentColor.withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.primaryColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Pet Family',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: context.textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${petState.pets.length} ${petState.pets.length == 1 ? 'pet' : 'pets'}',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primaryColor.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    border: Border.all(
+                                      color: AppColors.primaryColor.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.pets,
+                                      color: AppColors.primaryColor,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          pet.species.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryColor,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                      if (pet.breed != null && pet.breed!.isNotEmpty) ...[
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            pet.breed!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: context.textSecondary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      if (pet.age != null) ...[
-                        Icon(
-                          Icons.cake_outlined,
-                          size: 14,
-                          color: context.textSecondary,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          '${pet.age} ${pet.age == 1 ? 'year' : 'years'}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: context.textSecondary,
-                          ),
-                        ),
-                      ],
-                      if (pet.age != null && pet.weight != null) ...[
-                        SizedBox(width: 12),
-                        Container(
-                          width: 4,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: context.borderColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                      ],
-                      if (pet.weight != null) ...[
-                        Icon(
-                          Icons.monitor_weight_outlined,
-                          size: 14,
-                          color: context.textSecondary,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          '${pet.weight} kg',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: context.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ],
+                  // Pet List
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                    sliver: SliverList.separated(
+                      itemCount: petState.pets.length,
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final pet = petState.pets[index];
+                        return MyPetCard(
+                          pet: pet,
+                          onTap: () => _onPetTap(pet),
+                          onCare: () => _onCareTap(pet),
+                          onDelete: () => _deletePet(pet.petId ?? ''),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            // Delete Button
-            IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                color: AppColors.errorColor,
-                size: 22,
-              ),
-              onPressed: onDelete,
-              tooltip: 'Delete pet',
-            ),
-          ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _onAddPetTap,
+        backgroundColor: AppColors.primaryColor,
+        foregroundColor: AppColors.buttonTextColor,
+        elevation: 6,
+        icon: const Icon(Icons.add),
+        label: const Text(
+          'Add Pet',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),
     );

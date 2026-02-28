@@ -7,7 +7,7 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      false; // Set to true for physical device testing, false for emulator/simulator
+      true; // Set to true for physical device testing, false for emulator/simulator
   static const String _ipAddress = '192.168.1.6';
   static const int _port = 5050;
 
@@ -20,17 +20,39 @@ class ApiEndpoints {
   }
 
   static String get serverUrl => 'http://$_host:$_port/';
+  static String get socketUrl => 'http://$_host:$_port';
   static String get baseUrl => '${serverUrl}api/';
   static String get mediaUrl => '${serverUrl}media/';
+  static String get uploadsUrl => '${serverUrl}uploads/';
 
   static String resolveMediaUrl(String path) {
-    if (path.isEmpty) return mediaUrl;
-    final normalized = path.startsWith('/') ? path.substring(1) : path;
+    final trimmed = path.trim();
+    if (trimmed.isEmpty) return mediaUrl;
+
+    final parsed = Uri.tryParse(trimmed);
+    if (parsed != null && parsed.hasScheme) {
+      return trimmed;
+    }
+
+    var normalized = trimmed.startsWith('/') ? trimmed.substring(1) : trimmed;
+
+    // Backward compatibility for incorrectly prefixed persisted paths.
+    if (normalized.startsWith('media/uploads/')) {
+      normalized = normalized.substring('media/'.length);
+    }
+
+    if (normalized.startsWith('uploads/')) {
+      return '$serverUrl$normalized';
+    }
+    if (normalized.startsWith('media/')) {
+      return '$serverUrl$normalized';
+    }
+
     return '$mediaUrl$normalized';
   }
 
-  static const Duration connectionTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectionTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
 
   // -------------------------- AUTH -------------------------
   static const String user = 'auth/user';
@@ -44,6 +66,11 @@ class ApiEndpoints {
   static const String provider = 'provider';
   static const String providerLogin = 'login';
   static const String providerRegister = 'register';
+  static const String providerMe = 'provider/me';
+  static const String providerProfile = 'provider/profile';
+  static const String providerSetType = 'provider/set-type';
+  static const String providerCertificateUpload = 'upload/provider-certificate';
+  static const String providerVerifiedLocations = 'provider/verified-locations';
 
   static const String providerGetAll = 'provider';
   static const String providerById = 'provider';
@@ -62,6 +89,7 @@ class ApiEndpoints {
   static const String petCreate = 'user/pet';
   static const String petUpdate = 'user/pet';
   static const String petDelete = 'user/pet';
+  static String petCareById(String petId) => 'user/pet/$petId/care';
 
   // ----------------------- BOOKING -------------------------
   static const String bookingCreate = 'booking';
@@ -102,8 +130,13 @@ class ApiEndpoints {
   static const String messageMy = 'message/my';
   static const String messageById = 'message';
 
+  // ------------------------ CHAT ---------------------------
+  static const String chatConversations = 'chat/conversations';
+  static const String chatMessages = 'chat/messages';
+  static const String chatContacts = 'chat/contacts';
+
   // ------------------------ POST ---------------------------
-  static const String postAll = 'provider/post/all';
+  static const String postAll = 'post';
   static const String postCreate = 'provider/post';
   static const String postMy = 'provider/post/my';
   static const String postById = 'provider/post';

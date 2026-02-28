@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/provider/di/provider_providers.dart';
+import 'package:petcare/features/provider/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
-import 'package:petcare/features/provider/presentation/screens/provider_login_screen.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_login_screen.dart';
+import 'package:petcare/features/auth/presentation/widgets/auth_form_field.dart';
+import 'package:petcare/features/auth/presentation/widgets/provider_type_selector.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_location_picker_screen.dart';
 
 class ProviderSignupScreen extends ConsumerStatefulWidget {
   const ProviderSignupScreen({super.key});
@@ -37,6 +40,11 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   bool _isSubmitting = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  String? _selectedProviderType;
+  bool _showProviderTypeError = false;
+  double? _locationLatitude;
+  double? _locationLongitude;
+  String _locationNote = '';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -93,6 +101,41 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   Future<void> _tryRegister() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
+    if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
+      setState(() {
+        _showProviderTypeError = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please choose a provider type to continue'),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final requiresPinnedLocation =
+        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
+    if (requiresPinnedLocation &&
+        (_locationLatitude == null || _locationLongitude == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please pin your clinic/shop location on map to continue',
+          ),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
@@ -107,6 +150,12 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
         businessName: _businessNameController.text.trim(),
         address: _addressController.text.trim(),
         phone: _phoneController.text.trim(),
+        providerType: _selectedProviderType!,
+        locationLatitude: _locationLatitude,
+        locationLongitude: _locationLongitude,
+        locationAddress: _locationNote.trim().isEmpty
+            ? null
+            : _locationNote.trim(),
       );
 
       final result = await usecase(params);
@@ -168,10 +217,38 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
     }
   }
 
+  Future<void> _pickLocationOnMap() async {
+    final title = _selectedProviderType == 'vet'
+        ? 'Pin Clinic Location'
+        : 'Pin Shop Location';
+    final result = await Navigator.of(context).push<ProviderLocationPickResult>(
+      MaterialPageRoute(
+        builder: (_) => ProviderLocationPickerScreen(
+          title: title,
+          initialLatitude: _locationLatitude,
+          initialLongitude: _locationLongitude,
+          initialNote: _locationNote,
+        ),
+      ),
+    );
+
+    if (!mounted || result == null) return;
+    setState(() {
+      _locationLatitude = result.latitude;
+      _locationLongitude = result.longitude;
+      _locationNote = result.locationNote;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final requiresPinnedLocation =
+        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
+    final hasPinnedLocation =
+        _locationLatitude != null && _locationLongitude != null;
+
     return Scaffold(
-            body: SafeArea(
+      body: SafeArea(
         child: Stack(
           children: [
             Positioned(
@@ -241,7 +318,105 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                               key: _formKey,
                               child: Column(
                                 children: [
-                                  _modernField(
+                                  ProviderTypeSelector(
+                                    selectedProviderType: _selectedProviderType,
+                                    showError: _showProviderTypeError,
+                                    onSelected: (value) {
+                                      setState(() {
+                                        _selectedProviderType = value;
+                                        _showProviderTypeError = false;
+                                      });
+                                    },
+                                  ),
+                                  if (requiresPinnedLocation) ...[
+                                    const SizedBox(height: 14),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: hasPinnedLocation
+                                              ? const Color(0xFFB7E4C7)
+                                              : const Color(0xFFFFE0B2),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_pin,
+                                                color: hasPinnedLocation
+                                                    ? const Color(0xFF2E7D32)
+                                                    : const Color(0xFFEF6C00),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  _selectedProviderType == 'vet'
+                                                      ? 'Clinic Map Location'
+                                                      : 'Shop Map Location',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            hasPinnedLocation
+                                                ? 'Pinned at ${_locationLatitude!.toStringAsFixed(6)}, ${_locationLongitude!.toStringAsFixed(6)}'
+                                                : 'Pin your exact business location for admin map verification.',
+                                            style: TextStyle(
+                                              color: hasPinnedLocation
+                                                  ? const Color(0xFF2E7D32)
+                                                  : const Color(0xFF6D4C41),
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          if (_locationNote.trim().isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 4,
+                                              ),
+                                              child: Text(
+                                                _locationNote.trim(),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Color(0xFF6B7280),
+                                                ),
+                                              ),
+                                            ),
+                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: OutlinedButton.icon(
+                                              onPressed: _pickLocationOnMap,
+                                              icon: Icon(
+                                                hasPinnedLocation
+                                                    ? Icons.edit_location_alt
+                                                    : Icons.map_outlined,
+                                              ),
+                                              label: Text(
+                                                hasPinnedLocation
+                                                    ? 'Update Pin on Map'
+                                                    : 'Pin on Map',
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 18),
+                                  AuthFormField(
                                     controller: _emailController,
                                     focusNode: _emailFocusNode,
                                     hint: 'Enter your email',
@@ -261,7 +436,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  _modernField(
+                                  AuthFormField(
                                     controller: _passwordController,
                                     focusNode: _passwordFocusNode,
                                     hint: 'Enter your password',
@@ -292,7 +467,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  _modernField(
+                                  AuthFormField(
                                     controller: _confirmPasswordController,
                                     focusNode: _confirmPasswordFocusNode,
                                     hint: 'Confirm your password',
@@ -324,7 +499,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  _modernField(
+                                  AuthFormField(
                                     controller: _businessNameController,
                                     focusNode: _businessNameFocusNode,
                                     hint: 'Enter your business name',
@@ -341,7 +516,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  _modernField(
+                                  AuthFormField(
                                     controller: _addressController,
                                     focusNode: _addressFocusNode,
                                     hint: 'Enter your business address',
@@ -359,7 +534,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     },
                                   ),
                                   const SizedBox(height: 16),
-                                  _modernField(
+                                  AuthFormField(
                                     controller: _phoneController,
                                     focusNode: _phoneFocusNode,
                                     hint: 'Enter your phone number',
@@ -430,90 +605,6 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _modernField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String hint,
-    required String label,
-    required IconData icon,
-    bool obscure = false,
-    TextInputType keyboardType = TextInputType.text,
-    Widget? suffixIcon,
-    int? maxLines,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      focusNode: focusNode,
-      keyboardType: keyboardType,
-      obscureText: obscure,
-      maxLines: maxLines ?? 1,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: Colors.black.withOpacity(0.35),
-          fontWeight: FontWeight.w400,
-        ),
-        labelStyle: TextStyle(
-          color: Colors.black.withOpacity(0.6),
-          fontWeight: FontWeight.w600,
-        ),
-        floatingLabelStyle: TextStyle(
-          color: AppColors.accentColor,
-          fontWeight: FontWeight.w700,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: AppColors.iconPrimaryColor.withOpacity(0.7),
-          size: 22,
-        ),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.5),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: Colors.black.withOpacity(0.08),
-            width: 1.5,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: Colors.black.withOpacity(0.08),
-            width: 1.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: AppColors.accentColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-      ),
-      validator:
-          validator ??
-          (value) {
-            if (value == null || value.trim().isEmpty) {
-              return '$label is empty';
-            }
-            return null;
-          },
     );
   }
 }

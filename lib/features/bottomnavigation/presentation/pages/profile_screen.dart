@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,10 +7,9 @@ import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
-import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
@@ -146,6 +144,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final themeMode = ref.watch(themeModeProvider);
 
     final avatar = profileState.user?.avatar;
+    final resolvedAvatarUrl = (avatar != null && avatar.isNotEmpty)
+        ? ApiEndpoints.resolveMediaUrl(avatar)
+        : null;
+    final hasAvatarImage = resolvedAvatarUrl != null;
     final displayName = session.getFirstName() ?? 'User';
     final displayEmail = session.getEmail() ?? '';
 
@@ -240,21 +242,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     backgroundColor: Colors.white.withOpacity(
                                       0.2,
                                     ),
-                                    backgroundImage:
-                                        avatar != null && avatar.isNotEmpty
-                                        ? CachedNetworkImageProvider(
-                                            ApiEndpoints.resolveMediaUrl(
-                                              avatar,
+                                    child: hasAvatarImage
+                                        ? ClipOval(
+                                            child: Image.network(
+                                              resolvedAvatarUrl,
+                                              width: 110,
+                                              height: 110,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder:
+                                                  (
+                                                    context,
+                                                    child,
+                                                    loadingProgress,
+                                                  ) => loadingProgress == null
+                                                  ? child
+                                                  : Center(
+                                                      child: SizedBox(
+                                                        width: 22,
+                                                        height: 22,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                      ),
+                                                    ),
+                                              errorBuilder:
+                                                  (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) => const Icon(
+                                                    Icons.person_rounded,
+                                                    size: 55,
+                                                    color: Colors.white,
+                                                  ),
                                             ),
                                           )
-                                        : null,
-                                    child: avatar == null || avatar.isEmpty
-                                        ? const Icon(
+                                        : const Icon(
                                             Icons.person_rounded,
                                             size: 55,
                                             color: Colors.white,
-                                          )
-                                        : null,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -378,21 +408,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               MaterialPageRoute(
                                 builder: (_) =>
                                     const MyProviderServicesScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _MenuItem(
-                          icon: Icons.message_rounded,
-                          title: 'Messages',
-                          subtitle: 'View and send messages',
-                          color: ProfileColors.myPets,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MessagesScreen(),
                               ),
                             );
                           },
@@ -970,9 +985,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(ctx);
-                        await ref
-                            .read(userSessionNotifierProvider.notifier)
-                            .clearSession();
+                        await ref.read(sessionProvider.notifier).clearSession();
                         if (!context.mounted) return;
                         context.go(RoutePaths.login);
                       },

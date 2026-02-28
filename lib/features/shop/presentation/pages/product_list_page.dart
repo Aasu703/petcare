@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
-import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
-import 'package:petcare/features/shop/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
+import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -27,45 +26,11 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     final state = ref.watch(shopProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pet Shop'),
-        backgroundColor: AppColors.iconPrimaryColor,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartPage()),
-                ),
-              ),
-              if (state.cart.itemCount > 0)
-                Positioned(
-                  right: 6,
-                  top: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${state.cart.itemCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Shop'), elevation: 0),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-          ? Center(child: Text(state.error!))
+          ? Center(child: Text('Error: ${state.error}'))
           : state.products.isEmpty
           ? const Center(
               child: Column(
@@ -124,7 +89,7 @@ class _ProductCard extends ConsumerWidget {
                   child: Icon(
                     Icons.inventory_2_rounded,
                     size: 48,
-                    color: AppColors.iconPrimaryColor.withOpacity(0.3),
+                    color: AppColors.iconPrimaryColor.withValues(alpha: 0.3),
                   ),
                 ),
               ),

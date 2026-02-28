@@ -6,12 +6,13 @@ class ProviderServiceState extends BaseState {
   final ProviderServiceEntity? lastApplied;
 
   const ProviderServiceState({
-    bool isLoading = false,
-    String? error,
+    super.isLoading,
+    super.error,
     this.services = const [],
     this.lastApplied,
-  }) : super(isLoading: isLoading, error: error);
+  });
 
+  @override
   ProviderServiceState copyWith({
     bool? isLoading,
     String? error,

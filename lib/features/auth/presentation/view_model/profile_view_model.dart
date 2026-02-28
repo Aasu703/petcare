@@ -1,33 +1,33 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/auth/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/update_profile_usecase.dart';
 import 'package:petcare/features/auth/presentation/state/profile_state.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 
 final profileViewModelProvider =
     StateNotifierProvider<ProfileViewModel, ProfileState>((ref) {
       return ProfileViewModel(
         getCurrentUserUsecase: ref.read(getCurrentUserUsecaseProvider),
         updateProfileUsecase: ref.read(updateProfileUsecaseProvider),
-        userSessionNotifier: ref.read(UserSessionNotifierProvider.notifier),
+        sessionNotifier: ref.read(sessionProvider.notifier),
       );
     });
 
 class ProfileViewModel extends StateNotifier<ProfileState> {
   final GetCurrentUserUsecase _getCurrentUserUsecase;
   final UpdateProfileUsecase _updateProfileUsecase;
-  final UserSessionNotifier _userSessionNotifier;
+  final SessionNotifier _sessionNotifier;
 
   ProfileViewModel({
     required GetCurrentUserUsecase getCurrentUserUsecase,
     required UpdateProfileUsecase updateProfileUsecase,
-    required UserSessionNotifier userSessionNotifier,
+    required SessionNotifier sessionNotifier,
   }) : _getCurrentUserUsecase = getCurrentUserUsecase,
        _updateProfileUsecase = updateProfileUsecase,
-       _userSessionNotifier = userSessionNotifier,
+       _sessionNotifier = sessionNotifier,
        super(const ProfileState());
 
   Future<void> loadProfile() async {
@@ -74,7 +74,7 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
         return false;
       },
       (user) async {
-        await _userSessionNotifier.setSession(
+        await _sessionNotifier.setSession(
           userId: user.userId,
           firstName: user.FirstName,
           email: user.email,

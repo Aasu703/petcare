@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_business_profile_screen.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_documents_screen.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_help_screen.dart';
@@ -580,7 +580,7 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen>
                       onPressed: () async {
                         Navigator.pop(ctx);
                         await ref
-                            .read(userSessionNotifierProvider.notifier)
+                            .read(sessionProvider.notifier)
                             .clearSession();
                         if (!mounted) return;
                         context.go(RoutePaths.login);

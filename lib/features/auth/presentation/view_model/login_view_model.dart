@@ -1,19 +1,19 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:dartz/dartz.dart';
 import 'package:petcare/core/error/failures.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/auth/auth_providers.dart';
 import 'package:petcare/features/auth/domain/entities/auth_entity.dart';
 import 'package:petcare/features/auth/domain/usecases/login_usecase.dart';
 import 'package:petcare/features/auth/presentation/state/profile_state.dart';
-import 'package:petcare/features/auth/presentation/view_model/session_notifier.dart';
 
 class LoginViewModel extends StateNotifier<ProfileState> {
   final LoginUsecase _loginUsecase;
-  final UserSessionNotifier _sessionNotifier;
+  final SessionNotifier _sessionNotifier;
 
   LoginViewModel({
     required LoginUsecase loginUsecase,
-    required UserSessionNotifier sessionNotifier,
+    required SessionNotifier sessionNotifier,
   }) : _loginUsecase = loginUsecase,
        _sessionNotifier = sessionNotifier,
        super(const ProfileState());
@@ -46,7 +46,7 @@ class LoginViewModel extends StateNotifier<ProfileState> {
 final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, ProfileState>((ref) {
       final loginUsecase = ref.read(loginUsecaseProvider);
-      final sessionNotifier = ref.read(UserSessionNotifierProvider.notifier);
+      final sessionNotifier = ref.read(sessionProvider.notifier);
       return LoginViewModel(
         loginUsecase: loginUsecase,
         sessionNotifier: sessionNotifier,

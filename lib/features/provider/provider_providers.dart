@@ -9,7 +9,7 @@ import 'package:petcare/features/provider/domain/usecases/create_provider_usecas
 import 'package:petcare/features/provider/domain/usecases/delete_provider_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/get_all_provider_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/get_provider_usecase.dart';
-import 'package:petcare/features/provider/domain/usecases/update_provider_usercase.dart';
+import 'package:petcare/features/provider/domain/usecases/update_provider_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
 

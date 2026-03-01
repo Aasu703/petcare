@@ -7,6 +7,7 @@ class ProviderEntity extends Equatable {
   final String address;
   final String phone;
   final int rating;
+  final int ratingCount;
   final String? providerType; // shop, vet, babysitter
   final String? email;
   final String? password;
@@ -16,6 +17,14 @@ class ProviderEntity extends Equatable {
   final bool locationVerified;
   final bool pawcareVerified;
   final String? status;
+  final String? bio;
+  final String? degree;
+  final String? profileImageUrl;
+  final double? appointmentFee;
+  final String? workingHours;
+  final String? experience;
+  final String? certification;
+  final String? clinicOrShopName;
 
   const ProviderEntity({
     this.providerId,
@@ -24,6 +33,7 @@ class ProviderEntity extends Equatable {
     required this.address,
     required this.phone,
     required this.rating,
+    this.ratingCount = 0,
     this.providerType,
     this.email,
     this.password,
@@ -33,6 +43,14 @@ class ProviderEntity extends Equatable {
     this.locationVerified = false,
     this.pawcareVerified = false,
     this.status,
+    this.bio,
+    this.degree,
+    this.profileImageUrl,
+    this.appointmentFee,
+    this.workingHours,
+    this.experience,
+    this.certification,
+    this.clinicOrShopName,
   });
 
   @override
@@ -43,6 +61,7 @@ class ProviderEntity extends Equatable {
     address,
     phone,
     rating,
+    ratingCount,
     providerType,
     email,
     password,
@@ -52,5 +71,13 @@ class ProviderEntity extends Equatable {
     locationVerified,
     pawcareVerified,
     status,
+    bio,
+    degree,
+    profileImageUrl,
+    appointmentFee,
+    workingHours,
+    experience,
+    certification,
+    clinicOrShopName,
   ];
 }

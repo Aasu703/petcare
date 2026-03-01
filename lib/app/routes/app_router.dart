@@ -22,6 +22,9 @@ import 'package:petcare/features/provider/presentation/pages/provider_login_scre
 import 'package:petcare/features/provider/presentation/pages/provider_main_dashboard.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
 import 'package:petcare/features/splash/presentation/pages/splash_screen.dart';
+import 'package:petcare/features/discover/presentation/pages/discover_screen.dart';
+import 'package:petcare/features/discover/presentation/pages/provider_detail_page.dart';
+import 'package:petcare/features/reviews/presentation/pages/provider_reviews_page.dart';
 import 'package:petcare/shared/navigation/user_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -46,6 +49,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         location.startsWith(RoutePaths.profile) ||
         location.startsWith(RoutePaths.bookings) ||
         location.startsWith(RoutePaths.pets) ||
+        location.startsWith(RoutePaths.discover) ||
         location.startsWith(RoutePaths.providerDashboard);
   }
 
@@ -191,6 +195,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.addPet,
         builder: (context, state) => const AddPet(),
+      ),
+      GoRoute(
+        path: RoutePaths.discover,
+        builder: (context, state) => const DiscoverScreen(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.providerDetail}/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ProviderDetailPage(providerId: id);
+        },
+      ),
+      GoRoute(
+        path: '${RoutePaths.providerReviews}/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ProviderReviewsPage(providerId: id);
+        },
       ),
     ],
     errorBuilder: (context, state) {

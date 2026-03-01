@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/services/notification/notification_service.dart';
-import 'package:petcare/features/bookings/booking_providers.dart';
+import 'package:petcare/features/bookings/presentation/providers/booking_providers.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/domain/usecases/approve_booking_usecase.dart';
 import 'package:petcare/features/bookings/domain/usecases/get_user_bookings_usecase.dart';

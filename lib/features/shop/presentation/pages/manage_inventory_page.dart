@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
-import 'package:petcare/features/shop/shop_providers.dart';
+import 'package:petcare/features/shop/presentation/provider/shop_providers.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 

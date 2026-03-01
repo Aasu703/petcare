@@ -22,4 +22,8 @@ abstract final class RoutePaths {
   static const addPet = '/pets/add';
 
   static const providerDashboard = '/provider/dashboard';
+
+  static const discover = '/discover';
+  static const providerDetail = '/discover/provider';
+  static const providerReviews = '/discover/reviews';
 }

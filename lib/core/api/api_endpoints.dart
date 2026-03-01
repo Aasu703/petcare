@@ -7,8 +7,8 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      true; // Set to true for physical device testing, false for emulator/simulator
-  static const String _ipAddress = '192.168.1.6';
+      false; // Set to true for physical device testing, false for emulator/simulator
+  static const String _ipAddress = '110.1.12.110';
   static const int _port = 5050;
 
   // Base URL configuration
@@ -105,6 +105,13 @@ class ApiEndpoints {
   static const String serviceList = 'service';
   static const String serviceById = 'service';
   static const String serviceByProvider = 'service/provider';
+
+  // ----------------------- REVIEW --------------------------
+  static const String reviewCreate = 'review';
+  static const String reviewMy = 'review/my';
+  static const String reviewByProvider = 'review/provider';
+  static String reviewProviderRatingBreakdown(String providerId) =>
+      'review/provider/$providerId/rating-breakdown';
 
   // ---------------------- INVENTORY ------------------------
   static const String products = 'product';

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/services/notification/notification_service.dart';
-import 'package:petcare/features/health_records/health_record_providers.dart';
+import 'package:petcare/features/health_records/presentation/provider/health_record_providers.dart';
 import 'package:petcare/features/health_records/domain/entities/health_record_entity.dart';
 import 'package:petcare/features/health_records/domain/usecases/get_health_records_by_pet_usecase.dart';
 import 'package:petcare/features/health_records/presentation/state/vaccination_reminder_state.dart';

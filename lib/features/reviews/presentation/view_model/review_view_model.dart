@@ -85,8 +85,8 @@ class ReviewNotifier extends StateNotifier<ReviewState> {
 
 final reviewProvider = StateNotifierProvider.autoDispose
     .family<ReviewNotifier, ReviewState, String>((ref, providerId) {
-  final dataSource = ref.read(reviewRemoteDataSourceProvider);
-  final notifier = ReviewNotifier(dataSource);
-  notifier.loadReviews(providerId);
-  return notifier;
-});
+      final dataSource = ref.read(reviewRemoteDataSourceProvider);
+      final notifier = ReviewNotifier(dataSource);
+      notifier.loadReviews(providerId);
+      return notifier;
+    });

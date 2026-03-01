@@ -114,11 +114,14 @@ class ProviderApiModel {
       bio: json["bio"]?.toString(),
       degree: json["degree"]?.toString(),
       profileImageUrl: json["profileImageUrl"]?.toString(),
-      appointmentFee: (json["appointmentFee"] is num) ? (json["appointmentFee"] as num).toDouble() : double.tryParse(json["appointmentFee"]?.toString() ?? ''),
+      appointmentFee: (json["appointmentFee"] is num)
+          ? (json["appointmentFee"] as num).toDouble()
+          : double.tryParse(json["appointmentFee"]?.toString() ?? ''),
       workingHours: json["workingHours"]?.toString(),
       experience: json["experience"]?.toString(),
       certification: json["certification"]?.toString(),
-      clinicOrShopName: (json["clinicOrShopName"] ?? json["clinic_or_shop_name"])?.toString(),
+      clinicOrShopName:
+          (json["clinicOrShopName"] ?? json["clinic_or_shop_name"])?.toString(),
       locationLatitude: parseCoordinate(
         (json["location"] as Map?)?["latitude"] ?? json["latitude"],
       ),

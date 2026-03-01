@@ -13,14 +13,20 @@ class ReviewRemoteDataSource {
 
   ReviewRemoteDataSource({required this.apiClient});
 
-  Future<List<ReviewEntity>> getReviewsByProvider(String providerId, {int page = 1, int limit = 20}) async {
+  Future<List<ReviewEntity>> getReviewsByProvider(
+    String providerId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
     final response = await apiClient.get(
       '${ApiEndpoints.reviewByProvider}/$providerId',
       queryParameters: {'page': page, 'limit': limit, 'enriched': 'true'},
     );
     final data = response.data;
     final rawList = _extractList(data);
-    return rawList.map((json) => ReviewApiModel.fromJson(json).toEntity()).toList();
+    return rawList
+        .map((json) => ReviewApiModel.fromJson(json).toEntity())
+        .toList();
   }
 
   Future<RatingBreakdown> getRatingBreakdown(String providerId) async {
@@ -31,12 +37,20 @@ class ReviewRemoteDataSource {
     final breakdown = data is Map ? (data['data'] ?? data) : {};
     final bd = breakdown['breakdown'] ?? {};
     return RatingBreakdown(
-      averageRating: (breakdown['averageRating'] is num) ? (breakdown['averageRating'] as num).toDouble() : 0,
-      totalReviews: (breakdown['totalReviews'] is num) ? (breakdown['totalReviews'] as num).toInt() : 0,
-      excellent: (bd['excellent'] is num) ? (bd['excellent'] as num).toInt() : 0,
+      averageRating: (breakdown['averageRating'] is num)
+          ? (breakdown['averageRating'] as num).toDouble()
+          : 0,
+      totalReviews: (breakdown['totalReviews'] is num)
+          ? (breakdown['totalReviews'] as num).toInt()
+          : 0,
+      excellent: (bd['excellent'] is num)
+          ? (bd['excellent'] as num).toInt()
+          : 0,
       good: (bd['good'] is num) ? (bd['good'] as num).toInt() : 0,
       average: (bd['average'] is num) ? (bd['average'] as num).toInt() : 0,
-      belowAverage: (bd['belowAverage'] is num) ? (bd['belowAverage'] as num).toInt() : 0,
+      belowAverage: (bd['belowAverage'] is num)
+          ? (bd['belowAverage'] as num).toInt()
+          : 0,
       poor: (bd['poor'] is num) ? (bd['poor'] as num).toInt() : 0,
     );
   }

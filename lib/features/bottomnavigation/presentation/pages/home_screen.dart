@@ -19,6 +19,8 @@ import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
 import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
+import 'package:petcare/features/discover/presentation/pages/discover_screen.dart';
+import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
 
 // Service-specific colors (not theme-dependent)
 const _kVeterinaryColor = Color(0xFFFF6B6B);
@@ -933,7 +935,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const BookAppointmentPage(),
+                                    builder: (_) => const DiscoverScreen(initialCategory: 'vet'),
                                   ),
                                 );
                               },
@@ -960,7 +962,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const BookAppointmentPage(),
+                                    builder: (_) => const DiscoverScreen(initialCategory: 'babysitter'),
                                   ),
                                 );
                               },
@@ -991,7 +993,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const BookAppointmentPage(),
+                                    builder: (_) => const ProductListPage(),
                                   ),
                                 );
                               },
@@ -1018,7 +1020,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const BookAppointmentPage(),
+                                    builder: (_) => const DiscoverScreen(initialCategory: 'shop'),
                                   ),
                                 );
                               },

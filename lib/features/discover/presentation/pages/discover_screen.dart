@@ -10,7 +10,8 @@ import 'package:petcare/features/provider/presentation/view_model/provider_view_
 import 'package:petcare/shared/widgets/index.dart' hide OutlinedButton;
 
 class DiscoverScreen extends ConsumerStatefulWidget {
-  const DiscoverScreen({super.key});
+  final String? initialCategory;
+  const DiscoverScreen({super.key, this.initialCategory});
 
   @override
   ConsumerState<DiscoverScreen> createState() => _DiscoverScreenState();
@@ -18,7 +19,7 @@ class DiscoverScreen extends ConsumerStatefulWidget {
 
 class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
     with SingleTickerProviderStateMixin {
-  String _selectedCategory = 'vet';
+  late String _selectedCategory;
   final _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -31,6 +32,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.initialCategory ?? 'vet';
     Future.microtask(() => ref.read(providerListProvider.notifier).loadProviders());
   }
 

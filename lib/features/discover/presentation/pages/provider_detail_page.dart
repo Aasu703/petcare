@@ -96,7 +96,10 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                         top: MediaQuery.of(context).padding.top + 48,
                         right: 16,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(8),
@@ -105,8 +108,8 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                             provider.providerType == 'vet'
                                 ? 'Veterinarian'
                                 : provider.providerType == 'babysitter'
-                                    ? 'Grooming'
-                                    : 'Boarding',
+                                ? 'Grooming'
+                                : 'Boarding',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
@@ -145,20 +148,23 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                         // Name
                         Text(
                           provider.businessName,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.3,
-                          ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.3,
+                              ),
                         ),
                         // Degree
-                        if (provider.degree != null && provider.degree!.isNotEmpty) ...[
+                        if (provider.degree != null &&
+                            provider.degree!.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
                             provider.degree!,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: context.primaryColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                         ],
                         // Certification
@@ -167,10 +173,11 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                           const SizedBox(height: 2),
                           Text(
                             provider.certification!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: context.primaryColor.withOpacity(0.7),
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: context.primaryColor.withOpacity(0.7),
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ],
 
@@ -180,19 +187,29 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFA000).withOpacity(0.12),
+                                color: const Color(
+                                  0xFFFFA000,
+                                ).withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.star_rounded,
-                                      size: 16, color: Color(0xFFFFA000)),
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 16,
+                                    color: Color(0xFFFFA000),
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    provider.rating.toDouble().toStringAsFixed(1),
+                                    provider.rating.toDouble().toStringAsFixed(
+                                      1,
+                                    ),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 14,
@@ -204,9 +221,8 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                             const SizedBox(width: 8),
                             Text(
                               '${provider.ratingCount} reviews',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: context.textSecondary,
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: context.textSecondary),
                             ),
                           ],
                         ),
@@ -241,7 +257,9 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                           const SizedBox(height: 14),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 10),
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               color: context.primaryColor.withOpacity(0.06),
                               borderRadius: BorderRadius.circular(12),
@@ -252,8 +270,11 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.payments_rounded,
-                                    size: 18, color: context.primaryColor),
+                                Icon(
+                                  Icons.payments_rounded,
+                                  size: 18,
+                                  color: context.primaryColor,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'LKR ${provider.appointmentFee!.toStringAsFixed(0)} per Appointment',
@@ -283,18 +304,20 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                       children: [
                         Text(
                           'About',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           provider.bio!,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: context.textSecondary,
-                            height: 1.6,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: context.textSecondary,
+                                height: 1.6,
+                              ),
                         ),
                       ],
                     ),
@@ -327,11 +350,16 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFA000).withOpacity(0.12),
+                                color: const Color(
+                                  0xFFFFA000,
+                                ).withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.star_rounded,
-                                  color: Color(0xFFFFA000), size: 20),
+                              child: const Icon(
+                                Icons.star_rounded,
+                                color: Color(0xFFFFA000),
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -347,16 +375,18 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                                   ),
                                   Text(
                                     '${provider.ratingCount} reviews from pet owners',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: context.textSecondary),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: context.textSecondary,
+                                        ),
                                   ),
                                 ],
                               ),
                             ),
-                            Icon(Icons.chevron_right_rounded,
-                                color: context.hintColor),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              color: context.hintColor,
+                            ),
                           ],
                         ),
                       ),
@@ -400,7 +430,10 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                     ).toString();
                     context.push(route);
                   },
-                  icon: const Icon(Icons.calendar_month_rounded, color: Colors.white),
+                  icon: const Icon(
+                    Icons.calendar_month_rounded,
+                    color: Colors.white,
+                  ),
                   label: const Text(
                     'Book an Appointment',
                     style: TextStyle(
@@ -426,7 +459,8 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
   }
 
   Widget _buildHeaderImage(ProviderEntity provider) {
-    if (provider.profileImageUrl != null && provider.profileImageUrl!.isNotEmpty) {
+    if (provider.profileImageUrl != null &&
+        provider.profileImageUrl!.isNotEmpty) {
       final url = provider.profileImageUrl!.startsWith('http')
           ? provider.profileImageUrl!
           : ApiEndpoints.resolveMediaUrl(provider.profileImageUrl!);
@@ -456,8 +490,8 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
           provider.providerType == 'vet'
               ? Icons.local_hospital_rounded
               : provider.providerType == 'babysitter'
-                  ? Icons.content_cut_rounded
-                  : Icons.house_rounded,
+              ? Icons.content_cut_rounded
+              : Icons.house_rounded,
           size: 80,
           color: context.primaryColor.withOpacity(0.3),
         ),
@@ -482,8 +516,11 @@ class _CircleBackButton extends StatelessWidget {
             color: Colors.black.withOpacity(0.3),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white, size: 18),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
         ),
       ),
     );
@@ -550,9 +587,9 @@ class _RecommendedForSection extends ConsumerWidget {
               const SizedBox(width: 6),
               Text(
                 'Recommended For Your Pets',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -562,7 +599,10 @@ class _RecommendedForSection extends ConsumerWidget {
             runSpacing: 8,
             children: pets.take(4).map((pet) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.accentColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(20),
@@ -573,8 +613,11 @@ class _RecommendedForSection extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.pets_rounded,
-                        size: 12, color: AppColors.accentColor),
+                    Icon(
+                      Icons.pets_rounded,
+                      size: 12,
+                      color: AppColors.accentColor,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       pet.name,

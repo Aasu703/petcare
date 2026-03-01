@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
+import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
+import 'package:petcare/features/shop/cart/presentation/view_model/cart_view_model.dart';
+import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -26,7 +30,62 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     final state = ref.watch(shopProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Shop'),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_rounded),
+            tooltip: 'Nearby Pet Shops',
+            onPressed: () async {
+              try {
+                final position = await Geolocator.getCurrentPosition(
+                  locationSettings: const LocationSettings(
+                    accuracy: LocationAccuracy.medium,
+                  ),
+                );
+                if (!context.mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NearbyMapScreen(
+                      latitude: position.latitude,
+                      longitude: position.longitude,
+                      initialMode: NearbyMapMode.petShop,
+                    ),
+                  ),
+                );
+              } catch (_) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Unable to get location. Please enable location services.')),
+                );
+              }
+            },
+          ),
+          Consumer(
+            builder: (context, ref, child) {
+              final cart = ref.watch(cartEntityProvider);
+              final itemCount = cart.items.length;
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: itemCount > 0,
+                  label: Text('$itemCount'),
+                  child: const Icon(Icons.shopping_cart_rounded),
+                ),
+                tooltip: 'Cart',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartPage()),
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null

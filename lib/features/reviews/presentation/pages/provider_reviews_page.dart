@@ -25,8 +25,11 @@ class ProviderReviewsPage extends ConsumerWidget {
             pinned: true,
             backgroundColor: context.primaryColor,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () => context.pop(),
             ),
             title: const Text(
@@ -46,8 +49,11 @@ class ProviderReviewsPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.rate_review_rounded,
-                      color: Colors.white, size: 22),
+                  icon: const Icon(
+                    Icons.rate_review_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                   onPressed: () => _showAddReviewSheet(context, ref),
                   tooltip: 'Write a review',
                 ),
@@ -58,86 +64,90 @@ class ProviderReviewsPage extends ConsumerWidget {
         body: state.isLoading
             ? const LoadingIndicator(message: 'Loading reviews...')
             : state.error != null
-                ? ErrorState(
-                    title: 'Error loading reviews',
-                    message: state.error,
-                    actionLabel: 'Retry',
-                    onAction: () => ref
-                        .read(reviewProvider(providerId).notifier)
-                        .loadReviews(providerId),
-                  )
-                : RefreshIndicator(
-                    color: context.primaryColor,
-                    onRefresh: () => ref
-                        .read(reviewProvider(providerId).notifier)
-                        .loadReviews(providerId),
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        // Rating summary card
-                        if (state.ratingBreakdown != null)
-                          _RatingSummaryCard(breakdown: state.ratingBreakdown!),
+            ? ErrorState(
+                title: 'Error loading reviews',
+                message: state.error,
+                actionLabel: 'Retry',
+                onAction: () => ref
+                    .read(reviewProvider(providerId).notifier)
+                    .loadReviews(providerId),
+              )
+            : RefreshIndicator(
+                color: context.primaryColor,
+                onRefresh: () => ref
+                    .read(reviewProvider(providerId).notifier)
+                    .loadReviews(providerId),
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Rating summary card
+                    if (state.ratingBreakdown != null)
+                      _RatingSummaryCard(breakdown: state.ratingBreakdown!),
 
-                        const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                        // Reviews header
-                        if (state.reviews.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: context.primaryColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(Icons.forum_rounded,
-                                      size: 16, color: context.primaryColor),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'All Reviews',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(fontWeight: FontWeight.w800),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: context.primaryColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    '${state.reviews.length}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    // Reviews header
+                    if (state.reviews.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: context.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.forum_rounded,
+                                size: 16,
+                                color: context.primaryColor,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'All Reviews',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${state.reviews.length}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: context.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                        // Review list or empty state
-                        if (state.reviews.isEmpty)
-                          _EmptyReviewsState(
-                            onAddReview: () =>
-                                _showAddReviewSheet(context, ref),
-                          )
-                        else
-                          ...state.reviews.map((review) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _ReviewCard(review: review),
-                              )),
-                      ],
-                    ),
-                  ),
+                    // Review list or empty state
+                    if (state.reviews.isEmpty)
+                      _EmptyReviewsState(
+                        onAddReview: () => _showAddReviewSheet(context, ref),
+                      )
+                    else
+                      ...state.reviews.map(
+                        (review) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _ReviewCard(review: review),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
       ),
       // Floating add review button
       floatingActionButton: FloatingActionButton.extended(
@@ -146,10 +156,7 @@ class ProviderReviewsPage extends ConsumerWidget {
         icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
         label: const Text(
           'Write Review',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -161,8 +168,7 @@ class ProviderReviewsPage extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) =>
-          _AddReviewSheet(providerId: providerId, parentRef: ref),
+      builder: (ctx) => _AddReviewSheet(providerId: providerId, parentRef: ref),
     );
   }
 }
@@ -185,31 +191,40 @@ class _EmptyReviewsState extends StatelessWidget {
                 color: context.primaryColor.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.rate_review_outlined,
-                  size: 48, color: context.primaryColor.withOpacity(0.4)),
+              child: Icon(
+                Icons.rate_review_outlined,
+                size: 48,
+                color: context.primaryColor.withOpacity(0.4),
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'No reviews yet',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
             Text(
               'Be the first to share your experience!',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: context.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: context.textSecondary),
             ),
             const SizedBox(height: 20),
             TextButton.icon(
               onPressed: onAddReview,
-              icon: Icon(Icons.edit_rounded, size: 16, color: context.primaryColor),
+              icon: Icon(
+                Icons.edit_rounded,
+                size: 16,
+                color: context.primaryColor,
+              ),
               label: Text(
                 'Write a Review',
                 style: TextStyle(
-                    fontWeight: FontWeight.w700, color: context.primaryColor),
+                  fontWeight: FontWeight.w700,
+                  color: context.primaryColor,
+                ),
               ),
             ),
           ],
@@ -250,9 +265,9 @@ class _RatingSummaryCard extends StatelessWidget {
                 Text(
                   breakdown.averageRating.toStringAsFixed(1),
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        height: 1,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -263,8 +278,8 @@ class _RatingSummaryCard extends StatelessWidget {
                       value >= 1
                           ? Icons.star_rounded
                           : value > 0
-                              ? Icons.star_half_rounded
-                              : Icons.star_border_rounded,
+                          ? Icons.star_half_rounded
+                          : Icons.star_border_rounded,
                       size: 18,
                       color: const Color(0xFFFFA000),
                     );
@@ -274,9 +289,9 @@ class _RatingSummaryCard extends StatelessWidget {
                 Text(
                   '${breakdown.totalReviews} reviews',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -294,30 +309,35 @@ class _RatingSummaryCard extends StatelessWidget {
             child: Column(
               children: [
                 _RatingBar(
-                    stars: 5,
-                    count: breakdown.excellent,
-                    total: breakdown.totalReviews,
-                    color: context.primaryColor),
+                  stars: 5,
+                  count: breakdown.excellent,
+                  total: breakdown.totalReviews,
+                  color: context.primaryColor,
+                ),
                 _RatingBar(
-                    stars: 4,
-                    count: breakdown.good,
-                    total: breakdown.totalReviews,
-                    color: AppColors.primaryLightColor),
+                  stars: 4,
+                  count: breakdown.good,
+                  total: breakdown.totalReviews,
+                  color: AppColors.primaryLightColor,
+                ),
                 _RatingBar(
-                    stars: 3,
-                    count: breakdown.average,
-                    total: breakdown.totalReviews,
-                    color: AppColors.warningColor),
+                  stars: 3,
+                  count: breakdown.average,
+                  total: breakdown.totalReviews,
+                  color: AppColors.warningColor,
+                ),
                 _RatingBar(
-                    stars: 2,
-                    count: breakdown.belowAverage,
-                    total: breakdown.totalReviews,
-                    color: AppColors.accentColor),
+                  stars: 2,
+                  count: breakdown.belowAverage,
+                  total: breakdown.totalReviews,
+                  color: AppColors.accentColor,
+                ),
                 _RatingBar(
-                    stars: 1,
-                    count: breakdown.poor,
-                    total: breakdown.totalReviews,
-                    color: AppColors.errorColor),
+                  stars: 1,
+                  count: breakdown.poor,
+                  total: breakdown.totalReviews,
+                  color: AppColors.errorColor,
+                ),
               ],
             ),
           ),
@@ -414,7 +434,8 @@ class _ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: context.primaryColor.withOpacity(0.1),
-                child: review.userProfileImage != null &&
+                child:
+                    review.userProfileImage != null &&
                         review.userProfileImage!.isNotEmpty
                     ? ClipOval(
                         child: Image.network(
@@ -447,24 +468,23 @@ class _ReviewCard extends StatelessWidget {
                     Text(
                       review.userName ?? 'Anonymous',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _timeAgo(review.createdAt),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: context.textSecondary,
-                            fontSize: 11,
-                          ),
+                        color: context.textSecondary,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
               ),
               // Compact rating badge
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFA000).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
@@ -472,8 +492,11 @@ class _ReviewCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded,
-                        size: 14, color: Color(0xFFFFA000)),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 14,
+                      color: Color(0xFFFFA000),
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       review.rating.toStringAsFixed(1),
@@ -492,9 +515,9 @@ class _ReviewCard extends StatelessWidget {
             Text(
               review.comment!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: context.textSecondary,
-                    height: 1.5,
-                  ),
+                color: context.textSecondary,
+                height: 1.5,
+              ),
             ),
           ],
         ],
@@ -536,7 +559,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
     'Below Average',
     'Average',
     'Good',
-    'Excellent'
+    'Excellent',
   ];
 
   @override
@@ -580,17 +603,17 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             Text(
               'Share Your Experience',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.3,
-                  ),
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.3,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
             Text(
               'Help other pet owners make informed decisions',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: context.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: context.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -600,8 +623,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(5, (i) {
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _rating = (i + 1).toDouble()),
+                  onTap: () => setState(() => _rating = (i + 1).toDouble()),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: AnimatedScale(
@@ -656,8 +678,10 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide:
-                      BorderSide(color: context.primaryColor, width: 1.5),
+                  borderSide: BorderSide(
+                    color: context.primaryColor,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: context.backgroundColor,
@@ -691,8 +715,9 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    disabledBackgroundColor:
-                        context.primaryColor.withOpacity(0.3),
+                    disabledBackgroundColor: context.primaryColor.withOpacity(
+                      0.3,
+                    ),
                     elevation: 0,
                   ),
                   child: _isSubmitting
@@ -739,19 +764,20 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             content: const Text('Review submitted successfully!'),
             backgroundColor: context.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                const Text('Failed to submit review. Please try again.'),
+            content: const Text('Failed to submit review. Please try again.'),
             backgroundColor: AppColors.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }

@@ -32,7 +32,9 @@ class ReviewApiModel {
   factory ReviewApiModel.fromJson(Map<String, dynamic> json) {
     return ReviewApiModel(
       reviewId: (json['_id'] ?? json['id'])?.toString(),
-      rating: (json['rating'] is num) ? (json['rating'] as num).toDouble() : 0.0,
+      rating: (json['rating'] is num)
+          ? (json['rating'] as num).toDouble()
+          : 0.0,
       comment: json['comment']?.toString(),
       userId: json['userId']?.toString(),
       userName: json['userName']?.toString(),
@@ -42,7 +44,9 @@ class ReviewApiModel {
       productId: json['productId']?.toString(),
       bookingId: json['bookingId']?.toString(),
       reviewType: json['reviewType']?.toString(),
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
     );
   }
 

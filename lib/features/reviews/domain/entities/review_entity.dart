@@ -76,5 +76,13 @@ class RatingBreakdown extends Equatable {
   );
 
   @override
-  List<Object?> get props => [averageRating, totalReviews, excellent, good, average, belowAverage, poor];
+  List<Object?> get props => [
+    averageRating,
+    totalReviews,
+    excellent,
+    good,
+    average,
+    belowAverage,
+    poor,
+  ];
 }

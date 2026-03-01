@@ -83,10 +83,57 @@ class ReviewNotifier extends StateNotifier<ReviewState> {
   }
 }
 
+// ── Product Review ViewModel ──────────────────────────────────────────
+class ProductReviewNotifier extends StateNotifier<ReviewState> {
+  final ReviewRemoteDataSource _dataSource;
+
+  ProductReviewNotifier(this._dataSource) : super(const ReviewState());
+
+  Future<void> loadProductReviews(String productId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final reviews = await _dataSource.getReviewsByProduct(productId);
+      state = state.copyWith(isLoading: false, reviews: reviews);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<bool> submitProductReview({
+    required double rating,
+    String? comment,
+    required String productId,
+  }) async {
+    state = state.copyWith(isSubmitting: true, error: null);
+    try {
+      await _dataSource.createReview(
+        rating: rating,
+        comment: comment,
+        productId: productId,
+        reviewType: 'product',
+      );
+      await loadProductReviews(productId);
+      state = state.copyWith(isSubmitting: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSubmitting: false, error: e.toString());
+      return false;
+    }
+  }
+}
+
 final reviewProvider = StateNotifierProvider.autoDispose
     .family<ReviewNotifier, ReviewState, String>((ref, providerId) {
       final dataSource = ref.read(reviewRemoteDataSourceProvider);
       final notifier = ReviewNotifier(dataSource);
       notifier.loadReviews(providerId);
+      return notifier;
+    });
+
+final productReviewProvider = StateNotifierProvider.autoDispose
+    .family<ProductReviewNotifier, ReviewState, String>((ref, productId) {
+      final dataSource = ref.read(reviewRemoteDataSourceProvider);
+      final notifier = ProductReviewNotifier(dataSource);
+      notifier.loadProductReviews(productId);
       return notifier;
     });

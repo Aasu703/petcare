@@ -59,6 +59,7 @@ class ReviewRemoteDataSource {
     required double rating,
     String? comment,
     String? providerId,
+    String? productId,
     String? bookingId,
     String? reviewType,
   }) async {
@@ -68,6 +69,7 @@ class ReviewRemoteDataSource {
         'rating': rating,
         if (comment != null && comment.isNotEmpty) 'comment': comment,
         if (providerId != null) 'providerId': providerId,
+        if (productId != null) 'productId': productId,
         if (bookingId != null) 'bookingId': bookingId,
         'reviewType': reviewType ?? 'provider',
       },
@@ -75,6 +77,22 @@ class ReviewRemoteDataSource {
     final data = response.data;
     final reviewData = data is Map ? (data['data'] ?? data) : data;
     return ReviewApiModel.fromJson(reviewData).toEntity();
+  }
+
+  Future<List<ReviewEntity>> getReviewsByProduct(
+    String productId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final response = await apiClient.get(
+      '${ApiEndpoints.reviewByProduct}/$productId',
+      queryParameters: {'page': page, 'limit': limit, 'enriched': 'true'},
+    );
+    final data = response.data;
+    final rawList = _extractList(data);
+    return rawList
+        .map((json) => ReviewApiModel.fromJson(json).toEntity())
+        .toList();
   }
 
   List<Map<String, dynamic>> _extractList(dynamic data) {

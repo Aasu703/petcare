@@ -854,7 +854,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const BookAppointmentPage(),
+                                builder: (_) => const DiscoverScreen(),
                               ),
                             );
                           },
@@ -935,7 +935,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const DiscoverScreen(initialCategory: 'vet'),
+                                    builder: (_) => const DiscoverScreen(
+                                      initialCategory: 'vet',
+                                    ),
                                   ),
                                 );
                               },
@@ -962,7 +964,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const DiscoverScreen(initialCategory: 'babysitter'),
+                                    builder: (_) => const DiscoverScreen(
+                                      initialCategory: 'babysitter',
+                                    ),
                                   ),
                                 );
                               },
@@ -1020,7 +1024,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const DiscoverScreen(initialCategory: 'shop'),
+                                    builder: (_) => const DiscoverScreen(
+                                      initialCategory: 'shop',
+                                    ),
                                   ),
                                 );
                               },

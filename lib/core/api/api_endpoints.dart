@@ -112,6 +112,7 @@ class ApiEndpoints {
   static const String reviewByProvider = 'review/provider';
   static String reviewProviderRatingBreakdown(String providerId) =>
       'review/provider/$providerId/rating-breakdown';
+  static const String reviewByProduct = 'review/product';
 
   // ---------------------- INVENTORY ------------------------
   static const String products = 'product';

@@ -39,6 +39,38 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
             tooltip: 'Nearby Pet Shops',
             onPressed: () async {
               try {
+                final serviceEnabled =
+                    await Geolocator.isLocationServiceEnabled();
+                if (!serviceEnabled) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Location services are off. Please enable GPS to view the map.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                var permission = await Geolocator.checkPermission();
+                if (permission == LocationPermission.denied) {
+                  permission = await Geolocator.requestPermission();
+                }
+
+                if (permission == LocationPermission.denied ||
+                    permission == LocationPermission.deniedForever) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Location permission is required to show nearby pet shops.',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
                 final position = await Geolocator.getCurrentPosition(
                   locationSettings: const LocationSettings(
                     accuracy: LocationAccuracy.medium,
@@ -58,7 +90,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
               } catch (_) {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Unable to get location. Please enable location services.')),
+                  const SnackBar(
+                    content: Text('Unable to get location. Please try again.'),
+                  ),
                 );
               }
             },

@@ -14,6 +14,7 @@ class ProviderServiceModel {
   final double? earnings;
   final String? createdAt;
   final String? updatedAt;
+  final String approvalStatus;
 
   ProviderServiceModel({
     this.id,
@@ -29,6 +30,7 @@ class ProviderServiceModel {
     this.earnings,
     this.createdAt,
     this.updatedAt,
+    this.approvalStatus = 'pending',
   });
 
   factory ProviderServiceModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,7 @@ class ProviderServiceModel {
           : null,
       createdAt: json['createdAt']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
+      approvalStatus: json['approvalStatus']?.toString() ?? 'pending',
     );
   }
 
@@ -83,6 +86,7 @@ class ProviderServiceModel {
       earnings: earnings,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      approvalStatus: approvalStatus,
     );
   }
 
@@ -101,6 +105,7 @@ class ProviderServiceModel {
       earnings: entity.earnings,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      approvalStatus: entity.approvalStatus,
     );
   }
 

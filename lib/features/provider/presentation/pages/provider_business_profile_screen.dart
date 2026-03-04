@@ -31,7 +31,9 @@ class _ProviderBusinessProfileScreenState
 
   String? _providerType;
   String _certificationDocumentUrl = '';
+  String _profileImageUrl = '';
   bool _uploadingCertificate = false;
+  bool _uploadingProfileImage = false;
   double? _locationLatitude;
   double? _locationLongitude;
   bool _locationVerified = false;
@@ -79,6 +81,7 @@ class _ProviderBusinessProfileScreenState
           profile['certification']?.toString() ?? '';
       _certificationDocumentUrl =
           profile['certificationDocumentUrl']?.toString() ?? '';
+      _profileImageUrl = profile['profileImageUrl']?.toString() ?? '';
       _experienceController.text = profile['experience']?.toString() ?? '';
       _clinicOrShopController.text =
           profile['clinicOrShopName']?.toString() ?? '';
@@ -136,6 +139,7 @@ class _ProviderBusinessProfileScreenState
         'email': _emailController.text.trim(),
         'certification': _certificationController.text.trim(),
         'certificationDocumentUrl': _certificationDocumentUrl,
+        'profileImageUrl': _profileImageUrl,
         'experience': _experienceController.text.trim(),
         'clinicOrShopName': _clinicOrShopController.text.trim(),
         'panNumber': _panNumberController.text.trim().toUpperCase(),
@@ -168,6 +172,8 @@ class _ProviderBusinessProfileScreenState
         _certificationDocumentUrl =
             updated['certificationDocumentUrl']?.toString() ??
             _certificationDocumentUrl;
+        _profileImageUrl =
+            updated['profileImageUrl']?.toString() ?? _profileImageUrl;
 
         final session = ref.read(userSessionServiceProvider);
         await session.saveSession(
@@ -276,6 +282,102 @@ class _ProviderBusinessProfileScreenState
                       ),
                       const SizedBox(height: 12),
                     ],
+                    // Profile Photo Section
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFDEDEDE)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Profile Photo',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Photo Preview
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: const Color(0xFFDEDEDE),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.grey[100],
+                                ),
+                                child: _profileImageUrl.isEmpty
+                                    ? const Icon(
+                                        Icons.camera_alt_outlined,
+                                        color: Colors.grey,
+                                      )
+                                    : Image.network(
+                                        _buildFullImageUrl(_profileImageUrl),
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(
+                                                  Icons.error_outline,
+                                                  color: Colors.red,
+                                                ),
+                                      ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: _uploadingProfileImage
+                                          ? null
+                                          : _pickAndUploadProfileImage,
+                                      icon: Icon(
+                                        _uploadingProfileImage
+                                            ? Icons.sync_rounded
+                                            : Icons.upload_file_rounded,
+                                      ),
+                                      label: Text(
+                                        _uploadingProfileImage
+                                            ? 'Uploading...'
+                                            : (_profileImageUrl.isEmpty
+                                                  ? 'Upload Photo'
+                                                  : 'Replace Photo'),
+                                      ),
+                                    ),
+                                    if (_profileImageUrl.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          setState(() => _profileImageUrl = '');
+                                        },
+                                        icon: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Colors.red,
+                                        ),
+                                        label: const Text('Remove'),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Formats: JPG, PNG, WEBP (max 5MB)',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     _input(
                       controller: _businessNameController,
                       label: 'Business Name',
@@ -595,10 +697,75 @@ class _ProviderBusinessProfileScreenState
     }
   }
 
+  Future<void> _pickAndUploadProfileImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp'],
+    );
+
+    if (!mounted || result == null || result.files.isEmpty) return;
+    final selected = result.files.single;
+    final path = selected.path;
+    if (path == null || path.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selected file path is not accessible.')),
+      );
+      return;
+    }
+
+    setState(() => _uploadingProfileImage = true);
+    try {
+      final api = ref.read(apiClientProvider);
+      final formData = FormData.fromMap({
+        'profile_image': await MultipartFile.fromFile(
+          path,
+          filename: selected.name,
+        ),
+      });
+
+      final response = await api.uploadFile(
+        ApiEndpoints.uploadProfileImage,
+        formData: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['success'] != false) {
+        final uploadedPath = (data['data'] as Map?)?['path']?.toString() ?? '';
+        if (uploadedPath.isEmpty) {
+          throw Exception('Upload succeeded but file path was not returned');
+        }
+
+        setState(() => _profileImageUrl = uploadedPath);
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile photo uploaded')));
+      } else {
+        throw Exception(data is Map ? data['message']?.toString() : null);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _uploadingProfileImage = false);
+      }
+    }
+  }
+
   String _fileNameFromPath(String path) {
     final normalized = path.replaceAll('\\', '/');
     final segments = normalized.split('/');
     return segments.isEmpty ? path : segments.last;
+  }
+
+  String _buildFullImageUrl(String imagePath) {
+    if (imagePath.startsWith('http')) return imagePath;
+    final baseUrl = ApiEndpoints.baseUrl.replaceAll('api/', '');
+    return '$baseUrl${imagePath.startsWith('/') ? imagePath : '/$imagePath'}';
   }
 
   Widget _input({

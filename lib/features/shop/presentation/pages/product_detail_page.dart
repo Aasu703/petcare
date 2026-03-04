@@ -180,7 +180,8 @@ class ProductDetailPage extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    onPressed: () => _showAddProductReviewSheet(context, ref, productId),
+                    onPressed: () =>
+                        _showAddProductReviewSheet(context, ref, productId),
                     icon: const Icon(Icons.rate_review_rounded),
                     color: AppColors.iconPrimaryColor,
                     tooltip: 'Write a Review',
@@ -194,7 +195,9 @@ class ProductDetailPage extends ConsumerWidget {
                           ref.read(shopProvider.notifier).addToCart(product);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('${product.productName} added to cart'),
+                              content: Text(
+                                '${product.productName} added to cart',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );
@@ -223,12 +226,17 @@ class ProductDetailPage extends ConsumerWidget {
     );
   }
 
-  void _showAddProductReviewSheet(BuildContext context, WidgetRef ref, String productId) {
+  void _showAddProductReviewSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String productId,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _AddProductReviewSheet(productId: productId, parentRef: ref),
+      builder: (ctx) =>
+          _AddProductReviewSheet(productId: productId, parentRef: ref),
     );
   }
 }
@@ -265,7 +273,10 @@ class _ProductReviewsSection extends ConsumerWidget {
             const Spacer(),
             if (reviews.isNotEmpty)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFA000).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
@@ -273,11 +284,18 @@ class _ProductReviewsSection extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, size: 14, color: Color(0xFFFFA000)),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 14,
+                      color: Color(0xFFFFA000),
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       avgRating.toStringAsFixed(1),
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
                     ),
                     Text(
                       ' (${reviews.length})',
@@ -334,12 +352,14 @@ class _ProductReviewsSection extends ConsumerWidget {
             ),
           )
         else
-          ...reviews.take(5).map(
-            (review) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _ProductReviewCard(review: review),
-            ),
-          ),
+          ...reviews
+              .take(5)
+              .map(
+                (review) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ProductReviewCard(review: review),
+                ),
+              ),
       ],
     );
   }
@@ -391,10 +411,7 @@ class _ProductReviewCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       _timeAgo(review.createdAt),
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
                     ),
                   ],
                 ),
@@ -409,11 +426,18 @@ class _ProductReviewCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, size: 14, color: Color(0xFFFFA000)),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 14,
+                      color: Color(0xFFFFA000),
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       review.rating.toStringAsFixed(1),
-                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -453,7 +477,10 @@ class _AddProductReviewSheet extends StatefulWidget {
   final String productId;
   final WidgetRef parentRef;
 
-  const _AddProductReviewSheet({required this.productId, required this.parentRef});
+  const _AddProductReviewSheet({
+    required this.productId,
+    required this.parentRef,
+  });
 
   @override
   State<_AddProductReviewSheet> createState() => _AddProductReviewSheetState();
@@ -464,7 +491,14 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
 
-  static const _ratingLabels = ['', 'Poor', 'Below Average', 'Average', 'Good', 'Excellent'];
+  static const _ratingLabels = [
+    '',
+    'Poor',
+    'Below Average',
+    'Average',
+    'Good',
+    'Excellent',
+  ];
 
   @override
   void dispose() {
@@ -480,7 +514,9 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
-        24, 12, 24,
+        24,
+        12,
+        24,
         MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: SingleChildScrollView(
@@ -512,9 +548,9 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
             const SizedBox(height: 4),
             Text(
               'Help others make better buying decisions',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: context.textSecondary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: context.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -531,9 +567,13 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
                       scale: i < _rating ? 1.15 : 1.0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
-                        i < _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                        i < _rating
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
                         size: 44,
-                        color: i < _rating ? const Color(0xFFFFA000) : context.borderColor,
+                        color: i < _rating
+                            ? const Color(0xFFFFA000)
+                            : context.borderColor,
                       ),
                     ),
                   ),
@@ -572,7 +612,10 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: context.primaryColor, width: 1.5),
+                  borderSide: BorderSide(
+                    color: context.primaryColor,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: context.backgroundColor,
@@ -597,13 +640,17 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
               child: SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _rating > 0 && !_isSubmitting ? _submitReview : null,
+                  onPressed: _rating > 0 && !_isSubmitting
+                      ? _submitReview
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    disabledBackgroundColor: context.primaryColor.withOpacity(0.3),
+                    disabledBackgroundColor: context.primaryColor.withOpacity(
+                      0.3,
+                    ),
                     elevation: 0,
                   ),
                   child: _isSubmitting
@@ -650,7 +697,9 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
             content: const Text('Review submitted successfully!'),
             backgroundColor: context.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } else {
@@ -659,7 +708,9 @@ class _AddProductReviewSheetState extends State<_AddProductReviewSheet> {
             content: const Text('Failed to submit review. Please try again.'),
             backgroundColor: AppColors.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }

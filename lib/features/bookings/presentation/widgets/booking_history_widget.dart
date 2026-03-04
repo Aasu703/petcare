@@ -149,7 +149,9 @@ class _BookingCard extends StatelessWidget {
     final dateStr = startDT != null
         ? DateFormat('EEE, MMM d, yyyy').format(startDT)
         : booking.startTime;
-    final timeStr = startDT != null ? DateFormat('hh:mm a').format(startDT) : '';
+    final timeStr = startDT != null
+        ? DateFormat('hh:mm a').format(startDT)
+        : '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -186,7 +188,8 @@ class _BookingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    booking.status[0].toUpperCase() + booking.status.substring(1),
+                    booking.status[0].toUpperCase() +
+                        booking.status.substring(1),
                     style: TextStyle(
                       color: _statusColor(booking.status),
                       fontWeight: FontWeight.w600,
@@ -261,9 +264,7 @@ class _BookingCard extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _RateServiceSheet(
-        booking: booking,
-      ),
+      builder: (ctx) => _RateServiceSheet(booking: booking),
     );
   }
 }
@@ -283,7 +284,14 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
 
-  static const _ratingLabels = ['', 'Poor', 'Below Average', 'Average', 'Good', 'Excellent'];
+  static const _ratingLabels = [
+    '',
+    'Poor',
+    'Below Average',
+    'Average',
+    'Good',
+    'Excellent',
+  ];
 
   @override
   void dispose() {
@@ -299,7 +307,9 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
-        24, 12, 24,
+        24,
+        12,
+        24,
         MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: SingleChildScrollView(
@@ -331,9 +341,9 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
             if (widget.booking.serviceTitle != null)
               Text(
                 widget.booking.serviceTitle!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: context.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: context.textSecondary),
                 textAlign: TextAlign.center,
               ),
             const SizedBox(height: 24),
@@ -350,9 +360,13 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
                       scale: i < _rating ? 1.15 : 1.0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
-                        i < _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                        i < _rating
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
                         size: 44,
-                        color: i < _rating ? const Color(0xFFFFA000) : context.borderColor,
+                        color: i < _rating
+                            ? const Color(0xFFFFA000)
+                            : context.borderColor,
                       ),
                     ),
                   ),
@@ -360,7 +374,8 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
               }),
             ),
 
-            if (_rating > 0) ...[              const SizedBox(height: 6),
+            if (_rating > 0) ...[
+              const SizedBox(height: 6),
               Text(
                 _ratingLabels[_rating.toInt()],
                 textAlign: TextAlign.center,
@@ -390,7 +405,10 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: context.primaryColor, width: 1.5),
+                  borderSide: BorderSide(
+                    color: context.primaryColor,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: context.backgroundColor,
@@ -415,13 +433,17 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
               child: SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _rating > 0 && !_isSubmitting ? _submitReview : null,
+                  onPressed: _rating > 0 && !_isSubmitting
+                      ? _submitReview
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    disabledBackgroundColor: context.primaryColor.withOpacity(0.3),
+                    disabledBackgroundColor: context.primaryColor.withOpacity(
+                      0.3,
+                    ),
                     elevation: 0,
                   ),
                   child: _isSubmitting
@@ -469,7 +491,9 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
             content: const Text('Review submitted successfully!'),
             backgroundColor: context.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -478,10 +502,14 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to submit review: ${e.toString().replaceAll('Exception: ', '')}'),
+            content: Text(
+              'Failed to submit review: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
             backgroundColor: AppColors.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }

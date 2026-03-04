@@ -44,9 +44,44 @@ class _MyProviderServicesScreenState
                 separatorBuilder: (_, __) => SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final s = state.services[index];
+                  
+                  // Determine status color and label
+                  final statusColor = s.approvalStatus == 'approved' 
+                    ? Color.fromARGB(255, 34, 197, 94)  // green
+                    : s.approvalStatus == 'rejected'
+                    ? Color.fromARGB(255, 239, 68, 68)  // red
+                    : Color.fromARGB(255, 251, 191, 36);  // amber
+                  
+                  final statusLabel = s.approvalStatus == 'approved' 
+                    ? 'Approved'
+                    : s.approvalStatus == 'rejected'
+                    ? 'Rejected'
+                    : 'Pending';
+                  
                   return ListTile(
                     title: Text(s.serviceType),
-                    subtitle: Text('Status: ${s.verificationStatus}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Status: ${s.verificationStatus}'),
+                        SizedBox(height: 4),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: statusColor.withAlpha(51),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     trailing: s.ratingAverage != null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,

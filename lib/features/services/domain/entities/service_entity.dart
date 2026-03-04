@@ -9,6 +9,7 @@ class ServiceEntity extends Equatable {
   final String? category;
   final List<String> availability;
   final String? providerId;
+  final String approvalStatus;
 
   const ServiceEntity({
     this.serviceId,
@@ -19,6 +20,7 @@ class ServiceEntity extends Equatable {
     this.category,
     this.availability = const [],
     this.providerId,
+    this.approvalStatus = 'pending',
   });
 
   @override
@@ -31,6 +33,7 @@ class ServiceEntity extends Equatable {
     category,
     availability,
     providerId,
+    approvalStatus,
   ];
 
   ServiceEntity copyWith({
@@ -42,6 +45,7 @@ class ServiceEntity extends Equatable {
     String? category,
     List<String>? availability,
     String? providerId,
+    String? approvalStatus,
   }) {
     return ServiceEntity(
       serviceId: serviceId ?? this.serviceId,
@@ -52,6 +56,7 @@ class ServiceEntity extends Equatable {
       category: category ?? this.category,
       availability: availability ?? this.availability,
       providerId: providerId ?? this.providerId,
+      approvalStatus: approvalStatus ?? this.approvalStatus,
     );
   }
 }

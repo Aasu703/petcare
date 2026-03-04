@@ -14,6 +14,7 @@ class ProviderServiceEntity extends Equatable {
   final double? earnings;
   final String? createdAt;
   final String? updatedAt;
+  final String approvalStatus;
 
   const ProviderServiceEntity({
     this.providerServiceId,
@@ -29,6 +30,7 @@ class ProviderServiceEntity extends Equatable {
     this.earnings,
     this.createdAt,
     this.updatedAt,
+    this.approvalStatus = 'pending',
   });
 
   @override
@@ -46,6 +48,7 @@ class ProviderServiceEntity extends Equatable {
     earnings,
     createdAt,
     updatedAt,
+    approvalStatus,
   ];
 
   ProviderServiceEntity copyWith({
@@ -62,6 +65,7 @@ class ProviderServiceEntity extends Equatable {
     double? earnings,
     String? createdAt,
     String? updatedAt,
+    String? approvalStatus,
   }) {
     return ProviderServiceEntity(
       providerServiceId: providerServiceId ?? this.providerServiceId,
@@ -77,6 +81,7 @@ class ProviderServiceEntity extends Equatable {
       earnings: earnings ?? this.earnings,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      approvalStatus: approvalStatus ?? this.approvalStatus,
     );
   }
 }

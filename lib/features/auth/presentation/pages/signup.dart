@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/auth/presentation/providers/auth_providers.dart';
@@ -181,7 +182,7 @@ class _SignupState extends ConsumerState<Signup>
       child: Column(
         children: [
           Text(
-            'Create Account',
+            AppLocalizations.of(context).tr('createAccount'),
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               fontWeight: FontWeight.w900,
               fontSize: 32,
@@ -190,7 +191,7 @@ class _SignupState extends ConsumerState<Signup>
           ),
           const SizedBox(height: 10),
           Text(
-            'Join PawCare today',
+            AppLocalizations.of(context).tr('joinPawCareToday'),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.black.withValues(alpha: 0.5),
               fontSize: 16,
@@ -260,7 +261,7 @@ class _SignupState extends ConsumerState<Signup>
   void _showSuccessSnackBar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Account created successfully. Please log in.'),
+        content: Text(AppLocalizations.of(context).tr('accountCreatedSuccess')),
         backgroundColor: Colors.green.shade400,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

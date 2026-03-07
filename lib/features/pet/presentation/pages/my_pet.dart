@@ -9,6 +9,7 @@ import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/pet/presentation/widgets/my_pet_card.dart';
 import 'package:petcare/features/pet/presentation/widgets/my_pet_empty_state.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class MyPet extends ConsumerStatefulWidget {
   const MyPet({super.key});
@@ -29,22 +30,21 @@ class _MyPetState extends ConsumerState<MyPet> {
   }
 
   Future<void> _deletePet(String petId) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Delete Pet',
+          l10n.tr('deletePet'),
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        content: const Text(
-          'Are you sure you want to delete this pet? This action cannot be undone.',
-        ),
+        content: Text(l10n.tr('deletePetConfirm')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
-              'Cancel',
+              l10n.tr('cancel'),
               style: TextStyle(color: context.textSecondary),
             ),
           ),
@@ -58,7 +58,7 @@ class _MyPetState extends ConsumerState<MyPet> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.tr('delete')),
           ),
         ],
       ),
@@ -74,7 +74,7 @@ class _MyPetState extends ConsumerState<MyPet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Pet deleted successfully' : 'Failed to delete pet',
+          success ? l10n.tr('petDeletedSuccess') : l10n.tr('failedDeletePet'),
         ),
         backgroundColor: success
             ? AppColors.successColor
@@ -115,6 +115,7 @@ class _MyPetState extends ConsumerState<MyPet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final petState = ref.watch(petNotifierProvider);
 
     return Scaffold(
@@ -125,7 +126,7 @@ class _MyPetState extends ConsumerState<MyPet> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'My Pets',
+          l10n.tr('myPets'),
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -294,8 +295,8 @@ class _MyPetState extends ConsumerState<MyPet> {
         foregroundColor: AppColors.buttonTextColor,
         elevation: 6,
         icon: const Icon(Icons.add),
-        label: const Text(
-          'Add Pet',
+        label: Text(
+          l10n.tr('addPet'),
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),

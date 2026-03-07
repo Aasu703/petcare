@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/provider/presentation/provider/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
@@ -107,7 +108,9 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please choose a provider type to continue'),
+          content: Text(
+            AppLocalizations.of(context).tr('pleaseChooseProviderType'),
+          ),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -179,7 +182,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Provider account created successfully! Please login to continue.',
+                AppLocalizations.of(context).tr('providerAccountCreated'),
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
@@ -219,8 +222,8 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
 
   Future<void> _pickLocationOnMap() async {
     final title = _selectedProviderType == 'vet'
-        ? 'Pin Clinic Location'
-        : 'Pin Shop Location';
+        ? AppLocalizations.of(context).tr('pinClinicLocation')
+        : AppLocalizations.of(context).tr('pinShopLocation');
     final result = await Navigator.of(context).push<ProviderLocationPickResult>(
       MaterialPageRoute(
         builder: (_) => ProviderLocationPickerScreen(
@@ -299,7 +302,9 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Provider Sign Up',
+                                    AppLocalizations.of(
+                                      context,
+                                    ).tr('providerSignUp'),
                                     style: Theme.of(context)
                                         .textTheme
                                         .displaySmall
@@ -310,7 +315,9 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Create your provider account',
+                              AppLocalizations.of(
+                                context,
+                              ).tr('createProviderAccount'),
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 28),
@@ -358,8 +365,14 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                               Expanded(
                                                 child: Text(
                                                   _selectedProviderType == 'vet'
-                                                      ? 'Clinic Map Location'
-                                                      : 'Shop Map Location',
+                                                      ? AppLocalizations.of(
+                                                          context,
+                                                        ).tr(
+                                                          'clinicMapLocation',
+                                                        )
+                                                      : AppLocalizations.of(
+                                                          context,
+                                                        ).tr('shopMapLocation'),
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.w700,
                                                     fontSize: 14,
@@ -372,7 +385,11 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                           Text(
                                             hasPinnedLocation
                                                 ? 'Pinned at ${_locationLatitude!.toStringAsFixed(6)}, ${_locationLongitude!.toStringAsFixed(6)}'
-                                                : 'Pin your exact business location for admin map verification.',
+                                                : AppLocalizations.of(
+                                                    context,
+                                                  ).tr(
+                                                    'pinExactBusinessLocation',
+                                                  ),
                                             style: TextStyle(
                                               color: hasPinnedLocation
                                                   ? const Color(0xFF2E7D32)
@@ -406,8 +423,12 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                               ),
                                               label: Text(
                                                 hasPinnedLocation
-                                                    ? 'Update Pin on Map'
-                                                    : 'Pin on Map',
+                                                    ? AppLocalizations.of(
+                                                        context,
+                                                      ).tr('updatePinOnMap')
+                                                    : AppLocalizations.of(
+                                                        context,
+                                                      ).tr('pinOnMap'),
                                               ),
                                             ),
                                           ),
@@ -419,18 +440,26 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _emailController,
                                     focusNode: _emailFocusNode,
-                                    hint: 'Enter your email',
-                                    label: 'Email',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('loginHint'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('email'),
                                     icon: Icons.email_outlined,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your email';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterEmail');
                                       }
                                       if (!RegExp(
                                         r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                                       ).hasMatch(value)) {
-                                        return 'Please enter a valid email';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterValidEmail');
                                       }
                                       return null;
                                     },
@@ -439,8 +468,12 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _passwordController,
                                     focusNode: _passwordFocusNode,
-                                    hint: 'Enter your password',
-                                    label: 'Password',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('passwordHint'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('password'),
                                     icon: Icons.lock_outline_rounded,
                                     obscure: !_showPassword,
                                     suffixIcon: IconButton(
@@ -458,7 +491,9 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your password';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterPassword');
                                       }
                                       if (value.length < 8) {
                                         return 'Password must be at least 8 characters';
@@ -470,8 +505,12 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _confirmPasswordController,
                                     focusNode: _confirmPasswordFocusNode,
-                                    hint: 'Confirm your password',
-                                    label: 'Confirm Password',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('confirmPasswordHint'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('confirmPassword'),
                                     icon: Icons.lock_outline_rounded,
                                     obscure: !_showConfirmPassword,
                                     suffixIcon: IconButton(
@@ -490,10 +529,14 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     ),
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please confirm your password';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseConfirmPassword');
                                       }
                                       if (value != _passwordController.text) {
-                                        return 'Passwords do not match';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('passwordsDoNotMatch');
                                       }
                                       return null;
                                     },
@@ -502,12 +545,18 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _businessNameController,
                                     focusNode: _businessNameFocusNode,
-                                    hint: 'Enter your business name',
-                                    label: 'Business Name',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('enterBusinessName'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('businessName'),
                                     icon: Icons.business_outlined,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your business name';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterBusinessName');
                                       }
                                       if (value.length < 2) {
                                         return 'Business name must be at least 2 characters';
@@ -519,13 +568,19 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _addressController,
                                     focusNode: _addressFocusNode,
-                                    hint: 'Enter your business address',
-                                    label: 'Address',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('enterBusinessAddress'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('address'),
                                     icon: Icons.location_on_outlined,
                                     maxLines: 3,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your address';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterAddress');
                                       }
                                       if (value.length < 5) {
                                         return 'Address must be at least 5 characters';
@@ -537,13 +592,19 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                   AuthFormField(
                                     controller: _phoneController,
                                     focusNode: _phoneFocusNode,
-                                    hint: 'Enter your phone number',
-                                    label: 'Phone Number',
+                                    hint: AppLocalizations.of(
+                                      context,
+                                    ).tr('enterPhoneNumber'),
+                                    label: AppLocalizations.of(
+                                      context,
+                                    ).tr('phoneNumber'),
                                     icon: Icons.phone_outlined,
                                     keyboardType: TextInputType.phone,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter your phone number';
+                                        return AppLocalizations.of(
+                                          context,
+                                        ).tr('pleaseEnterPhoneNumber');
                                       }
                                       if (value.length < 10) {
                                         return 'Phone number must be at least 10 digits';
@@ -582,8 +643,10 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                                     >(Colors.white),
                                               ),
                                             )
-                                          : const Text(
-                                              'Create Provider Account',
+                                          : Text(
+                                              AppLocalizations.of(
+                                                context,
+                                              ).tr('createProviderAccount'),
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,

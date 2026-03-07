@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
 class ProviderHelpScreen extends StatelessWidget {
@@ -6,11 +7,9 @@ class ProviderHelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Help & Support'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(l10n.tr('helpAndSupport')), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -24,7 +23,7 @@ class ProviderHelpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Help Center Coming Soon',
+                l10n.tr('helpCenterComingSoon'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -33,7 +32,7 @@ class ProviderHelpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Browse FAQs or contact our support team for help with your provider account.',
+                l10n.tr('browseFaqsContact'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -48,4 +47,3 @@ class ProviderHelpScreen extends StatelessWidget {
     );
   }
 }
-

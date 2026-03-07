@@ -21,6 +21,7 @@ import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/discover/presentation/pages/discover_screen.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 // Service-specific colors (not theme-dependent)
 const _kVeterinaryColor = Color(0xFFFF6B6B);
@@ -175,19 +176,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  String _greetingLabel() {
+  String _greetingLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return l10n.tr('goodMorning');
+    if (hour < 17) return l10n.tr('goodAfternoon');
+    return l10n.tr('goodEvening');
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final petState = ref.watch(petNotifierProvider);
     final bookingState = ref.watch(userBookingProvider);
     final reminderState = ref.watch(vaccinationReminderProvider);
-    final greeting = _greetingLabel();
+    final greeting = _greetingLabel(context);
     final petIds = petState.pets
         .map((pet) => pet.petId)
         .where((id) => id != null && id.isNotEmpty)
@@ -285,7 +288,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Ready to care for your pets?',
+                                  l10n.tr('readyToCarePets'),
                                   style: TextStyle(
                                     color: context.textSecondary,
                                     fontSize: 15,
@@ -402,18 +405,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                                 width: 1,
                                               ),
                                             ),
-                                            child: const Row(
+                                            child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Icon(
+                                                const Icon(
                                                   Icons.pets_rounded,
                                                   color: Colors.white,
                                                   size: 14,
                                                 ),
-                                                SizedBox(width: 8),
+                                                const SizedBox(width: 8),
                                                 Text(
-                                                  'NEW PET',
-                                                  style: TextStyle(
+                                                  l10n.tr('newPet'),
+                                                  style: const TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.w800,
@@ -424,9 +427,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                             ),
                                           ),
                                           const SizedBox(height: 20),
-                                          const Text(
-                                            'Add Your First Pet',
-                                            style: TextStyle(
+                                          Text(
+                                            l10n.tr('addYourFirstPet'),
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 26,
                                               fontWeight: FontWeight.w800,
@@ -528,7 +531,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Vaccination Reminders',
+                        l10n.tr('vaccinationReminders'),
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: 22,
@@ -538,7 +541,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Upcoming health checks',
+                        l10n.tr('upcomingHealthChecks'),
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: 14,
@@ -572,7 +575,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             border: Border.all(color: context.borderColor),
                           ),
                           child: Text(
-                            'No upcoming vaccinations. You are all set!',
+                            l10n.tr('noUpcomingVaccinations'),
                             style: TextStyle(color: context.textSecondary),
                           ),
                         )
@@ -586,13 +589,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             );
                             final petName = matchedPets.isNotEmpty
                                 ? matchedPets.first.name
-                                : 'Your pet';
+                                : l10n.tr('yourPet');
                             final dueDate = DateTime.tryParse(
                               record.nextDueDate ?? '',
                             );
                             final dueStr = dueDate != null
                                 ? DateFormat('MMM d, yyyy').format(dueDate)
-                                : 'Due soon';
+                                : l10n.tr('dueSoon');
 
                             return Material(
                               color: Colors.transparent,
@@ -652,7 +655,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                record.title ?? 'Vaccination',
+                                                record.title ??
+                                                    l10n.tr('vaccination'),
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 14,
@@ -697,7 +701,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       _buildStatCard(
                         icon: Icons.favorite_rounded,
                         value: '${petState.pets.length}',
-                        label: 'My Pets',
+                        label: l10n.tr('myPets'),
                         color: _kAccentColor,
                         delay: 0,
                       ),
@@ -705,7 +709,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       _buildStatCard(
                         icon: Icons.calendar_today_rounded,
                         value: '${bookingState.bookings.length}',
-                        label: 'Appointments',
+                        label: l10n.tr('appointments'),
                         color: _kPetShopColor,
                         delay: 100,
                         onTap: () async {
@@ -726,7 +730,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       _buildStatCard(
                         icon: Icons.notifications_active_rounded,
                         value: '${reminderState.reminders.length}',
-                        label: 'Reminders',
+                        label: l10n.tr('reminders'),
                         color: _kGroomingColor,
                         delay: 200,
                       ),
@@ -745,7 +749,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quick Actions',
+                        l10n.tr('quickActions'),
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: 22,
@@ -755,7 +759,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Messages and nearby map at your fingertips',
+                        l10n.tr('messagesAndMap'),
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: 14,
@@ -768,8 +772,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Expanded(
                             child: _buildQuickActionCard(
                               icon: Icons.chat_rounded,
-                              title: 'Messages',
-                              subtitle: 'Open chats',
+                              title: l10n.tr('messages'),
+                              subtitle: l10n.tr('openChats'),
                               color: const Color(0xFF4C6EF5),
                               onTap: () {
                                 _openMessages();
@@ -781,12 +785,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             child: _buildQuickActionCard(
                               icon: Icons.map_rounded,
                               title: _isRequestingLocation
-                                  ? 'Requesting...'
+                                  ? l10n.tr('requesting')
                                   : (_mapPreviewCenter == null
-                                        ? 'Enable Map'
-                                        : 'Nearby Map Ready'),
+                                        ? l10n.tr('enableMap')
+                                        : l10n.tr('nearbyMapReady')),
                               subtitle: _mapPreviewCenter == null
-                                  ? 'Allow location to show map here'
+                                  ? l10n.tr('allowLocationMap')
                                   : 'Find vets & pet spots nearby',
                               color: const Color(0xFF0CA678),
                               isLoading: _isRequestingLocation,
@@ -823,7 +827,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Services',
+                            l10n.tr('services'),
                             style: TextStyle(
                               color: context.textPrimary,
                               fontSize: 22,
@@ -833,7 +837,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Everything your pet needs',
+                            l10n.tr('everythingPetNeeds'),
                             style: TextStyle(
                               color: context.textSecondary,
                               fontSize: 14,
@@ -882,7 +886,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             child: Row(
                               children: [
                                 Text(
-                                  'View All',
+                                  l10n.tr('viewAll'),
                                   style: TextStyle(
                                     color: context.primaryColor,
                                     fontWeight: FontWeight.w700,
@@ -918,8 +922,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Expanded(
                             child: _buildModernServiceCard(
                               icon: Icons.local_hospital_rounded,
-                              label: 'Veterinary',
-                              subtitle: 'Health care',
+                              label: l10n.tr('veterinary'),
+                              subtitle: l10n.tr('healthCare'),
                               color: _kVeterinaryColor,
                               gradientColors: [
                                 const Color(0xFFFF6B6B),
@@ -947,8 +951,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Expanded(
                             child: _buildModernServiceCard(
                               icon: Icons.spa_rounded,
-                              label: 'Grooming',
-                              subtitle: 'Beauty care',
+                              label: l10n.tr('grooming'),
+                              subtitle: l10n.tr('beautyCare'),
                               color: _kGroomingColor,
                               gradientColors: [
                                 const Color(0xFFFFA94D),
@@ -1007,8 +1011,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Expanded(
                             child: _buildModernServiceCard(
                               icon: Icons.home_filled,
-                              label: 'Boarding',
-                              subtitle: 'Day care',
+                              label: l10n.tr('boarding'),
+                              subtitle: l10n.tr('dayCare'),
                               color: _kBoardingColor,
                               gradientColors: [
                                 const Color(0xFF51CF66),
@@ -1052,7 +1056,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Recent Activity',
+                            l10n.tr('recentActivity'),
                             style: TextStyle(
                               color: context.textPrimary,
                               fontSize: 22,
@@ -1062,7 +1066,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Your latest updates',
+                            l10n.tr('yourLatestUpdates'),
                             style: TextStyle(
                               color: context.textSecondary,
                               fontSize: 14,
@@ -1120,9 +1124,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showHomeSnack(
-          'Location services are off. Please enable GPS to open nearby map.',
-        );
+        _showHomeSnack(AppLocalizations.of(context).tr('locationServicesOff'));
         return;
       }
 
@@ -1134,7 +1136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         _showHomeSnack(
-          'Location permission is required to show nearby vets and pet places.',
+          AppLocalizations.of(context).tr('locationPermissionRequired'),
         );
         return;
       }
@@ -1154,11 +1156,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         kind: 'page',
       );
       if (!mounted) return;
-      _showHomeSnack(
-        'Nearby map enabled on home. Tap Open Full Map for details.',
-      );
+      _showHomeSnack(AppLocalizations.of(context).tr('nearbyMapEnabled'));
     } catch (_) {
-      _showHomeSnack('Unable to open map right now. Please try again.');
+      _showHomeSnack(AppLocalizations.of(context).tr('unableOpenMap'));
     } finally {
       if (mounted) {
         setState(() {
@@ -1218,7 +1218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'No recent activity',
+              AppLocalizations.of(context).tr('noRecentActivity'),
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: 18,
@@ -1227,7 +1227,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Open a page or chat to see it here.',
+              AppLocalizations.of(context).tr('openPageOrChat'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: context.textSecondary,
@@ -1441,7 +1441,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Add Pet',
+                  AppLocalizations.of(context).tr('addPet'),
                   style: TextStyle(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w800,
@@ -1491,7 +1491,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 Icon(Icons.pets_rounded, color: context.primaryColor, size: 18),
                 const SizedBox(width: 10),
                 Text(
-                  'My Pets',
+                  AppLocalizations.of(context).tr('myPets'),
                   style: TextStyle(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w800,
@@ -1719,7 +1719,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Nearby Map',
+                        AppLocalizations.of(context).tr('nearbyMap'),
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: 16,
@@ -1728,7 +1728,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Map is now shown on your home screen',
+                        AppLocalizations.of(context).tr('mapShownOnHome'),
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: 12,
@@ -1740,7 +1740,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 TextButton(
                   onPressed: _openFullNearbyMap,
-                  child: const Text('Open Full Map'),
+                  child: Text(AppLocalizations.of(context).tr('openFullMap')),
                 ),
               ],
             ),

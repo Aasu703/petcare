@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/providers/shared_prefs_provider.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
@@ -103,13 +104,14 @@ class _ProviderDocumentsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final session = ref.watch(userSessionServiceProvider);
     final providerType = session.getProviderType();
     final documentTypes = _documentTypesForProvider(providerType);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Business Documents'),
+        title: Text(l10n.tr('businessDocuments')),
         centerTitle: true,
       ),
       body: _isLoading

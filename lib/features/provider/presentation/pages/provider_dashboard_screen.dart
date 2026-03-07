@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/presentation/pages/manage_appointments_page.dart';
@@ -121,46 +122,47 @@ class _ProviderDashboardScreenState
   }
 
   ProviderDashboardUiKit _uiKitForType(ProviderType providerType) {
+    final l10n = AppLocalizations.of(context);
     if (isShopProvider(providerType)) {
-      return const ProviderDashboardUiKit(
+      return ProviderDashboardUiKit(
         headerIcon: Icons.storefront_rounded,
-        accentColor: Color(0xFF0F766E),
-        accentSoft: Color(0xFFD1FAE5),
-        headerGradientStart: Color(0xFFCCFBF1),
-        headerGradientEnd: Color(0xFFFFEDD5),
-        managementTitle: 'Store Operations',
+        accentColor: const Color(0xFF0F766E),
+        accentSoft: const Color(0xFFD1FAE5),
+        headerGradientStart: const Color(0xFFCCFBF1),
+        headerGradientEnd: const Color(0xFFFFEDD5),
+        managementTitle: l10n.tr('storeOperations'),
       );
     }
 
     if (isGroomerProvider(providerType)) {
-      return const ProviderDashboardUiKit(
+      return ProviderDashboardUiKit(
         headerIcon: Icons.content_cut_rounded,
-        accentColor: Color(0xFFBE185D),
-        accentSoft: Color(0xFFFCE7F3),
-        headerGradientStart: Color(0xFFFCE7F3),
-        headerGradientEnd: Color(0xFFFFF7ED),
-        managementTitle: 'Grooming Operations',
+        accentColor: const Color(0xFFBE185D),
+        accentSoft: const Color(0xFFFCE7F3),
+        headerGradientStart: const Color(0xFFFCE7F3),
+        headerGradientEnd: const Color(0xFFFFF7ED),
+        managementTitle: l10n.tr('groomingOperations'),
       );
     }
 
     if (isVetProvider(providerType)) {
-      return const ProviderDashboardUiKit(
+      return ProviderDashboardUiKit(
         headerIcon: Icons.health_and_safety_rounded,
-        accentColor: Color(0xFF7C3AED),
-        accentSoft: Color(0xFFEDE9FE),
-        headerGradientStart: Color(0xFFEDE9FE),
-        headerGradientEnd: Color(0xFFE0F2FE),
-        managementTitle: 'Clinical Operations',
+        accentColor: const Color(0xFF7C3AED),
+        accentSoft: const Color(0xFFEDE9FE),
+        headerGradientStart: const Color(0xFFEDE9FE),
+        headerGradientEnd: const Color(0xFFE0F2FE),
+        managementTitle: l10n.tr('clinicalOperations'),
       );
     }
 
-    return const ProviderDashboardUiKit(
+    return ProviderDashboardUiKit(
       headerIcon: Icons.business_rounded,
-      accentColor: Color(0xFF4F46E5),
-      accentSoft: Color(0xFFE0E7FF),
-      headerGradientStart: Color(0xFFE0E7FF),
-      headerGradientEnd: Color(0xFFE0F2FE),
-      managementTitle: 'Business Management',
+      accentColor: const Color(0xFF4F46E5),
+      accentSoft: const Color(0xFFE0E7FF),
+      headerGradientStart: const Color(0xFFE0E7FF),
+      headerGradientEnd: const Color(0xFFE0F2FE),
+      managementTitle: l10n.tr('businessManagement'),
     );
   }
 
@@ -193,6 +195,7 @@ class _ProviderDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final session = ref.watch(userSessionServiceProvider);
     final providerType = session.getProviderType();
     final providerLabel = getProviderTypeLabel(providerType);
@@ -233,19 +236,19 @@ class _ProviderDashboardScreenState
     final dashboardStats = isShop
         ? [
             ProviderDashboardStat(
-              label: 'Products',
+              label: l10n.tr('products'),
               value: inventoryCount.toString(),
               icon: Icons.inventory_2_rounded,
               color: ProviderColors.inventory,
             ),
             ProviderDashboardStat(
-              label: 'Low Stock Alerts',
+              label: l10n.tr('lowStockAlerts'),
               value: lowStockCount.toString(),
               icon: Icons.warning_amber_rounded,
               color: ProviderColors.bookings,
             ),
             ProviderDashboardStat(
-              label: 'Inventory Value',
+              label: l10n.tr('inventoryValue'),
               value: '\$${inventoryValue.toStringAsFixed(0)}',
               icon: Icons.payments_rounded,
               color: ProviderColors.services,
@@ -253,25 +256,25 @@ class _ProviderDashboardScreenState
           ]
         : [
             ProviderDashboardStat(
-              label: 'Active Services',
+              label: l10n.tr('activeServices'),
               value: activeServicesCount.toString(),
               icon: Icons.medical_services_rounded,
               color: ProviderColors.services,
             ),
             ProviderDashboardStat(
-              label: 'Pending Bookings',
+              label: l10n.tr('pendingBookings'),
               value: pendingBookingsCount.toString(),
               icon: Icons.schedule_rounded,
               color: ProviderColors.accent,
             ),
             ProviderDashboardStat(
-              label: 'Completed Bookings',
+              label: l10n.tr('completedBookings'),
               value: completedBookingsCount.toString(),
               icon: Icons.check_circle_rounded,
               color: ProviderColors.inventory,
             ),
             ProviderDashboardStat(
-              label: 'Revenue Potential',
+              label: l10n.tr('revenuePotential'),
               value: '\$${totalBookingRevenue.toStringAsFixed(0)}',
               icon: Icons.attach_money_rounded,
               color: ProviderColors.analytics,
@@ -381,6 +384,7 @@ class _ProviderDashboardScreenState
     BuildContext context,
     ProviderType providerType,
   ) {
+    final l10n = AppLocalizations.of(context);
     final canServices = canManageServices(providerType);
     final canBookings = canManageBookings(providerType);
     final canInventory = canManageInventory(providerType);
@@ -391,8 +395,8 @@ class _ProviderDashboardScreenState
     if (canInventory) {
       cards.add(
         ProviderDashboardFeature(
-          title: 'Inventory',
-          subtitle: 'Manage products and stock',
+          title: l10n.tr('inventory'),
+          subtitle: l10n.tr('manageProductsStock'),
           icon: Icons.inventory_2_rounded,
           color: ProviderColors.inventory,
           onTap: () {
@@ -408,8 +412,8 @@ class _ProviderDashboardScreenState
     if (canServices) {
       cards.add(
         ProviderDashboardFeature(
-          title: isVet ? 'Vet Services' : 'Grooming Services',
-          subtitle: 'View and manage your services',
+          title: isVet ? l10n.tr('vetServices') : l10n.tr('groomingServices'),
+          subtitle: l10n.tr('viewManageServices'),
           icon: Icons.medical_services_rounded,
           color: ProviderColors.services,
           onTap: () {
@@ -425,8 +429,8 @@ class _ProviderDashboardScreenState
 
       cards.add(
         ProviderDashboardFeature(
-          title: 'Apply for Service',
-          subtitle: 'Submit a new provider service application',
+          title: l10n.tr('applyForService'),
+          subtitle: l10n.tr('submitProviderServiceApp'),
           icon: Icons.assignment_rounded,
           color: ProviderColors.primary,
           onTap: () {
@@ -448,10 +452,10 @@ class _ProviderDashboardScreenState
     if (canBookings) {
       cards.add(
         ProviderDashboardFeature(
-          title: isVet ? 'Vet Appointments' : 'Bookings',
+          title: isVet ? l10n.tr('vetAppointments') : l10n.tr('bookings'),
           subtitle: isVet
-              ? 'Manage pet consultation requests'
-              : 'View and manage appointments',
+              ? l10n.tr('managePetConsultation')
+              : l10n.tr('viewManageAppointments'),
           icon: Icons.event_note_rounded,
           color: ProviderColors.bookings,
           onTap: () {
@@ -466,8 +470,8 @@ class _ProviderDashboardScreenState
       if (isVet) {
         cards.add(
           ProviderDashboardFeature(
-            title: 'Vaccination Prescriptions',
-            subtitle: 'See prescribed vaccinations by pet owner',
+            title: l10n.tr('vaccinationPrescriptions'),
+            subtitle: l10n.tr('seePrescribedVaccinations'),
             icon: Icons.vaccines_rounded,
             color: ProviderColors.primary,
             onTap: () {
@@ -484,8 +488,8 @@ class _ProviderDashboardScreenState
 
       cards.add(
         ProviderDashboardFeature(
-          title: 'Calendar',
-          subtitle: 'View booking calendar',
+          title: l10n.tr('calendar'),
+          subtitle: l10n.tr('viewBookingCalendar'),
           icon: Icons.calendar_month_rounded,
           color: ProviderColors.messages,
           onTap: () {
@@ -500,8 +504,8 @@ class _ProviderDashboardScreenState
 
     cards.addAll([
       ProviderDashboardFeature(
-        title: 'Messages',
-        subtitle: 'Chat with pet owners',
+        title: l10n.tr('messages'),
+        subtitle: l10n.tr('chatWithPetOwners'),
         icon: Icons.chat_bubble_rounded,
         color: ProviderColors.messages,
         onTap: () {
@@ -512,10 +516,10 @@ class _ProviderDashboardScreenState
         },
       ),
       ProviderDashboardFeature(
-        title: 'Analytics',
+        title: l10n.tr('analytics'),
         subtitle: canInventory
-            ? 'Inventory and sales insights'
-            : 'Earnings and service insights',
+            ? l10n.tr('inventorySalesInsights')
+            : l10n.tr('earningsServiceInsights'),
         icon: Icons.analytics_rounded,
         color: ProviderColors.analytics,
         onTap: () {
@@ -526,8 +530,8 @@ class _ProviderDashboardScreenState
         },
       ),
       ProviderDashboardFeature(
-        title: 'Posts',
-        subtitle: 'Share blogs and updates',
+        title: l10n.tr('posts'),
+        subtitle: l10n.tr('shareBlogsUpdates'),
         icon: Icons.post_add_rounded,
         color: ProviderColors.primary,
         onTap: () {

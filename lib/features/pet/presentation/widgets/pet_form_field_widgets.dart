@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/shared/widgets/index.dart';
@@ -54,6 +55,13 @@ class PetSpeciesSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final speciesLabels = {
+      'dog': l10n.tr('dog'),
+      'cat': l10n.tr('cat'),
+      'bird': l10n.tr('bird'),
+      'other': l10n.tr('other'),
+    };
     return Row(
       children: _speciesOptions.asMap().entries.map((entry) {
         final index = entry.key;
@@ -84,7 +92,7 @@ class PetSpeciesSelector extends StatelessWidget {
                   Text(option.emoji, style: const TextStyle(fontSize: 24)),
                   const SizedBox(height: 4),
                   Text(
-                    option.label,
+                    speciesLabels[option.value] ?? option.label,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected

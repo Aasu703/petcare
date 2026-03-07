@@ -8,6 +8,7 @@ import 'package:petcare/features/shop/presentation/pages/product_detail_page.dar
 import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
 import 'package:petcare/features/shop/cart/presentation/view_model/cart_view_model.dart';
 import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -27,16 +28,17 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(shopProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shop'),
+        title: Text(l10n.tr('shop')),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.map_rounded),
-            tooltip: 'Nearby Pet Shops',
+            tooltip: l10n.tr('nearbyPetShops'),
             onPressed: () async {
               try {
                 final serviceEnabled =
@@ -44,11 +46,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 if (!serviceEnabled) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Location services are off. Please enable GPS to view the map.',
-                      ),
-                    ),
+                    SnackBar(content: Text(l10n.tr('locationServicesOffShop'))),
                   );
                   return;
                 }
@@ -62,11 +60,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     permission == LocationPermission.deniedForever) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Location permission is required to show nearby pet shops.',
-                      ),
-                    ),
+                    SnackBar(content: Text(l10n.tr('locationPermissionShops'))),
                   );
                   return;
                 }
@@ -90,9 +84,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
               } catch (_) {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unable to get location. Please try again.'),
-                  ),
+                  SnackBar(content: Text(l10n.tr('unableGetLocation'))),
                 );
               }
             },
@@ -107,7 +99,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   label: Text('$itemCount'),
                   child: const Icon(Icons.shopping_cart_rounded),
                 ),
-                tooltip: 'Cart',
+                tooltip: l10n.tr('cart'),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -125,15 +117,15 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
           : state.error != null
           ? Center(child: Text('Error: ${state.error}'))
           : state.products.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.storefront, size: 64, color: Colors.grey),
-                  SizedBox(height: 12),
+                  const Icon(Icons.storefront, size: 64, color: Colors.grey),
+                  const SizedBox(height: 12),
                   Text(
-                    'No products available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    l10n.tr('noProductsAvailable'),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),
@@ -161,6 +153,7 @@ class _ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
@@ -213,7 +206,9 @@ class _ProductCard extends ConsumerWidget {
                     ref.read(shopProvider.notifier).addToCart(product);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${product.productName} added to cart'),
+                        content: Text(
+                          '${product.productName} ${l10n.tr('addedToCart')}',
+                        ),
                         duration: const Duration(seconds: 1),
                       ),
                     );
@@ -226,9 +221,9 @@ class _ProductCard extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Add to Cart',
-                    style: TextStyle(fontSize: 12),
+                  child: Text(
+                    l10n.tr('addToCart'),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),

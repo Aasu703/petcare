@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/bookings/presentation/view_model/earnings_view_model.dart';
 
 class EarningsDashboardPage extends ConsumerStatefulWidget {
@@ -24,11 +25,12 @@ class _EarningsDashboardPageState extends ConsumerState<EarningsDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(earningsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Earnings Dashboard'),
+        title: Text(l10n.tr('earningsDashboard')),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -50,18 +52,19 @@ class _EarningsDashboardPageState extends ConsumerState<EarningsDashboardPage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => ref.read(earningsProvider.notifier).load(),
-                    child: const Text('Retry'),
+                    child: Text(l10n.tr('retry')),
                   ),
                 ],
               ),
             )
           : state.earnings == null
-          ? const Center(child: Text('No earnings data'))
+          ? Center(child: Text(l10n.tr('noEarningsData')))
           : _buildContent(context, state),
     );
   }
 
   Widget _buildContent(BuildContext context, EarningsState state) {
+    final l10n = AppLocalizations.of(context);
     final earnings = state.earnings!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -73,7 +76,7 @@ class _EarningsDashboardPageState extends ConsumerState<EarningsDashboardPage> {
             children: [
               Expanded(
                 child: _SummaryCard(
-                  title: 'Total Earnings',
+                  title: l10n.tr('totalEarnings'),
                   value: '\$${earnings.totalEarnings.toStringAsFixed(2)}',
                   icon: Icons.account_balance_wallet,
                   color: AppColors.successColor,
@@ -82,7 +85,7 @@ class _EarningsDashboardPageState extends ConsumerState<EarningsDashboardPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _SummaryCard(
-                  title: 'This Month',
+                  title: l10n.tr('thisMonth'),
                   value: '\$${earnings.monthlyEarnings.toStringAsFixed(2)}',
                   icon: Icons.calendar_month,
                   color: Colors.blue,
@@ -92,7 +95,7 @@ class _EarningsDashboardPageState extends ConsumerState<EarningsDashboardPage> {
           ),
           const SizedBox(height: 12),
           _SummaryCard(
-            title: 'Completed Appointments',
+            title: l10n.tr('completedAppointments'),
             value: earnings.completedAppointments.toString(),
             icon: Icons.check_circle,
             color: AppColors.iconPrimaryColor,
@@ -187,7 +190,9 @@ class _EarningsBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (dailyEarnings.isEmpty) {
-      return const Center(child: Text('No chart data available'));
+      return Center(
+        child: Text(AppLocalizations.of(context).tr('noChartData')),
+      );
     }
 
     // Sort by date, take last 14 days max

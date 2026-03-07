@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/messages/presentation/view_model/chat_view_model.dart';
 
 class ChatContactsBottomSheet extends StatelessWidget {
@@ -13,6 +14,7 @@ class ChatContactsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final contacts = state.contacts;
 
     return SafeArea(
@@ -22,9 +24,9 @@ class ChatContactsBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Start New Chat',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            Text(
+              l10n.tr('startNewChat'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             if (state.isLoadingContacts)
@@ -33,11 +35,9 @@ class ChatContactsBottomSheet extends StatelessWidget {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (contacts.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 14),
-                child: Text(
-                  'No chat contacts found yet. Contacts appear after bookings.',
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Text(l10n.tr('noContactsYet')),
               )
             else
               ConstrainedBox(

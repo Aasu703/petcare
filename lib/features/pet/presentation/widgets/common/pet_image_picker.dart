@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 /// Pet image picker with camera/gallery options
@@ -20,6 +21,7 @@ class PetImagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         GestureDetector(
@@ -84,8 +86,8 @@ class PetImagePicker extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           imageFile != null || networkImageUrl != null
-              ? 'Change pet photo'
-              : 'Add pet photo',
+              ? l10n.tr('changePetPhoto')
+              : l10n.tr('addPetPhoto'),
           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
       ],
@@ -109,6 +111,7 @@ class ImagePickerModal {
     BuildContext context, {
     required Function(ImageSource) onSourceSelected,
   }) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -123,7 +126,7 @@ class ImagePickerModal {
                 Icons.photo_library,
                 color: AppColors.primaryColor,
               ),
-              title: const Text('Choose from gallery'),
+              title: Text(l10n.tr('chooseFromGallery')),
               onTap: () {
                 Navigator.pop(context);
                 onSourceSelected(ImageSource.gallery);
@@ -134,7 +137,7 @@ class ImagePickerModal {
                 Icons.camera_alt,
                 color: AppColors.primaryColor,
               ),
-              title: const Text('Take a photo'),
+              title: Text(l10n.tr('takePhoto')),
               onTap: () {
                 Navigator.pop(context);
                 onSourceSelected(ImageSource.camera);

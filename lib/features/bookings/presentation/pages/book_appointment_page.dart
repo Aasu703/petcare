@@ -9,6 +9,7 @@ import 'package:petcare/features/bookings/presentation/widgets/book_appointment_
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/provider/presentation/view_model/provider_view_model.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/services/presentation/view_model/service_view_model.dart';
 
 class BookAppointmentPage extends ConsumerStatefulWidget {
@@ -84,10 +85,11 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
   }
 
   Future<void> _submitBooking() async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedPetId == null || _selectedPetId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a pet to continue.'),
+        SnackBar(
+          content: Text(l10n.tr('pleaseSelectPet')),
           backgroundColor: Colors.red,
         ),
       );
@@ -95,8 +97,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
     }
     if (_selectedService == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a service to continue.'),
+        SnackBar(
+          content: Text(l10n.tr('pleaseSelectService')),
           backgroundColor: Colors.red,
         ),
       );
@@ -108,8 +110,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
         widget.providerId;
     if (providerId == null || providerId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a provider to continue.'),
+        SnackBar(
+          content: Text(l10n.tr('pleaseSelectProvider')),
           backgroundColor: Colors.red,
         ),
       );
@@ -124,8 +126,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
     if (userId == null || userId.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Session expired. Please log in again.'),
+          SnackBar(
+            content: Text(l10n.tr('sessionExpired')),
             backgroundColor: Colors.red,
           ),
         );
@@ -168,8 +170,8 @@ class _BookAppointmentPageState extends ConsumerState<BookAppointmentPage> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Appointment booked successfully!'),
+        SnackBar(
+          content: Text(l10n.tr('appointmentBookedSuccess')),
           backgroundColor: AppColors.successColor,
         ),
       );

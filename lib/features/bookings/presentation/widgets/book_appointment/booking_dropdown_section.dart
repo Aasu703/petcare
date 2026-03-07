@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/provider/domain/entities/provider_entity.dart';
@@ -37,11 +38,12 @@ class BookingDropdownSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Select Pet',
+          l10n.tr('selectPet'),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -71,7 +73,7 @@ class BookingDropdownSection extends StatelessWidget {
               ),
         const SizedBox(height: 20),
         Text(
-          'Select Service',
+          l10n.tr('selectService'),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -105,7 +107,7 @@ class BookingDropdownSection extends StatelessWidget {
               ),
         const SizedBox(height: 20),
         Text(
-          'Select Provider',
+          l10n.tr('selectProvider'),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),

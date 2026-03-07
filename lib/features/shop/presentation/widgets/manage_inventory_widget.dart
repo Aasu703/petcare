@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ManageInventoryWidget extends StatelessWidget {
   final List<Map<String, dynamic>> items;
@@ -6,8 +7,9 @@ class ManageInventoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return items.isEmpty
-        ? const Center(child: Text('No inventory'))
+        ? Center(child: Text(l10n.tr('noInventoryItems')))
         : ListView.builder(
             padding: const EdgeInsets.all(12),
             itemCount: items.length,
@@ -17,7 +19,7 @@ class ManageInventoryWidget extends StatelessWidget {
                 child: ListTile(
                   leading: const Icon(Icons.inventory),
                   title: Text(p['name'] ?? 'Item'),
-                  subtitle: Text('Qty: ${p['qty'] ?? 0}'),
+                  subtitle: Text('${l10n.tr('quantity')}: ${p['qty'] ?? 0}'),
                 ),
               );
             },

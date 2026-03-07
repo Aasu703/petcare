@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/features/pet/domain/entities/pet_care_entity.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
-import 'package:petcare/features/pet/domain/usecase/add_pet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/delete_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_all_pets_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_pet_care_usecase.dart';

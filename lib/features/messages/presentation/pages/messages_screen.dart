@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/core/services/storage/recent_activity_service.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/messages/presentation/pages/chat_conversation_screen.dart';
@@ -102,24 +103,25 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final sessionService = ref.watch(userSessionServiceProvider);
     final state = ref.watch(chatViewModelProvider);
 
     if (!sessionService.isLoggedIn()) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: const Center(child: Text('Please log in to view messages')),
+        appBar: AppBar(title: Text(l10n.tr('messages'))),
+        body: Center(child: Text(l10n.tr('pleaseLoginMessages'))),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(l10n.tr('messages')),
         actions: [
           IconButton(
             onPressed: _showContactsSheet,
             icon: const Icon(Icons.add_comment_rounded),
-            tooltip: 'New Chat',
+            tooltip: l10n.tr('newChat'),
           ),
         ],
       ),

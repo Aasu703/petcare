@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
@@ -120,9 +121,11 @@ class _ProviderBusinessProfileScreenState
     if ((isVet || isShop) &&
         (_locationLatitude == null || _locationLongitude == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Please pin your clinic/shop location on map before saving.',
+            AppLocalizations.of(
+              context,
+            ).tr('pinClinicShopLocationBeforeSaving'),
           ),
         ),
       );
@@ -212,6 +215,7 @@ class _ProviderBusinessProfileScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isVet = isVetProvider(_providerType);
     final isShop = isShopProvider(_providerType);
     final isGroomer = isGroomerProvider(_providerType);
@@ -219,7 +223,7 @@ class _ProviderBusinessProfileScreenState
         _locationLatitude != null && _locationLongitude != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Business Profile')),
+      appBar: AppBar(title: Text(l10n.tr('editBusinessProfile'))),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -361,7 +365,7 @@ class _ProviderBusinessProfileScreenState
                                           Icons.delete_outline_rounded,
                                           color: Colors.red,
                                         ),
-                                        label: const Text('Remove'),
+                                        label: Text(l10n.tr('remove')),
                                       ),
                                     ],
                                   ],
@@ -380,21 +384,21 @@ class _ProviderBusinessProfileScreenState
                     const SizedBox(height: 12),
                     _input(
                       controller: _businessNameController,
-                      label: 'Business Name',
+                      label: l10n.tr('businessName'),
                       icon: Icons.business_rounded,
                       requiredField: true,
                     ),
                     const SizedBox(height: 12),
                     _input(
                       controller: _addressController,
-                      label: 'Address',
+                      label: l10n.tr('address'),
                       icon: Icons.location_on_rounded,
                       requiredField: true,
                     ),
                     const SizedBox(height: 12),
                     _input(
                       controller: _phoneController,
-                      label: 'Phone',
+                      label: l10n.tr('phone'),
                       icon: Icons.phone_rounded,
                       keyboardType: TextInputType.phone,
                       requiredField: true,
@@ -402,7 +406,7 @@ class _ProviderBusinessProfileScreenState
                     const SizedBox(height: 12),
                     _input(
                       controller: _emailController,
-                      label: 'Email',
+                      label: l10n.tr('email'),
                       icon: Icons.email_rounded,
                       keyboardType: TextInputType.emailAddress,
                       requiredField: true,
@@ -411,7 +415,7 @@ class _ProviderBusinessProfileScreenState
                     if (isVet || isGroomer) ...[
                       _input(
                         controller: _experienceController,
-                        label: 'Experience',
+                        label: l10n.tr('experience'),
                         icon: Icons.work_history_rounded,
                         maxLines: 2,
                         requiredField: true,
@@ -421,7 +425,7 @@ class _ProviderBusinessProfileScreenState
                     if (isVet) ...[
                       _input(
                         controller: _certificationController,
-                        label: 'Certification',
+                        label: l10n.tr('certification'),
                         icon: Icons.verified_rounded,
                         maxLines: 2,
                         requiredField: true,
@@ -520,7 +524,7 @@ class _ProviderBusinessProfileScreenState
                     if (isShop) ...[
                       _input(
                         controller: _panNumberController,
-                        label: 'PAN Number',
+                        label: l10n.tr('panNumber'),
                         icon: Icons.badge_rounded,
                         requiredField: true,
                       ),
@@ -606,7 +610,11 @@ class _ProviderBusinessProfileScreenState
                                 ),
                               )
                             : const Icon(Icons.save_rounded),
-                        label: Text(_isSaving ? 'Saving...' : 'Save Profile'),
+                        label: Text(
+                          _isSaving
+                              ? l10n.tr('saving')
+                              : l10n.tr('saveProfile'),
+                        ),
                       ),
                     ),
                   ],
@@ -649,7 +657,11 @@ class _ProviderBusinessProfileScreenState
     final path = selected.path;
     if (path == null || path.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selected file path is not accessible.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).tr('selectedFileNotAccessible'),
+          ),
+        ),
       );
       return;
     }
@@ -680,7 +692,11 @@ class _ProviderBusinessProfileScreenState
         setState(() => _certificationDocumentUrl = uploadedPath);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Certificate file uploaded')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).tr('certificateUploaded'),
+            ),
+          ),
         );
       } else {
         throw Exception(data is Map ? data['message']?.toString() : null);
@@ -708,7 +724,11 @@ class _ProviderBusinessProfileScreenState
     final path = selected.path;
     if (path == null || path.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selected file path is not accessible.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).tr('selectedFileNotAccessible'),
+          ),
+        ),
       );
       return;
     }
@@ -738,9 +758,13 @@ class _ProviderBusinessProfileScreenState
 
         setState(() => _profileImageUrl = uploadedPath);
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Profile photo uploaded')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).tr('profilePhotoUploaded'),
+            ),
+          ),
+        );
       } else {
         throw Exception(data is Map ? data['message']?.toString() : null);
       }

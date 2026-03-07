@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/reviews/data/datasources/review_remote_datasource.dart';
 import 'package:petcare/features/reviews/presentation/view_model/review_view_model.dart';
 
@@ -25,18 +26,19 @@ class BookingHistoryWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Appointments'),
+          title: Text(l10n.tr('myAppointments')),
           backgroundColor: AppColors.iconPrimaryColor,
           foregroundColor: Colors.white,
           centerTitle: true,
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'History'),
+              Tab(text: l10n.tr('upcoming')),
+              Tab(text: l10n.tr('history')),
             ],
           ),
         ),
@@ -57,7 +59,7 @@ class BookingHistoryWidget extends ConsumerWidget {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: onReload,
-                      child: const Text('Retry'),
+                      child: Text(l10n.tr('retry')),
                     ),
                   ],
                 ),
@@ -66,12 +68,12 @@ class BookingHistoryWidget extends ConsumerWidget {
                 children: [
                   _BookingList(
                     bookings: upcomingBookings,
-                    emptyMessage: 'No upcoming appointments',
+                    emptyMessage: l10n.tr('noUpcomingAppointments'),
                     onRefresh: onReload,
                   ),
                   _BookingList(
                     bookings: historyBookings,
-                    emptyMessage: 'No booking history yet',
+                    emptyMessage: l10n.tr('noBookingHistory'),
                     onRefresh: onReload,
                   ),
                 ],
@@ -241,7 +243,7 @@ class _BookingCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _showRateServiceSheet(context, booking),
                   icon: const Icon(Icons.star_rounded, size: 18),
-                  label: const Text('Rate Service'),
+                  label: Text(AppLocalizations.of(context).tr('rateService')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFFFA000),
                     side: const BorderSide(color: Color(0xFFFFA000)),
@@ -488,7 +490,9 @@ class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Review submitted successfully!'),
+            content: Text(
+              AppLocalizations.of(context).tr('reviewSubmittedSuccess'),
+            ),
             backgroundColor: context.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

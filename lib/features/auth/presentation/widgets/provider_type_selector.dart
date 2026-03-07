@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 class ProviderTypeOption {
@@ -30,22 +31,22 @@ class ProviderTypeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = <ProviderTypeOption>[
-      const ProviderTypeOption(
+      ProviderTypeOption(
         value: 'vet',
-        title: 'Veterinary Clinic',
-        subtitle: 'Vet & medical services',
+        title: AppLocalizations.of(context).tr('veterinaryClinic'),
+        subtitle: AppLocalizations.of(context).tr('vetMedicalServices'),
         icon: Icons.medical_services_rounded,
       ),
-      const ProviderTypeOption(
+      ProviderTypeOption(
         value: 'shop',
-        title: 'Pet Shop',
-        subtitle: 'Products & retail services',
+        title: AppLocalizations.of(context).tr('petShop'),
+        subtitle: AppLocalizations.of(context).tr('productsRetailServices'),
         icon: Icons.storefront_rounded,
       ),
-      const ProviderTypeOption(
+      ProviderTypeOption(
         value: 'babysitter',
-        title: 'Groomer / Babysitter',
-        subtitle: 'Grooming & pet care',
+        title: AppLocalizations.of(context).tr('groomerBabysitter'),
+        subtitle: AppLocalizations.of(context).tr('groomingPetCare'),
         icon: Icons.pets_rounded,
       ),
     ];
@@ -54,7 +55,7 @@ class ProviderTypeSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Provider type',
+          AppLocalizations.of(context).tr('providerType'),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),

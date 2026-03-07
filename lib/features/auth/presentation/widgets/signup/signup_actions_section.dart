@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 /// Signup action button with loading state
@@ -53,8 +54,10 @@ class SignupActionsSection extends StatelessWidget {
                 children: [
                   Text(
                     isProvider
-                        ? 'Continue to Provider Signup'
-                        : 'Create Account',
+                        ? AppLocalizations.of(
+                            context,
+                          ).tr('continueToProviderSignup')
+                        : AppLocalizations.of(context).tr('createAccount'),
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,

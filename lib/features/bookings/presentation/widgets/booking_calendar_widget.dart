@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class BookingCalendarWidget extends StatelessWidget {
@@ -10,8 +11,7 @@ class BookingCalendarWidget extends StatelessWidget {
   final DateTime? selectedDay;
   final List<BookingEntity> selectedEvents;
   final List<BookingEntity> Function(DateTime day) eventLoader;
-  final void Function(DateTime selectedDay, DateTime focusedDay)
-  onDaySelected;
+  final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
   final ValueChanged<CalendarFormat> onFormatChanged;
   final ValueChanged<DateTime> onPageChanged;
 
@@ -29,9 +29,10 @@ class BookingCalendarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Booking Calendar'),
+        title: Text(l10n.tr('bookingCalendar')),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -118,7 +119,9 @@ class _CalendarBookingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final startDT = DateTime.tryParse(booking.startTime);
-    final timeStr = startDT != null ? DateFormat('hh:mm a').format(startDT) : '';
+    final timeStr = startDT != null
+        ? DateFormat('hh:mm a').format(startDT)
+        : '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -126,7 +129,11 @@ class _CalendarBookingTile extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: _statusColor(booking.status).withOpacity(0.15),
-          child: Icon(Icons.event, color: _statusColor(booking.status), size: 20),
+          child: Icon(
+            Icons.event,
+            color: _statusColor(booking.status),
+            size: 20,
+          ),
         ),
         title: Text(
           timeStr.isNotEmpty ? timeStr : 'Appointment',

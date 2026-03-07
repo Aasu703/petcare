@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,7 +62,9 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
     if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a provider type'),
+          content: Text(
+            AppLocalizations.of(context).tr('pleaseSelectProviderType'),
+          ),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -78,8 +81,8 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
         (_locationLatitude == null || _locationLongitude == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            'Please pin your clinic/shop location on map to continue',
+          content: Text(
+            AppLocalizations.of(context).tr('pinClinicShopLocationSnackbar'),
           ),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
@@ -154,6 +157,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final requiresPinnedLocation =
         _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
     final hasPinnedLocation =
@@ -193,14 +197,14 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Create provider profile',
+                    l10n.tr('createProviderProfile'),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   SizedBox(height: 6),
                   Text(
-                    'Tell pet owners about your business',
+                    l10n.tr('tellPetOwnersAboutBusiness'),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   SizedBox(height: 28),
@@ -224,22 +228,22 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                         children: [
                           DropdownButtonFormField<String>(
                             initialValue: _selectedProviderType,
-                            decoration: const InputDecoration(
-                              labelText: 'Provider type',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l10n.tr('providerType'),
+                              border: const OutlineInputBorder(),
                             ),
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: 'vet',
-                                child: Text('Veterinary Clinic'),
+                                child: Text(l10n.tr('veterinaryClinic')),
                               ),
                               DropdownMenuItem(
                                 value: 'shop',
-                                child: Text('Pet Shop'),
+                                child: Text(l10n.tr('petShop')),
                               ),
                               DropdownMenuItem(
                                 value: 'babysitter',
-                                child: Text('Groomer / Babysitter'),
+                                child: Text(l10n.tr('groomerBabysitter')),
                               ),
                             ],
                             onChanged: (value) =>
@@ -323,8 +327,8 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                           _field(
                             controller: _businessNameController,
                             focusNode: _businessNameFocusNode,
-                            hint: 'Happy Paws Clinic',
-                            label: 'Business name',
+                            hint: l10n.tr('happyPawsClinic'),
+                            label: l10n.tr('businessName'),
                             icon: Icons.storefront_rounded,
                           ),
                           SizedBox(height: 18),
@@ -332,7 +336,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             controller: _addressController,
                             focusNode: _addressFocusNode,
                             hint: '123 Pet Street, City',
-                            label: 'Address',
+                            label: l10n.tr('address'),
                             icon: Icons.location_on_rounded,
                           ),
                           SizedBox(height: 18),
@@ -340,7 +344,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             controller: _phoneController,
                             focusNode: _phoneFocusNode,
                             hint: '+1 234 567 890',
-                            label: 'Phone number',
+                            label: l10n.tr('phone'),
                             icon: Icons.phone_rounded,
                             keyboardType: TextInputType.phone,
                           ),
@@ -349,7 +353,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             controller: _emailController,
                             focusNode: _emailFocusNode,
                             hint: 'email@example.com',
-                            label: 'Email',
+                            label: l10n.tr('email'),
                             icon: Icons.email_rounded,
                             keyboardType: TextInputType.emailAddress,
                           ),
@@ -359,7 +363,7 @@ class _ProviderSetupScreenState extends ConsumerState<ProviderSetupScreen> {
                             height: 56,
                             child: ElevatedButton(
                               onPressed: _completeSetup,
-                              child: Text('Finish setup'),
+                              child: Text(l10n.tr('finishSetup')),
                             ),
                           ),
                         ],

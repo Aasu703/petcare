@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_care_entity.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
+import 'package:petcare/core/providers/shared_prefs_provider.dart';
+import 'package:petcare/core/services/notification/notification_service.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 
 class _VaccineTemplate {
@@ -76,12 +80,16 @@ class PetCareScreen extends ConsumerStatefulWidget {
 class _PetCareScreenState extends ConsumerState<PetCareScreen> {
   final TextEditingController _notesController = TextEditingController();
   final List<String> _feedingTimes = [];
+  final Map<String, bool> _feedingChecklist = {};
+  final Set<String> _overdueNotifiedKeys = {};
   final List<_VaccinationRow> _vaccinationRows = [];
   static const Duration _pendingReminderInterval = Duration(minutes: 3);
   static const Duration _feedingReminderWindow = Duration(minutes: 30);
   Timer? _pendingReminderTimer;
   bool _isSaving = false;
   bool _isLoading = true;
+
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   int? get _ageMonths {
     if (widget.pet.age == null || widget.pet.age! < 0) return null;
@@ -135,22 +143,71 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
       _setVaccinationRows(merged);
       _isLoading = false;
     });
+    await _loadFeedingChecklist();
     _restartPendingReminders();
+  }
+
+  String _feedingChecklistKey(String petId) {
+    return 'feeding_checklist:$petId:$_todayKey';
+  }
+
+  Future<void> _loadFeedingChecklist() async {
+    final petId = widget.pet.petId;
+    if (petId == null || petId.isEmpty) return;
+
+    final prefs = ref.read(sharedPrefsProvider);
+    final raw = prefs.getString(_feedingChecklistKey(petId));
+    Map<String, bool> restored = {};
+
+    if (raw != null) {
+      try {
+        final decoded = jsonDecode(raw) as Map<String, dynamic>;
+        restored = decoded.map((key, value) => MapEntry(key, value == true));
+      } catch (_) {
+        restored = {};
+      }
+    }
+
+    final currentTimes = _feedingTimes.toSet();
+    setState(() {
+      _feedingChecklist
+        ..clear()
+        ..addAll(restored);
+      _feedingChecklist.removeWhere((key, _) => !currentTimes.contains(key));
+      for (final time in currentTimes) {
+        _feedingChecklist.putIfAbsent(time, () => false);
+      }
+      _overdueNotifiedKeys.clear();
+    });
+    await _persistFeedingChecklist();
+  }
+
+  Future<void> _persistFeedingChecklist() async {
+    final petId = widget.pet.petId;
+    if (petId == null || petId.isEmpty) return;
+
+    final prefs = ref.read(sharedPrefsProvider);
+    await prefs.setString(
+      _feedingChecklistKey(petId),
+      jsonEncode(_feedingChecklist),
+    );
   }
 
   void _restartPendingReminders() {
     _pendingReminderTimer?.cancel();
     if (_isLoading) return;
 
-    _pendingReminderTimer = Timer.periodic(_pendingReminderInterval, (_) {
+    _pendingReminderTimer = Timer.periodic(_pendingReminderInterval, (_) async {
       if (!mounted) return;
-      _showPendingReminderIfNeeded();
+      final now = DateTime.now();
+      _showPendingReminderIfNeeded(now);
+      await _triggerFeedingOverdueNotifications(now);
     });
   }
 
-  void _showPendingReminderIfNeeded() {
+  void _showPendingReminderIfNeeded(DateTime now) {
     final pendingVaccinations = _pendingVaccinationNames();
-    final pendingFood = _findPendingFoodReminder(DateTime.now());
+    final pendingFood = _findPendingFoodReminder(now);
     if (pendingVaccinations.isEmpty && pendingFood == null) return;
 
     final messages = <String>[];
@@ -190,23 +247,28 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
   }
 
   List<String> _pendingVaccinationNames() {
-    return _vaccinationRows.where((row) {
-      if (row.status != 'pending') return false;
+    return _vaccinationRows
+        .where((row) {
+          if (row.status != 'pending') return false;
 
-      final recommendedByMonths = int.tryParse(
-        row.recommendedByMonthsController.text.trim(),
-      );
-      if (_ageMonths == null || recommendedByMonths == null) return true;
-      return _ageMonths! >= recommendedByMonths;
-    }).map((row) => row.vaccineController.text.trim()).where((name) {
-      return name.isNotEmpty;
-    }).toList();
+          final recommendedByMonths = int.tryParse(
+            row.recommendedByMonthsController.text.trim(),
+          );
+          if (_ageMonths == null || recommendedByMonths == null) return true;
+          return _ageMonths! >= recommendedByMonths;
+        })
+        .map((row) => row.vaccineController.text.trim())
+        .where((name) {
+          return name.isNotEmpty;
+        })
+        .toList();
   }
 
   _PendingFoodReminder? _findPendingFoodReminder(DateTime now) {
     _PendingFoodReminder? bestReminder;
 
     for (final feedingTime in _feedingTimes) {
+      if (_feedingChecklist[feedingTime] == true) continue;
       final parsed = _parseTime(feedingTime);
       if (parsed == null) continue;
 
@@ -231,6 +293,57 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
     }
 
     return bestReminder;
+  }
+
+  Future<void> _triggerFeedingOverdueNotifications(DateTime now) async {
+    final petId = widget.pet.petId;
+    if (petId == null || petId.isEmpty) return;
+
+    final notificationService = ref.read(notificationServiceProvider);
+
+    for (final feedingTime in _feedingTimes) {
+      if (_feedingChecklist[feedingTime] == true) continue;
+      final parsed = _parseTime(feedingTime);
+      if (parsed == null) continue;
+
+      final scheduled = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        parsed.hour,
+        parsed.minute,
+      );
+      final minutesLate = now.difference(scheduled).inMinutes;
+      if (minutesLate <= 0) continue;
+
+      final key = '$petId:$_todayKey:$feedingTime';
+      if (_overdueNotifiedKeys.contains(key)) continue;
+
+      final success = await notificationService.showInstantNotification(
+        id: NotificationService.createEphemeralId(),
+        title: 'Feeding overdue',
+        body:
+            '${widget.pet.name} feeding at $feedingTime is overdue by $minutesLate min.',
+      );
+
+      if (success) {
+        _overdueNotifiedKeys.add(key);
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${widget.pet.name} feeding at $feedingTime is overdue by $minutesLate min.',
+                ),
+                backgroundColor: AppColors.errorColor,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+        }
+      }
+    }
   }
 
   void _setVaccinationRows(List<PetVaccinationEntity> vaccinations) {
@@ -317,6 +430,7 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
         _feedingTimes[index] = formatted;
       }
     });
+    await _syncChecklistWithTimes();
   }
 
   TimeOfDay? _parseTime(String value) {
@@ -352,6 +466,81 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
       final row = _vaccinationRows.removeAt(index);
       row.dispose();
     });
+  }
+
+  Future<void> _removeFeedingTime(int index) async {
+    setState(() => _feedingTimes.removeAt(index));
+    await _syncChecklistWithTimes();
+  }
+
+  Future<void> _syncChecklistWithTimes() async {
+    final currentTimes = _feedingTimes.toSet();
+    var changed = false;
+
+    setState(() {
+      final toRemove = _feedingChecklist.keys
+          .where((time) => !currentTimes.contains(time))
+          .toList();
+      for (final time in toRemove) {
+        _feedingChecklist.remove(time);
+        changed = true;
+      }
+
+      for (final time in currentTimes) {
+        if (!_feedingChecklist.containsKey(time)) {
+          _feedingChecklist[time] = false;
+          changed = true;
+        }
+      }
+
+      if (!changed) return;
+      _overdueNotifiedKeys.removeWhere((key) {
+        return !_feedingChecklist.keys.any((time) => key.endsWith(':$time'));
+      });
+    });
+
+    if (changed) {
+      await _persistFeedingChecklist();
+    }
+  }
+
+  Future<void> _toggleFeedingStatus(String time, bool value) async {
+    setState(() {
+      _feedingChecklist[time] = value;
+      if (!value) {
+        _overdueNotifiedKeys.removeWhere((key) => key.endsWith(':$time'));
+      }
+    });
+    await _persistFeedingChecklist();
+  }
+
+  bool _isFeedingOverdue(String time, DateTime now) {
+    final parsed = _parseTime(time);
+    if (parsed == null) return false;
+    final scheduled = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      parsed.hour,
+      parsed.minute,
+    );
+    return now.isAfter(scheduled);
+  }
+
+  String _feedingStatusLabel(String time, DateTime now) {
+    final parsed = _parseTime(time);
+    if (parsed == null) return 'Schedule unavailable';
+    final scheduled = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      parsed.hour,
+      parsed.minute,
+    );
+    final minutesDiff = scheduled.difference(now).inMinutes;
+    if (minutesDiff > 0) return 'Due in $minutesDiff min';
+    if (minutesDiff == 0) return 'Due now';
+    return 'Overdue by ${minutesDiff.abs()} min';
   }
 
   Future<void> _saveCare() async {
@@ -437,6 +626,7 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
     final completed = _vaccinationRows
         .where((row) => row.status == 'done')
         .length;
+    final now = DateTime.now();
 
     return Scaffold(
       appBar: AppBar(
@@ -487,9 +677,7 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
                                         onPressed: () => _pickTime(index: i),
                                         onDeleted: _feedingTimes.length == 1
                                             ? null
-                                            : () => setState(
-                                                () => _feedingTimes.removeAt(i),
-                                              ),
+                                            : () => _removeFeedingTime(i),
                                         avatar: const Icon(
                                           Icons.schedule,
                                           size: 18,
@@ -502,6 +690,69 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
                                     ),
                                   ],
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Expanded(
+                                      child: Text(
+                                        "Today's Feeding Checklist",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      '${_feedingChecklist.values.where((done) => done).length}/${_feedingTimes.length} done',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: context.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                if (_feedingTimes.isEmpty)
+                                  const Text('Add at least one feeding time'),
+                                for (final time in _feedingTimes)
+                                  CheckboxListTile(
+                                    value: _feedingChecklist[time] ?? false,
+                                    title: Text(time),
+                                    subtitle: Text(
+                                      _feedingStatusLabel(time, now),
+                                      style: TextStyle(
+                                        color: _isFeedingOverdue(time, now)
+                                            ? AppColors.errorColor
+                                            : context.textSecondary,
+                                      ),
+                                    ),
+                                    secondary: Icon(
+                                      _feedingChecklist[time] == true
+                                          ? Icons.check_circle
+                                          : Icons.access_time,
+                                      color: _feedingChecklist[time] == true
+                                          ? AppColors.successColor
+                                          : (_isFeedingOverdue(time, now)
+                                                ? AppColors.errorColor
+                                                : context.textSecondary),
+                                    ),
+                                    onChanged: (value) {
+                                      _toggleFeedingStatus(
+                                        time,
+                                        value ?? false,
+                                      );
+                                    },
+                                  ),
                               ],
                             ),
                           ),

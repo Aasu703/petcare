@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ServiceOnboardingScreen extends StatelessWidget {
   const ServiceOnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -52,7 +54,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Trusted',
+                              l10n.tr('trusted'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -61,7 +63,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'Care',
+                              l10n.tr('care'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -70,7 +72,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'Network',
+                              l10n.tr('network'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -106,7 +108,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'Discover trusted pet sitters, walkers, and groomers for your furry friends.',
+                    l10n.tr('discoverTrustedSitters'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontSize: 18,
                       height: 1.4,
@@ -135,13 +137,13 @@ class ServiceOnboardingScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Ready to get started?',
+                          l10n.tr('readyToGetStarted'),
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Join our community of pet lovers',
+                          l10n.tr('joinCommunity'),
                           style: Theme.of(
                             context,
                           ).textTheme.titleMedium?.copyWith(fontSize: 17),
@@ -154,7 +156,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                             onPressed: () {
                               context.go(RoutePaths.login);
                             },
-                            child: const Text('Login'),
+                            child: Text(l10n.tr('signIn')),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -165,7 +167,7 @@ class ServiceOnboardingScreen extends StatelessWidget {
                             onPressed: () {
                               context.push(RoutePaths.register);
                             },
-                            child: const Text('Sign Up'),
+                            child: Text(l10n.tr('signUp')),
                           ),
                         ),
                       ],

@@ -8,6 +8,7 @@ import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/provider/domain/entities/provider_entity.dart';
 import 'package:petcare/features/provider/presentation/view_model/provider_view_model.dart';
 import 'package:petcare/shared/widgets/index.dart' hide OutlinedButton;
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
@@ -24,16 +25,26 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
   String _searchQuery = '';
 
   final _categoryOptions = [
-    {'key': 'vet', 'label': 'Veterinary', 'icon': Icons.local_hospital_rounded},
-    {'key': 'babysitter', 'label': 'Grooming', 'icon': Icons.content_cut_rounded},
-    {'key': 'shop', 'label': 'Boarding', 'icon': Icons.house_rounded},
+    {
+      'key': 'vet',
+      'labelKey': 'veterinary',
+      'icon': Icons.local_hospital_rounded,
+    },
+    {
+      'key': 'babysitter',
+      'labelKey': 'grooming',
+      'icon': Icons.content_cut_rounded,
+    },
+    {'key': 'shop', 'labelKey': 'boarding', 'icon': Icons.house_rounded},
   ];
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory ?? 'vet';
-    Future.microtask(() => ref.read(providerListProvider.notifier).loadProviders());
+    Future.microtask(
+      () => ref.read(providerListProvider.notifier).loadProviders(),
+    );
   }
 
   @override
@@ -46,22 +57,25 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
     return providers.where((p) {
       final matchesCategory = p.providerType == _selectedCategory;
       final matchesStatus = p.status == 'approved';
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesSearch =
+          _searchQuery.isEmpty ||
           p.businessName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (p.degree ?? '').toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (p.clinicOrShopName ?? '').toLowerCase().contains(_searchQuery.toLowerCase());
+          (p.clinicOrShopName ?? '').toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
       return matchesCategory && matchesStatus && matchesSearch;
     }).toList();
   }
 
-  String _categoryLabel(String key) {
+  String _categoryLabel(String key, AppLocalizations l10n) {
     switch (key) {
       case 'vet':
-        return 'Veterinarians';
+        return l10n.tr('veterinarians');
       case 'babysitter':
-        return 'Grooming Salons';
+        return l10n.tr('groomingSalons');
       case 'shop':
-        return 'Boarding Places';
+        return l10n.tr('boardingPlaces');
       default:
         return key;
     }
@@ -69,6 +83,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(providerListProvider);
     final allProviders = state.providers;
     final filtered = _filteredProviders(allProviders);
@@ -86,7 +101,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
             pinned: true,
             backgroundColor: context.primaryColor,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: () {
                 if (Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
@@ -117,20 +136,22 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          'Find the Best Care',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
+                          l10n.tr('findBestCare'),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'for your furry friends',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
-                            fontWeight: FontWeight.w500,
-                          ),
+                          l10n.tr('forFurryFriends'),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: Colors.white.withOpacity(0.8),
+                                fontWeight: FontWeight.w500,
+                              ),
                         ),
                         const SizedBox(height: 16),
                         // Search bar
@@ -152,7 +173,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
                             onChanged: (v) => setState(() => _searchQuery = v),
                             style: const TextStyle(fontSize: 14),
                             decoration: InputDecoration(
-                              hintText: 'Search by name, degree, clinic...',
+                              hintText: l10n.tr('searchProviderHint'),
                               hintStyle: TextStyle(
                                 color: context.hintColor,
                                 fontSize: 14,
@@ -164,7 +185,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
                               ),
                               suffixIcon: _searchQuery.isNotEmpty
                                   ? IconButton(
-                                      icon: Icon(Icons.close_rounded, size: 18, color: context.hintColor),
+                                      icon: Icon(
+                                        Icons.close_rounded,
+                                        size: 18,
+                                        color: context.hintColor,
+                                      ),
                                       onPressed: () {
                                         _searchController.clear();
                                         setState(() => _searchQuery = '');
@@ -172,7 +197,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
                                     )
                                   : null,
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
                             ),
                           ),
                         ),
@@ -185,179 +212,195 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen>
           ),
         ],
         body: state.isLoading
-            ? const LoadingIndicator(message: 'Loading providers...')
+            ? LoadingIndicator(message: l10n.tr('loadingProviders'))
             : state.error != null
-                ? ErrorState(
-                    title: 'Error loading providers',
-                    message: state.error,
-                    actionLabel: 'Retry',
-                    onAction: () =>
-                        ref.read(providerListProvider.notifier).loadProviders(),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async =>
-                        ref.read(providerListProvider.notifier).loadProviders(),
-                    color: context.primaryColor,
-                    child: ListView(
-                      padding: const EdgeInsets.only(top: 20, bottom: 24),
-                      children: [
-                        // Category selector
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: _categoryOptions.map((opt) {
-                              final key = opt['key'] as String;
-                              final label = opt['label'] as String;
-                              final icon = opt['icon'] as IconData;
-                              final selected = _selectedCategory == key;
-                              return GestureDetector(
-                                onTap: () => setState(() => _selectedCategory = key),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
-                                  curve: Curves.easeOut,
-                                  child: Column(
-                                    children: [
-                                      AnimatedContainer(
-                                        duration: const Duration(milliseconds: 250),
-                                        width: 68,
-                                        height: 68,
-                                        decoration: BoxDecoration(
-                                          color: selected
-                                              ? context.primaryColor
-                                              : context.surfaceColor,
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: Border.all(
-                                            color: selected
-                                                ? context.primaryColor
-                                                : context.borderColor,
-                                            width: selected ? 2 : 1.5,
-                                          ),
-                                          boxShadow: selected
-                                              ? [
-                                                  BoxShadow(
-                                                    color: context.primaryColor.withOpacity(0.3),
-                                                    blurRadius: 12,
-                                                    offset: const Offset(0, 4),
-                                                  ),
-                                                ]
-                                              : null,
-                                        ),
-                                        child: Icon(
-                                          icon,
-                                          size: 30,
-                                          color: selected ? Colors.white : context.primaryColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        label,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                                          color: selected
-                                              ? context.primaryColor
-                                              : context.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Nearby section header
-                        if (nearby.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: _SectionHeader(
-                              title: 'Nearby ${_categoryLabel(_selectedCategory)}',
-                              icon: Icons.near_me_rounded,
-                              iconColor: AppColors.accentColor,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Horizontal scroll for nearby
-                          SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: nearby.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: _NearbyCard(
-                                    provider: nearby[index],
-                                    onTap: () => context.push(
-                                      '${RoutePaths.providerDetail}/${nearby[index].providerId}',
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-
-                        // Recommended section
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: _SectionHeader(
-                            title: 'All ${_categoryLabel(_selectedCategory)}',
-                            icon: Icons.star_rounded,
-                            iconColor: const Color(0xFFFFA000),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        if (recommended.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                            child: Center(
+            ? ErrorState(
+                title: l10n.tr('errorLoadingProviders'),
+                message: state.error,
+                actionLabel: l10n.tr('retry'),
+                onAction: () =>
+                    ref.read(providerListProvider.notifier).loadProviders(),
+              )
+            : RefreshIndicator(
+                onRefresh: () async =>
+                    ref.read(providerListProvider.notifier).loadProviders(),
+                color: context.primaryColor,
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 20, bottom: 24),
+                  children: [
+                    // Category selector
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: _categoryOptions.map((opt) {
+                          final key = opt['key'] as String;
+                          final label = l10n.tr(opt['labelKey'] as String);
+                          final icon = opt['icon'] as IconData;
+                          final selected = _selectedCategory == key;
+                          return GestureDetector(
+                            onTap: () =>
+                                setState(() => _selectedCategory = key),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOut,
                               child: Column(
                                 children: [
-                                  Icon(Icons.search_off_rounded,
-                                      size: 52, color: context.hintColor.withOpacity(0.5)),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'No ${_categoryLabel(_selectedCategory).toLowerCase()} found',
-                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color: context.textSecondary,
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+                                    width: 68,
+                                    height: 68,
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? context.primaryColor
+                                          : context.surfaceColor,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: selected
+                                            ? context.primaryColor
+                                            : context.borderColor,
+                                        width: selected ? 2 : 1.5,
+                                      ),
+                                      boxShadow: selected
+                                          ? [
+                                              BoxShadow(
+                                                color: context.primaryColor
+                                                    .withOpacity(0.3),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Icon(
+                                      icon,
+                                      size: 30,
+                                      color: selected
+                                          ? Colors.white
+                                          : context.primaryColor,
                                     ),
                                   ),
-                                  if (_searchQuery.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Text(
-                                        'Try a different search term',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: context.hintColor,
-                                        ),
-                                      ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: selected
+                                          ? FontWeight.w800
+                                          : FontWeight.w600,
+                                      color: selected
+                                          ? context.primaryColor
+                                          : context.textSecondary,
                                     ),
+                                  ),
                                 ],
                               ),
                             ),
-                          )
-                        else
-                          ...recommended.map((provider) => Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                                child: _ProviderCard(
-                                  provider: provider,
-                                  onTap: () => context.push(
-                                    '${RoutePaths.providerDetail}/${provider.providerId}',
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Nearby section header
+                    if (nearby.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _SectionHeader(
+                          title:
+                              '${l10n.tr('nearby')} ${_categoryLabel(_selectedCategory, l10n)}',
+                          icon: Icons.near_me_rounded,
+                          iconColor: AppColors.accentColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Horizontal scroll for nearby
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: nearby.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: _NearbyCard(
+                                provider: nearby[index],
+                                onTap: () => context.push(
+                                  '${RoutePaths.providerDetail}/${nearby[index].providerId}',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Recommended section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _SectionHeader(
+                        title:
+                            '${l10n.tr('viewAll')} ${_categoryLabel(_selectedCategory, l10n)}',
+                        icon: Icons.star_rounded,
+                        iconColor: const Color(0xFFFFA000),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (recommended.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 40,
+                        ),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 52,
+                                color: context.hintColor.withOpacity(0.5),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                '${_categoryLabel(_selectedCategory, l10n)} - ${l10n.tr('noResults')}',
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(color: context.textSecondary),
+                              ),
+                              if (_searchQuery.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    l10n.tr('tryDifferentSearchTerm'),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: context.hintColor),
                                   ),
                                 ),
-                              )),
-                      ],
-                    ),
-                  ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...recommended.map(
+                        (provider) => Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                          child: _ProviderCard(
+                            provider: provider,
+                            onTap: () => context.push(
+                              '${RoutePaths.providerDetail}/${provider.providerId}',
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -390,9 +433,9 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],
     );
@@ -429,7 +472,9 @@ class _NearbyCard extends StatelessWidget {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
               child: SizedBox(
                 height: 100,
                 width: double.infinity,
@@ -463,16 +508,26 @@ class _NearbyCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.star_rounded, size: 14, color: const Color(0xFFFFA000)),
+                      Icon(
+                        Icons.star_rounded,
+                        size: 14,
+                        color: const Color(0xFFFFA000),
+                      ),
                       const SizedBox(width: 2),
                       Text(
                         provider.rating.toDouble().toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '(${provider.ratingCount})',
-                        style: TextStyle(fontSize: 10, color: context.textSecondary),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: context.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -486,7 +541,8 @@ class _NearbyCard extends StatelessWidget {
   }
 
   Widget _buildImage(ProviderEntity provider) {
-    if (provider.profileImageUrl != null && provider.profileImageUrl!.isNotEmpty) {
+    if (provider.profileImageUrl != null &&
+        provider.profileImageUrl!.isNotEmpty) {
       final url = provider.profileImageUrl!.startsWith('http')
           ? provider.profileImageUrl!
           : ApiEndpoints.resolveMediaUrl(provider.profileImageUrl!);
@@ -507,8 +563,8 @@ class _NearbyCard extends StatelessWidget {
           provider.providerType == 'vet'
               ? Icons.local_hospital_rounded
               : provider.providerType == 'babysitter'
-                  ? Icons.content_cut_rounded
-                  : Icons.house_rounded,
+              ? Icons.content_cut_rounded
+              : Icons.house_rounded,
           size: 32,
           color: AppColors.primaryColor.withOpacity(0.4),
         ),
@@ -526,6 +582,7 @@ class _ProviderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isOpen = _isCurrentlyOpen(provider.workingHours);
 
     return GestureDetector(
@@ -570,7 +627,8 @@ class _ProviderCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   // Degree
-                  if (provider.degree != null && provider.degree!.isNotEmpty) ...[
+                  if (provider.degree != null &&
+                      provider.degree!.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       provider.degree!,
@@ -618,33 +676,42 @@ class _ProviderCard extends StatelessWidget {
                     runSpacing: 4,
                     children: [
                       _TagChip(
-                        label: isOpen ? 'OPEN' : 'CLOSED',
+                        label: isOpen ? l10n.tr('open') : l10n.tr('closed'),
                         bgColor: isOpen
                             ? AppColors.successColor.withOpacity(0.1)
                             : AppColors.errorColor.withOpacity(0.1),
-                        textColor: isOpen ? AppColors.successColor : AppColors.errorColor,
+                        textColor: isOpen
+                            ? AppColors.successColor
+                            : AppColors.errorColor,
                       ),
-                      if (provider.experience != null && provider.experience!.isNotEmpty)
+                      if (provider.experience != null &&
+                          provider.experience!.isNotEmpty)
                         _TagChip(
                           label: provider.experience!,
                           bgColor: context.primaryColor.withOpacity(0.08),
                           textColor: context.primaryColor,
                         ),
-                      if (provider.appointmentFee != null && provider.appointmentFee! > 0)
+                      if (provider.appointmentFee != null &&
+                          provider.appointmentFee! > 0)
                         _TagChip(
-                          label: 'LKR ${provider.appointmentFee!.toStringAsFixed(0)}',
+                          label:
+                              'LKR ${provider.appointmentFee!.toStringAsFixed(0)}',
                           bgColor: AppColors.warningColor.withOpacity(0.1),
                           textColor: AppColors.warningColor,
                         ),
                     ],
                   ),
                   // Working hours
-                  if (provider.workingHours != null && provider.workingHours!.isNotEmpty) ...[
+                  if (provider.workingHours != null &&
+                      provider.workingHours!.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.schedule_rounded,
-                            size: 13, color: context.hintColor),
+                        Icon(
+                          Icons.schedule_rounded,
+                          size: 13,
+                          color: context.hintColor,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -664,7 +731,11 @@ class _ProviderCard extends StatelessWidget {
               ),
             ),
             // Arrow
-            Icon(Icons.chevron_right_rounded, color: context.hintColor, size: 22),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: context.hintColor,
+              size: 22,
+            ),
           ],
         ),
       ),
@@ -672,7 +743,8 @@ class _ProviderCard extends StatelessWidget {
   }
 
   Widget _buildProviderImage(ProviderEntity provider) {
-    if (provider.profileImageUrl != null && provider.profileImageUrl!.isNotEmpty) {
+    if (provider.profileImageUrl != null &&
+        provider.profileImageUrl!.isNotEmpty) {
       final url = provider.profileImageUrl!.startsWith('http')
           ? provider.profileImageUrl!
           : ApiEndpoints.resolveMediaUrl(provider.profileImageUrl!);
@@ -698,8 +770,8 @@ class _ProviderCard extends StatelessWidget {
         provider.providerType == 'vet'
             ? Icons.local_hospital_rounded
             : provider.providerType == 'babysitter'
-                ? Icons.content_cut_rounded
-                : Icons.house_rounded,
+            ? Icons.content_cut_rounded
+            : Icons.house_rounded,
         size: 34,
         color: AppColors.primaryColor.withOpacity(0.5),
       ),

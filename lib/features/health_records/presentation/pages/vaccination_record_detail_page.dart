@@ -6,6 +6,7 @@ import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/health_records/domain/entities/health_record_entity.dart';
 import 'package:petcare/features/provider/presentation/view_model/provider_view_model.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class VaccinationRecordDetailPage extends ConsumerStatefulWidget {
   final HealthRecordEntity record;
@@ -96,6 +97,7 @@ class _VaccinationRecordDetailPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final providerState = ref.watch(providerListProvider);
     final bookingState = widget.resolveFromUserBookings
         ? ref.watch(userBookingProvider)
@@ -125,7 +127,7 @@ class _VaccinationRecordDetailPageState
         }
       }
 
-      return 'Unknown vet';
+      return l10n.tr('unknownVet');
     }
 
     String resolveOwnerName() {
@@ -149,70 +151,72 @@ class _VaccinationRecordDetailPageState
           return fullName;
         }
       }
-      return 'Unknown user';
+      return l10n.tr('unknownUser');
     }
 
     final dueDate = DateTime.tryParse(widget.record.nextDueDate ?? '');
     final issuedDate = DateTime.tryParse(widget.record.date ?? '');
     final dueDateText = dueDate != null
         ? DateFormat('EEE, MMM d, yyyy').format(dueDate)
-        : 'Not set';
+        : l10n.tr('notSet');
     final issuedDateText = issuedDate != null
         ? DateFormat('EEE, MMM d, yyyy').format(issuedDate)
-        : 'Not set';
+        : l10n.tr('notSet');
 
     final isResolvingContext =
         widget.resolveFromUserBookings &&
         ((bookingState?.isLoading ?? false) || providerState.isLoading);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Vaccination Details')),
+      appBar: AppBar(title: Text(l10n.tr('vaccinationDetails'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           if (isResolvingContext) const LinearProgressIndicator(minHeight: 2),
           if (isResolvingContext) const SizedBox(height: 12),
           _DetailCard(
-            title: widget.record.title ?? 'Vaccination',
-            subtitle: widget.record.recordType ?? 'Health record',
+            title: widget.record.title ?? l10n.tr('vaccination'),
+            subtitle: widget.record.recordType ?? l10n.tr('healthRecord'),
             icon: Icons.vaccines_rounded,
           ),
           const SizedBox(height: 12),
           _InfoTile(
             icon: Icons.pets_rounded,
-            label: 'Pet',
-            value: widget.petName.isEmpty ? 'Unknown pet' : widget.petName,
+            label: l10n.tr('pet'),
+            value: widget.petName.isEmpty
+                ? l10n.tr('unknownPet')
+                : widget.petName,
           ),
           const SizedBox(height: 8),
           _InfoTile(
             icon: Icons.local_hospital_rounded,
-            label: 'Prescribed By',
+            label: l10n.tr('prescribedBy'),
             value: resolveVetName(),
           ),
           const SizedBox(height: 8),
           _InfoTile(
             icon: Icons.person_rounded,
-            label: 'Prescribed For',
+            label: l10n.tr('prescribedFor'),
             value: resolveOwnerName(),
           ),
           const SizedBox(height: 8),
           _InfoTile(
             icon: Icons.event_note_rounded,
-            label: 'Issued Date',
+            label: l10n.tr('issuedDate'),
             value: issuedDateText,
           ),
           const SizedBox(height: 8),
           _InfoTile(
             icon: Icons.event_available_rounded,
-            label: 'Next Due',
+            label: l10n.tr('nextDue'),
             value: dueDateText,
           ),
           const SizedBox(height: 8),
           _InfoTile(
             icon: Icons.info_outline_rounded,
-            label: 'Description',
+            label: l10n.tr('description'),
             value: (widget.record.description ?? '').trim().isEmpty
-                ? 'No additional notes'
+                ? l10n.tr('noAdditionalNotes')
                 : widget.record.description!.trim(),
           ),
         ],

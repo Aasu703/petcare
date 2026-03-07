@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/provider/presentation/provider/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
@@ -67,6 +68,9 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
       },
       (provider) async {
         // Session is already saved in the datasource
+        // Refresh the session provider so the router can redirect properly
+        ref.read(sessionProvider.notifier).refresh();
+
         if (!mounted) return;
 
         context.go(RoutePaths.providerDashboard);

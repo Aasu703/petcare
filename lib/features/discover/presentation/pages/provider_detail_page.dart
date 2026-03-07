@@ -9,6 +9,7 @@ import 'package:petcare/features/provider/domain/entities/provider_entity.dart';
 import 'package:petcare/features/provider/presentation/view_model/provider_view_model.dart';
 import 'package:petcare/features/pet/presentation/view_model/pet_view_model.dart';
 import 'package:petcare/shared/widgets/index.dart' hide OutlinedButton;
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProviderDetailPage extends ConsumerStatefulWidget {
   final String providerId;
@@ -38,21 +39,22 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(providerListProvider);
     final provider = _findProvider(state.providers);
 
     if (state.isLoading && provider == null) {
-      return const Scaffold(
-        body: LoadingIndicator(message: 'Loading provider...'),
+      return Scaffold(
+        body: LoadingIndicator(message: l10n.tr('loadingProvider')),
       );
     }
 
     if (provider == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const ErrorState(
-          title: 'Provider not found',
-          message: 'The provider could not be found.',
+        body: ErrorState(
+          title: l10n.tr('providerNotFound'),
+          message: l10n.tr('providerNotFoundDesc'),
         ),
       );
     }
@@ -106,10 +108,10 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                           ),
                           child: Text(
                             provider.providerType == 'vet'
-                                ? 'Veterinarian'
+                                ? l10n.tr('veterinarian')
                                 : provider.providerType == 'babysitter'
-                                ? 'Grooming'
-                                : 'Boarding',
+                                ? l10n.tr('grooming')
+                                : l10n.tr('boarding'),
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
@@ -277,7 +279,7 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'LKR ${provider.appointmentFee!.toStringAsFixed(0)} per Appointment',
+                                  'LKR ${provider.appointmentFee!.toStringAsFixed(0)} ${l10n.tr('perAppointment')}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w800,
                                     color: context.primaryColor,
@@ -303,7 +305,7 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'About',
+                          l10n.tr('about'),
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
@@ -367,14 +369,14 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Reviews & Ratings',
+                                    l10n.tr('reviewsAndRatings'),
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleSmall
                                         ?.copyWith(fontWeight: FontWeight.w800),
                                   ),
                                   Text(
-                                    '${provider.ratingCount} reviews from pet owners',
+                                    '${provider.ratingCount} ${l10n.tr('reviewsFromPetOwners')}',
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: context.textSecondary,
@@ -434,8 +436,8 @@ class _ProviderDetailPageState extends ConsumerState<ProviderDetailPage> {
                     Icons.calendar_month_rounded,
                     color: Colors.white,
                   ),
-                  label: const Text(
-                    'Book an Appointment',
+                  label: Text(
+                    l10n.tr('bookAnAppointment'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,

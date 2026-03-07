@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class Onbording extends StatelessWidget {
   const Onbording({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -38,7 +40,7 @@ class Onbording extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Find Your',
+                              l10n.tr('findYour'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -47,7 +49,7 @@ class Onbording extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'Furry',
+                              l10n.tr('furry'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -56,7 +58,7 @@ class Onbording extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'Favorite',
+                              l10n.tr('favorite'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -93,7 +95,7 @@ class Onbording extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'Find your perfect pet companion',
+                    l10n.tr('findPerfectCompanion'),
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium?.copyWith(fontSize: 18),
@@ -134,7 +136,7 @@ class Onbording extends StatelessWidget {
                           child: Column(
                             children: [
                               Text(
-                                'Find your perfect pet companion',
+                                l10n.tr('findPerfectCompanion'),
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               Row(
@@ -155,7 +157,7 @@ class Onbording extends StatelessWidget {
                                           size: 18,
                                         ),
                                       ),
-                                      label: Text('Get Started'),
+                                      label: Text(l10n.tr('getStarted')),
                                     ),
                                   ),
                                 ],

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/l10n/app_localizations.dart';
@@ -23,6 +24,8 @@ class MessagesScreen extends ConsumerStatefulWidget {
 }
 
 class _MessagesScreenState extends ConsumerState<MessagesScreen> {
+  Timer? _refreshTimer;
+
   Future<void> _trackChatOpen(String participantName) async {
     final userId = ref.read(userSessionServiceProvider).getUserId();
     if (userId == null || userId.isEmpty) return;
@@ -44,7 +47,20 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> {
       Future.microtask(
         () => ref.read(chatViewModelProvider.notifier).loadConversations(),
       );
+
+      // Refresh conversations list every 5 seconds
+      _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (mounted) {
+          ref.read(chatViewModelProvider.notifier).loadConversations();
+        }
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _openConversation({

@@ -416,6 +416,14 @@ class _ReviewCard extends StatelessWidget {
 
   const _ReviewCard({required this.review});
 
+  String _initial() {
+    final name = review.userName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return name.characters.first.toUpperCase();
+    }
+    return 'A';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -444,7 +452,7 @@ class _ReviewCard extends StatelessWidget {
                           height: 40,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Text(
-                            (review.userName ?? 'A')[0].toUpperCase(),
+                            _initial(),
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
                               color: context.primaryColor,
@@ -453,7 +461,7 @@ class _ReviewCard extends StatelessWidget {
                         ),
                       )
                     : Text(
-                        (review.userName ?? 'A')[0].toUpperCase(),
+                        _initial(),
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           color: context.primaryColor,

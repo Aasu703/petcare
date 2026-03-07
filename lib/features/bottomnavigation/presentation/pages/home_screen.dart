@@ -15,6 +15,7 @@ import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
+import 'package:petcare/features/bottomnavigation/presentation/pages/home_notifications_screen.dart';
 import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
 import 'package:petcare/features/messages/presentation/pages/messages_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
@@ -298,7 +299,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ],
                             ),
                           ),
-                          _buildNotificationButton(),
+                          _buildNotificationButton(
+                            petIds: petIds,
+                            reminderCount: reminderState.reminders.length,
+                          ),
                         ],
                       ),
                     ),
@@ -993,10 +997,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ],
                               delay: 200,
                               onTap: () async {
-                                await _trackRecentActivity(
-                                  title: 'Pet Shop',
-                                  subtitle: 'Opened food & toy services',
-                                );
+                                try {
+                                  await _trackRecentActivity(
+                                    title: 'Pet Shop',
+                                    subtitle: 'Opened food & toy services',
+                                  );
+                                } catch (_) {
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Unable to open shop right now. Please try again.',
+                                      ),
+                                    ),
+                                  );
+                                }
+
                                 if (!context.mounted) return;
                                 Navigator.push(
                                   context,
@@ -1342,7 +1358,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildNotificationButton() {
+  Widget _buildNotificationButton({
+    required List<String> petIds,
+    required int reminderCount,
+  }) {
     return Container(
       width: 56,
       height: 56,
@@ -1358,35 +1377,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(
-            Icons.notifications_outlined,
-            color: context.textPrimary,
-            size: 24,
-          ),
-          Positioned(
-            top: 14,
-            right: 14,
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: _kAccentColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: context.surfaceColor, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: _kAccentColor.withOpacity(0.4),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HomeNotificationsScreen(petIds: petIds),
               ),
-            ),
+            );
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.notifications_outlined,
+                color: context.textPrimary,
+                size: 24,
+              ),
+              if (reminderCount > 0)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _kAccentColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: context.surfaceColor,
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _kAccentColor.withOpacity(0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      reminderCount > 9 ? '9+' : '$reminderCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -206,11 +206,15 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
   Future<void> _connectSocket() async {
     final token = await _tokenService.getToken();
-    if (token == null || token.isEmpty) return;
+    if (token == null || token.isEmpty) {
+      print('[Chat Socket] No token available, skipping socket connection');
+      return;
+    }
 
     _socket?.dispose();
     _socketReady = false;
 
+    print('[Chat Socket] Connecting to: ${ApiEndpoints.socketUrl}');
     final socket = io.io(
       ApiEndpoints.socketUrl,
       io.OptionBuilder()
@@ -226,13 +230,24 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
     socket.onConnect((_) {
       _socketReady = true;
+      print('[Chat Socket] Connected successfully');
     });
 
-    socket.onDisconnect((_) {
+    socket.onDisconnect((reason) {
       _socketReady = false;
+      print('[Chat Socket] Disconnected: $reason');
+    });
+
+    socket.onConnectError((error) {
+      print('[Chat Socket] Connection error: $error');
+    });
+
+    socket.onError((error) {
+      print('[Chat Socket] Error: $error');
     });
 
     socket.on('chat:message', (payload) {
+      print('[Chat Socket] Received message: $payload');
       if (payload is! Map) return;
       final mapped = payload.map(
         (key, value) => MapEntry(key.toString(), value),
@@ -244,6 +259,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
     socket.connect();
     _socket = socket;
+    print('[Chat Socket] Connection initiated');
   }
 
   List<dynamic> _extractList(dynamic data, {String? listKey}) {

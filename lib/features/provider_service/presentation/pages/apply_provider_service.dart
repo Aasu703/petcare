@@ -5,6 +5,7 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider_service/domain/entities/provider_service_entity.dart';
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ApplyProviderServiceScreen extends ConsumerStatefulWidget {
   final String? initialServiceType;
@@ -57,9 +58,10 @@ class _ApplyProviderServiceScreenState
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedServiceType == null || _selectedServiceType!.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a service type'),
+          content: Text(l10n.tr('pleaseSelectServiceType')),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -96,9 +98,10 @@ class _ApplyProviderServiceScreenState
     final state = ref.read(providerServiceProvider);
     if (state.error == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Application submitted')));
+      final l10nSnack = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10nSnack.tr('applicationSubmitted'))),
+      );
       Navigator.pop(context, true);
     } else {
       if (!mounted) return;
@@ -124,13 +127,14 @@ class _ApplyProviderServiceScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(providerServiceProvider);
     final session = ref.watch(userSessionServiceProvider);
     final providerType = (session.getProviderType() ?? '').toLowerCase();
-    final serviceOptions = _serviceOptionsForProvider(providerType);
+    final serviceOptions = _serviceOptionsForProvider(providerType, l10n);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Apply for Provider Service')),
+      appBar: AppBar(title: Text(l10n.tr('applyForProviderService'))),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Form(
@@ -139,8 +143,8 @@ class _ApplyProviderServiceScreenState
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _selectedServiceType,
-                decoration: const InputDecoration(
-                  labelText: 'Service Type',
+                decoration: InputDecoration(
+                  labelText: l10n.tr('serviceType'),
                   border: OutlineInputBorder(),
                 ),
                 items: serviceOptions
@@ -159,7 +163,7 @@ class _ApplyProviderServiceScreenState
                         });
                       },
                 validator: (value) => value == null || value.isEmpty
-                    ? 'Select a service type'
+                    ? l10n.tr('selectServiceType')
                     : null,
               ),
               SizedBox(height: 12),
@@ -167,13 +171,13 @@ class _ApplyProviderServiceScreenState
                 controller: _registrationController,
                 decoration: InputDecoration(
                   labelText: _selectedServiceType == 'vet'
-                      ? 'Medical Registration Number *'
-                      : 'Registration Number',
+                      ? '${l10n.tr('medicalRegistrationNumber')} *'
+                      : l10n.tr('registrationNumber'),
                 ),
                 validator: (value) {
                   if (_selectedServiceType == 'vet') {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Registration number is required';
+                      return l10n.tr('registrationNumberRequired');
                     }
                   }
                   return null;
@@ -182,13 +186,13 @@ class _ApplyProviderServiceScreenState
               SizedBox(height: 12),
               TextFormField(
                 controller: _bioController,
-                decoration: InputDecoration(labelText: 'Bio'),
+                decoration: InputDecoration(labelText: l10n.tr('bio')),
                 maxLines: 3,
               ),
               SizedBox(height: 12),
               TextFormField(
                 controller: _experienceController,
-                decoration: InputDecoration(labelText: 'Experience'),
+                decoration: InputDecoration(labelText: l10n.tr('experience')),
                 maxLines: 2,
               ),
               SizedBox(height: 16),
@@ -200,8 +204,8 @@ class _ApplyProviderServiceScreenState
                   icon: Icon(Icons.attach_file),
                   label: Text(
                     _medicalLicensePath == null
-                        ? 'Pick Medical License *'
-                        : 'Medical Selected',
+                        ? '${l10n.tr('pickMedicalLicense')} *'
+                        : l10n.tr('medicalSelected'),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
@@ -217,8 +221,8 @@ class _ApplyProviderServiceScreenState
                   icon: Icon(Icons.attach_file),
                   label: Text(
                     _certificationPath == null
-                        ? 'Pick Certification *'
-                        : 'Cert Selected',
+                        ? '${l10n.tr('pickCertification')} *'
+                        : l10n.tr('certSelected'),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -231,8 +235,8 @@ class _ApplyProviderServiceScreenState
                   icon: Icon(Icons.document_scanner),
                   label: Text(
                     _businessRegPath == null
-                        ? 'Pick Business Registration *'
-                        : 'Business Selected',
+                        ? '${l10n.tr('pickBusinessRegistration')} *'
+                        : l10n.tr('businessSelected'),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -244,8 +248,8 @@ class _ApplyProviderServiceScreenState
                   icon: Icon(Icons.photo_library),
                   label: Text(
                     _facilityImages.isEmpty
-                        ? 'Pick Facility Images *'
-                        : '${_facilityImages.length} images',
+                        ? '${l10n.tr('pickFacilityImages')} *'
+                        : '${_facilityImages.length} ${l10n.tr('imagesCount')}',
                   ),
                 ),
                 SizedBox(height: 8),
@@ -260,7 +264,7 @@ class _ApplyProviderServiceScreenState
                           horizontal: 20.0,
                           vertical: 12,
                         ),
-                        child: Text('Submit Application'),
+                        child: Text(l10n.tr('submitApplication')),
                       ),
                     ),
             ],
@@ -278,28 +282,31 @@ class _ServiceTypeOption {
   const _ServiceTypeOption({required this.value, required this.label});
 }
 
-List<_ServiceTypeOption> _serviceOptionsForProvider(String providerType) {
+List<_ServiceTypeOption> _serviceOptionsForProvider(
+  String providerType,
+  AppLocalizations l10n,
+) {
   switch (providerType) {
     case 'vet':
-      return const [
-        _ServiceTypeOption(value: 'vet', label: 'Veterinary Services'),
-        _ServiceTypeOption(value: 'boarding', label: 'Boarding'),
+      return [
+        _ServiceTypeOption(value: 'vet', label: l10n.tr('veterinaryServices')),
+        _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
       ];
     case 'shop':
-      return const [
-        _ServiceTypeOption(value: 'shop_owner', label: 'Shop Owner'),
+      return [
+        _ServiceTypeOption(value: 'shop_owner', label: l10n.tr('shopOwner')),
       ];
     case 'babysitter':
-      return const [
-        _ServiceTypeOption(value: 'groomer', label: 'Grooming'),
-        _ServiceTypeOption(value: 'boarding', label: 'Boarding'),
+      return [
+        _ServiceTypeOption(value: 'groomer', label: l10n.tr('grooming')),
+        _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
       ];
     default:
-      return const [
-        _ServiceTypeOption(value: 'vet', label: 'Veterinary Services'),
-        _ServiceTypeOption(value: 'groomer', label: 'Grooming'),
-        _ServiceTypeOption(value: 'boarding', label: 'Boarding'),
-        _ServiceTypeOption(value: 'shop_owner', label: 'Shop Owner'),
+      return [
+        _ServiceTypeOption(value: 'vet', label: l10n.tr('veterinaryServices')),
+        _ServiceTypeOption(value: 'groomer', label: l10n.tr('grooming')),
+        _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
+        _ServiceTypeOption(value: 'shop_owner', label: l10n.tr('shopOwner')),
       ];
   }
 }

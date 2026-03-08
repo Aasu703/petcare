@@ -58,7 +58,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         location.startsWith(RoutePaths.providerVerificationPending);
   }
 
-  String _providerRedirect(SessionState session) {
+  String providerRedirect(SessionState session) {
     if (!session.hasProviderType) {
       return RoutePaths.providerVerificationPending;
     }
@@ -84,9 +84,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // Authenticated users on auth routes → redirect to appropriate home
       if (isAuthenticated && isAuthRoute(location)) {
-        return role == 'provider'
-            ? _providerRedirect(session)
-            : RoutePaths.home;
+        return role == 'provider' ? providerRedirect(session) : RoutePaths.home;
       }
 
       // Non-provider users trying to access provider routes → user home
@@ -100,7 +98,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Provider onboarding + approval gate
       if (isAuthenticated && role == 'provider') {
         final inProviderArea = location.startsWith('/provider/');
-        final redirectTarget = _providerRedirect(session);
+        final redirectTarget = providerRedirect(session);
 
         if (inProviderArea &&
             location != RoutePaths.providerLogin &&
@@ -117,7 +115,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location.startsWith(RoutePaths.explore) ||
               location.startsWith(RoutePaths.shop) ||
               location.startsWith(RoutePaths.profile))) {
-        return _providerRedirect(session);
+        return providerRedirect(session);
       }
 
       return null;

@@ -7,7 +7,7 @@ class ApiEndpoints {
 
   // configure base URL based on platform
   static const bool isPhysicalDevice =
-      true; // Set to true for physical device testing, false for emulator/simulator
+      false; // Set to true for physical device testing, false for emulator/simulator
   static const String _ipAddress = '192.168.1.7';
   static const int _port = 5050;
 

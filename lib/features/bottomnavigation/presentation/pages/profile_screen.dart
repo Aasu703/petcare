@@ -7,7 +7,6 @@ import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/l10n/locale_provider.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
-import 'package:petcare/core/sensors/device_sensors_provider.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 import 'package:petcare/core/session/session_provider.dart';
@@ -17,6 +16,9 @@ import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
 import 'package:petcare/core/services/notification/notification_service.dart';
+import 'package:petcare/features/bottomnavigation/presentation/widgets/sensor_settings_card.dart';
+import 'package:petcare/core/providers/sensor_settings_provider.dart';
+import 'package:petcare/core/services/sensor_interaction_service.dart';
 
 // Modern color palette - Theme Aware
 class ProfileColors {
@@ -129,6 +131,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       () => ref.read(profileViewModelProvider.notifier).loadProfile(),
     );
 
+    Future.microtask(() {
+      // Initialize sensor monitoring when profile screen loads
+      final sensorSettings = ref.read(sensorSettingsProvider);
+      final sensorService = ref.read(sensorInteractionServiceProvider);
+      sensorService.initializeSensorMonitoring(
+        proximityAlertEnabled: sensorSettings.proximityAlertEnabled,
+        autoBrightnessEnabled: sensorSettings.autoBrightnessEnabled,
+        context: context,
+      );
+    });
+
     _headerController.forward();
     Future.delayed(
       const Duration(milliseconds: 300),
@@ -214,8 +227,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profileState = ref.watch(profileViewModelProvider);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(appLocaleProvider);
-    final proximityStatus = ref.watch(proximitySensorNearProvider);
-    final ambientLightLux = ref.watch(ambientLightLuxProvider);
     final l10n = AppLocalizations.of(context);
 
     final avatar = profileState.user?.avatar;
@@ -567,35 +578,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                     const SizedBox(height: 28),
 
-                    _buildModernMenuSection(
-                      l10n.tr('deviceSensors'),
-                      Icons.sensors_rounded,
-                      [
-                        _MenuItem(
-                          icon: Icons.sensors_rounded,
-                          title: l10n.tr('proximitySensor'),
-                          subtitle: l10n.tr('deviceSensorsSubtitle'),
-                          color: ProfileColors.help,
-                          trailing: _buildStatusBadge(
-                            _proximityLabel(proximityStatus, l10n),
-                            ProfileColors.help,
-                          ),
-                          onTap: () {},
-                        ),
-                        _MenuItem(
-                          icon: Icons.light_mode_rounded,
-                          title: l10n.tr('ambientLightSensor'),
-                          subtitle: l10n.tr('deviceSensorsSubtitle'),
-                          color: ProfileColors.theme,
-                          trailing: _buildStatusBadge(
-                            _ambientLightLabel(ambientLightLux, l10n),
-                            ProfileColors.theme,
-                          ),
-                          onTap: () {},
-                        ),
-                      ],
-                      delay: 150,
-                    ),
+                    // Smart Sensors Settings Card
+                    const SensorSettingsCard(),
 
                     const SizedBox(height: 28),
 
@@ -864,32 +848,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       return 'NE';
     }
     return 'EN';
-  }
-
-  String _proximityLabel(AsyncValue<bool?> value, AppLocalizations l10n) {
-    return value.when(
-      data: (isNear) {
-        if (isNear == null) {
-          return l10n.tr('unavailable');
-        }
-        return isNear ? l10n.tr('near') : l10n.tr('far');
-      },
-      loading: () => l10n.tr('loading'),
-      error: (_, __) => l10n.tr('unavailable'),
-    );
-  }
-
-  String _ambientLightLabel(AsyncValue<int?> value, AppLocalizations l10n) {
-    return value.when(
-      data: (lux) {
-        if (lux == null) {
-          return l10n.tr('unavailable');
-        }
-        return '$lux ${l10n.tr('lux')}';
-      },
-      loading: () => l10n.tr('loading'),
-      error: (_, __) => l10n.tr('unavailable'),
-    );
   }
 
   // Modern Logout Button

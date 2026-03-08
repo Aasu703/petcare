@@ -3,7 +3,11 @@ import 'package:equatable/equatable.dart';
 class ProviderServiceEntity extends Equatable {
   final String? providerServiceId;
   final String? userId;
-  final String serviceType;
+  final String title;
+  final String? description;
+  final String category;
+  final double price;
+  final int durationMinutes;
   final String verificationStatus;
   final List<String> documents;
   final String? registrationNumber;
@@ -19,7 +23,11 @@ class ProviderServiceEntity extends Equatable {
   const ProviderServiceEntity({
     this.providerServiceId,
     this.userId,
-    required this.serviceType,
+    required this.title,
+    this.description,
+    required this.category,
+    required this.price,
+    required this.durationMinutes,
     this.verificationStatus = 'pending',
     this.documents = const [],
     this.registrationNumber,
@@ -37,7 +45,11 @@ class ProviderServiceEntity extends Equatable {
   List<Object?> get props => [
     providerServiceId,
     userId,
-    serviceType,
+    title,
+    description,
+    category,
+    price,
+    durationMinutes,
     verificationStatus,
     documents,
     registrationNumber,
@@ -54,7 +66,11 @@ class ProviderServiceEntity extends Equatable {
   ProviderServiceEntity copyWith({
     String? providerServiceId,
     String? userId,
-    String? serviceType,
+    String? title,
+    String? description,
+    String? category,
+    double? price,
+    int? durationMinutes,
     String? verificationStatus,
     List<String>? documents,
     String? registrationNumber,
@@ -70,7 +86,11 @@ class ProviderServiceEntity extends Equatable {
     return ProviderServiceEntity(
       providerServiceId: providerServiceId ?? this.providerServiceId,
       userId: userId ?? this.userId,
-      serviceType: serviceType ?? this.serviceType,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
       verificationStatus: verificationStatus ?? this.verificationStatus,
       documents: documents ?? this.documents,
       registrationNumber: registrationNumber ?? this.registrationNumber,

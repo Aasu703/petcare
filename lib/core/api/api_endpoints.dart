@@ -60,6 +60,8 @@ class ApiEndpoints {
   static const String userRegister = 'auth/register';
   static const String userWhoAmI = 'auth/whoami';
   static const String userUploadPhoto = 'auth/update-profile';
+  static const String requestPasswordReset = 'auth/request-password-reset';
+  static const String resetPassword = 'auth/reset-password';
   static String userPicture(String filename) =>
       resolveMediaUrl('user_photos/$filename');
   // ------------------------ PROVIDER -----------------------
@@ -80,9 +82,9 @@ class ApiEndpoints {
   static const String providerDelete = 'provider';
 
   // ------------------ PROVIDER SERVICE --------------------
-  static const String providerServiceApply = 'provider/provider-service/apply';
-  static const String providerServiceMy = 'provider/provider-service/my';
-  static const String providerServiceById = 'provider/provider-service';
+  static const String providerServiceApply = 'provider/service';
+  static const String providerServiceMy = 'provider/service';
+  static const String providerServiceById = 'provider/service';
 
   // ------------------------ PET ----------------------------
   static const String petGetAll = 'user/pet';
@@ -90,7 +92,11 @@ class ApiEndpoints {
   static const String petCreate = 'user/pet';
   static const String petUpdate = 'user/pet';
   static const String petDelete = 'user/pet';
+  static String petAssignVet(String petId) => 'user/pet/$petId/assign-vet';
   static String petCareById(String petId) => 'user/pet/$petId/care';
+
+  // ------------------ PROVIDER PETS ------------------------
+  static const String providerAssignedPets = 'provider/pet/assigned';
 
   // ----------------------- BOOKING -------------------------
   static const String bookingCreate = 'booking';
@@ -129,6 +135,8 @@ class ApiEndpoints {
   static const String orderById = 'order';
   static const String orderUpdate = 'order';
   static const String orderDelete = 'order';
+  static const String providerOrders = 'provider/order/my';
+  static const String providerOrderStatus = 'provider/order';
 
   // -------------------- HEALTH RECORD ----------------------
   static const String healthRecord = 'health-record';

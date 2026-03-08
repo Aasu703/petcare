@@ -128,23 +128,27 @@ class _SignupState extends ConsumerState<Signup>
                       const SizedBox(height: 40),
 
                       // Form Section
-                      SignupFormSection(
-                        formKey: _formKey,
-                        emailController: _newEmailController,
-                        passwordController: _newPasswordController,
-                        confirmPasswordController: _confirmPasswordController,
-                        firstNameController: _fnameController,
-                        lastNameController: _lnameController,
-                        phoneController: _phoneController,
-                        isProvider: _isProvider,
-                        showPassword: _showPassword,
-                        showConfirmPassword: _showConfirmPassword,
-                        onTogglePassword: () =>
-                            setState(() => _showPassword = !_showPassword),
-                        onToggleConfirmPassword: () => setState(
-                          () => _showConfirmPassword = !_showConfirmPassword,
+                      if (_isProvider)
+                        _buildProviderRedirectCard(context)
+                      else
+                        SignupFormSection(
+                          formKey: _formKey,
+                          emailController: _newEmailController,
+                          passwordController: _newPasswordController,
+                          confirmPasswordController: _confirmPasswordController,
+                          firstNameController: _fnameController,
+                          lastNameController: _lnameController,
+                          phoneController: _phoneController,
+                          isProvider: _isProvider,
+                          showPassword: _showPassword,
+                          showConfirmPassword: _showConfirmPassword,
+                          onTogglePassword: () =>
+                              setState(() => _showPassword = !_showPassword),
+                          onToggleConfirmPassword: () => setState(
+                            () =>
+                                _showConfirmPassword = !_showConfirmPassword,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 28),
 
                       // Account Type Section
@@ -202,7 +206,56 @@ class _SignupState extends ConsumerState<Signup>
     );
   }
 
+  Widget _buildProviderRedirectCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
+            spreadRadius: -10,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.store_rounded,
+            size: 42,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context).tr('providerSignUp'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context).tr('createProviderAccount'),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _onSignupPressed() async {
+    if (_isProvider) {
+      if (!mounted) return;
+      context.push(RoutePaths.providerRegister);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -210,36 +263,30 @@ class _SignupState extends ConsumerState<Signup>
     setState(() => _isSubmitting = true);
 
     try {
-      if (_isProvider) {
-        // Redirect to provider-specific signup
-        if (!mounted) return;
-        context.push(RoutePaths.providerRegister);
-      } else {
-        // Register pet owner
-        final usecase = ref.read(registerUsecaseProvider);
-        final result = await usecase(
-          RegisterUsecaseParams(
-            email: _newEmailController.text.trim(),
-            firstName: _fnameController.text.trim(),
-            lastName: _lnameController.text.trim(),
-            password: _newPasswordController.text,
-            confirmPassword: _confirmPasswordController.text,
-            phoneNumber: _phoneController.text.trim(),
-          ),
-        );
+      // Register pet owner
+      final usecase = ref.read(registerUsecaseProvider);
+      final result = await usecase(
+        RegisterUsecaseParams(
+          email: _newEmailController.text.trim(),
+          firstName: _fnameController.text.trim(),
+          lastName: _lnameController.text.trim(),
+          password: _newPasswordController.text,
+          confirmPassword: _confirmPasswordController.text,
+          phoneNumber: _phoneController.text.trim(),
+        ),
+      );
 
-        if (!mounted) return;
+      if (!mounted) return;
 
-        result.fold(
-          (failure) {
-            _showErrorSnackBar(failure.message);
-          },
-          (_) {
-            _showSuccessSnackBar();
-            context.go(RoutePaths.login);
-          },
-        );
-      }
+      result.fold(
+        (failure) {
+          _showErrorSnackBar(failure.message);
+        },
+        (_) {
+          _showSuccessSnackBar();
+          context.go(RoutePaths.login);
+        },
+      );
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);

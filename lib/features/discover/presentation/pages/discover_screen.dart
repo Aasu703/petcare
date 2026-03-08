@@ -655,7 +655,7 @@ class _ProviderCard extends StatelessWidget {
                       }),
                       const SizedBox(width: 6),
                       Text(
-                        '${provider.rating.toDouble().toStringAsFixed(1)}',
+                        provider.rating.toDouble().toStringAsFixed(1),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),

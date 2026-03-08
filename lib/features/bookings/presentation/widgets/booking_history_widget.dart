@@ -6,7 +6,6 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/reviews/data/datasources/review_remote_datasource.dart';
-import 'package:petcare/features/reviews/presentation/view_model/review_view_model.dart';
 
 class BookingHistoryWidget extends ConsumerWidget {
   final bool isLoading;

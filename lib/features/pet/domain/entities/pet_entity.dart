@@ -11,6 +11,9 @@ class PetEntity extends Equatable {
   final String? imageUrl;
   final String? createdAt;
   final String? updatedAt;
+  final String? assignedVetId;
+  final String? assignedVetName;
+  final String? assignedAt;
 
   const PetEntity({
     this.petId,
@@ -23,6 +26,9 @@ class PetEntity extends Equatable {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
+    this.assignedVetId,
+    this.assignedVetName,
+    this.assignedAt,
   });
 
   @override
@@ -37,6 +43,9 @@ class PetEntity extends Equatable {
     imageUrl,
     createdAt,
     updatedAt,
+    assignedVetId,
+    assignedVetName,
+    assignedAt,
   ];
 
   PetEntity copyWith({
@@ -50,6 +59,9 @@ class PetEntity extends Equatable {
     String? imageUrl,
     String? createdAt,
     String? updatedAt,
+    String? assignedVetId,
+    String? assignedVetName,
+    String? assignedAt,
   }) {
     return PetEntity(
       petId: petId ?? this.petId,
@@ -62,6 +74,9 @@ class PetEntity extends Equatable {
       imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      assignedVetId: assignedVetId ?? this.assignedVetId,
+      assignedVetName: assignedVetName ?? this.assignedVetName,
+      assignedAt: assignedAt ?? this.assignedAt,
     );
   }
 }

@@ -7,6 +7,9 @@ import 'package:petcare/features/pet/domain/usecase/get_all_pets_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_pet_care_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_care_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/assign_vet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_provider_assigned_pets_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_verified_vets_usecase.dart';
 
 // Pet State
 class PetState {
@@ -15,6 +18,8 @@ class PetState {
   final String? error;
   final PetEntity? recentlyAddedPet; // For showing success message
   final PetCareEntity? activeCare;
+  final List<Map<String, String>> verifiedVets;
+  final List<PetEntity> assignedPets;
 
   const PetState({
     this.isLoading = false,
@@ -22,6 +27,8 @@ class PetState {
     this.error,
     this.recentlyAddedPet,
     this.activeCare,
+    this.verifiedVets = const [],
+    this.assignedPets = const [],
   });
 
   PetState copyWith({
@@ -30,6 +37,8 @@ class PetState {
     String? error,
     PetEntity? recentlyAddedPet,
     PetCareEntity? activeCare,
+    List<Map<String, String>>? verifiedVets,
+    List<PetEntity>? assignedPets,
     bool clearError = false,
     bool clearRecentPet = false,
     bool clearActiveCare = false,
@@ -42,6 +51,8 @@ class PetState {
           ? null
           : (recentlyAddedPet ?? this.recentlyAddedPet),
       activeCare: clearActiveCare ? null : (activeCare ?? this.activeCare),
+      verifiedVets: verifiedVets ?? this.verifiedVets,
+      assignedPets: assignedPets ?? this.assignedPets,
     );
   }
 }
@@ -54,6 +65,9 @@ class PetNotifier extends StateNotifier<PetState> {
   final DeletePetUsecase _deletePetUsecase;
   final GetPetCareUsecase _getPetCareUsecase;
   final UpdatePetCareUsecase _updatePetCareUsecase;
+  final AssignVetUsecase _assignVetUsecase;
+  final GetVerifiedVetsUsecase _getVerifiedVetsUsecase;
+  final GetProviderAssignedPetsUsecase _getProviderAssignedPetsUsecase;
 
   PetNotifier({
     required AddPetUsecase addPetUsecase,
@@ -62,12 +76,18 @@ class PetNotifier extends StateNotifier<PetState> {
     required DeletePetUsecase deletePetUsecase,
     required GetPetCareUsecase getPetCareUsecase,
     required UpdatePetCareUsecase updatePetCareUsecase,
+    required AssignVetUsecase assignVetUsecase,
+    required GetVerifiedVetsUsecase getVerifiedVetsUsecase,
+    required GetProviderAssignedPetsUsecase getProviderAssignedPetsUsecase,
   }) : _addPetUsecase = addPetUsecase,
        _getAllPetsUsecase = getAllPetsUsecase,
        _updatePetUsecase = updatePetUsecase,
        _deletePetUsecase = deletePetUsecase,
        _getPetCareUsecase = getPetCareUsecase,
        _updatePetCareUsecase = updatePetCareUsecase,
+       _assignVetUsecase = assignVetUsecase,
+       _getVerifiedVetsUsecase = getVerifiedVetsUsecase,
+       _getProviderAssignedPetsUsecase = getProviderAssignedPetsUsecase,
        super(const PetState());
 
   // Add a new pet
@@ -189,6 +209,43 @@ class PetNotifier extends StateNotifier<PetState> {
         state = state.copyWith(isLoading: false, activeCare: updated);
         return true;
       },
+    );
+  }
+
+  Future<bool> assignVet({required String petId, required String vetId}) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    final result = await _assignVetUsecase(
+      AssignVetParams(petId: petId, vetId: vetId),
+    );
+
+    return result.fold(
+      (failure) {
+        state = state.copyWith(isLoading: false, error: failure.message);
+        return false;
+      },
+      (updatedPet) {
+        final updatedList = state.pets
+            .map((pet) => pet.petId == updatedPet.petId ? updatedPet : pet)
+            .toList();
+        state = state.copyWith(isLoading: false, pets: updatedList);
+        return true;
+      },
+    );
+  }
+
+  Future<void> loadVerifiedVets() async {
+    final result = await _getVerifiedVetsUsecase();
+    result.fold(
+      (failure) => state = state.copyWith(error: failure.message),
+      (vets) => state = state.copyWith(verifiedVets: vets),
+    );
+  }
+
+  Future<void> loadProviderAssignedPets() async {
+    final result = await _getProviderAssignedPetsUsecase();
+    result.fold(
+      (failure) => state = state.copyWith(error: failure.message),
+      (pets) => state = state.copyWith(assignedPets: pets),
     );
   }
 

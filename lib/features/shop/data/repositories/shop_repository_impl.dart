@@ -189,10 +189,23 @@ class ShopRepositoryImpl implements IShopRepository {
         OrderEntity(
           orderId: (result['_id'] ?? result['id'])?.toString(),
           userId: result['userId']?.toString(),
-          items: order.items,
-          totalAmount: order.totalAmount,
+          providerId: result['providerId']?.toString(),
+          providerName: result['providerName']?.toString(),
+          items: (result['items'] as List? ?? order.items).map((item) {
+            if (item is OrderItemEntity) return item;
+            final map = item as Map<String, dynamic>;
+            return OrderItemEntity(
+              productId: map['productId']?.toString() ?? '',
+              productName: map['productName']?.toString() ?? '',
+              quantity: (map['quantity'] as num?)?.toInt() ?? 0,
+              price: (map['price'] as num?)?.toDouble() ?? 0,
+            );
+          }).toList(),
+          totalAmount:
+              (result['totalAmount'] as num?)?.toDouble() ?? order.totalAmount,
           status: result['status']?.toString() ?? 'pending',
           createdAt: result['createdAt']?.toString(),
+          updatedAt: result['updatedAt']?.toString(),
         ),
       );
     } catch (e) {
@@ -217,12 +230,15 @@ class ShopRepositoryImpl implements IShopRepository {
         return OrderEntity(
           orderId: (json['_id'] ?? json['id'])?.toString(),
           userId: json['userId']?.toString(),
+          providerId: json['providerId']?.toString(),
+          providerName: json['providerName']?.toString(),
           items: items,
           totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
           status: json['status']?.toString() ?? 'pending',
           shippingAddress: json['shippingAddress']?.toString(),
           notes: json['notes']?.toString(),
           createdAt: json['createdAt']?.toString(),
+          updatedAt: json['updatedAt']?.toString(),
         );
       }).toList();
       return Right(orders);
@@ -251,12 +267,93 @@ class ShopRepositoryImpl implements IShopRepository {
         OrderEntity(
           orderId: (json['_id'] ?? json['id'])?.toString(),
           userId: json['userId']?.toString(),
+          providerId: json['providerId']?.toString(),
+          providerName: json['providerName']?.toString(),
           items: items,
           totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
           status: json['status']?.toString() ?? 'pending',
           shippingAddress: json['shippingAddress']?.toString(),
           notes: json['notes']?.toString(),
           createdAt: json['createdAt']?.toString(),
+          updatedAt: json['updatedAt']?.toString(),
+        ),
+      );
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<OrderEntity>>> getProviderOrders() async {
+    try {
+      final results = await _remoteDataSource.getProviderOrders();
+      final orders = results.map((json) {
+        final items = (json['items'] as List? ?? []).map((item) {
+          final itemMap = item as Map<String, dynamic>;
+          return OrderItemEntity(
+            productId: itemMap['productId']?.toString() ?? '',
+            productName: itemMap['productName']?.toString() ?? '',
+            quantity: (itemMap['quantity'] as num?)?.toInt() ?? 0,
+            price: (itemMap['price'] as num?)?.toDouble() ?? 0,
+          );
+        }).toList();
+
+        return OrderEntity(
+          orderId: (json['_id'] ?? json['id'])?.toString(),
+          userId: json['userId']?.toString(),
+          providerId: json['providerId']?.toString(),
+          providerName: json['providerName']?.toString(),
+          items: items,
+          totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
+          status: json['status']?.toString() ?? 'pending',
+          shippingAddress: json['shippingAddress']?.toString(),
+          notes: json['notes']?.toString(),
+          createdAt: json['createdAt']?.toString(),
+          updatedAt: json['updatedAt']?.toString(),
+        );
+      }).toList();
+      return Right(orders);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, OrderEntity>> updateProviderOrderStatus({
+    required String orderId,
+    required String status,
+  }) async {
+    try {
+      final json = await _remoteDataSource.updateProviderOrderStatus(
+        orderId,
+        status,
+      );
+      if (json == null) {
+        return const Left(ServerFailure(message: 'Order update failed'));
+      }
+      final items = (json['items'] as List? ?? []).map((item) {
+        final itemMap = item as Map<String, dynamic>;
+        return OrderItemEntity(
+          productId: itemMap['productId']?.toString() ?? '',
+          productName: itemMap['productName']?.toString() ?? '',
+          quantity: (itemMap['quantity'] as num?)?.toInt() ?? 0,
+          price: (itemMap['price'] as num?)?.toDouble() ?? 0,
+        );
+      }).toList();
+
+      return Right(
+        OrderEntity(
+          orderId: (json['_id'] ?? json['id'])?.toString(),
+          userId: json['userId']?.toString(),
+          providerId: json['providerId']?.toString(),
+          providerName: json['providerName']?.toString(),
+          items: items,
+          totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
+          status: json['status']?.toString() ?? status,
+          shippingAddress: json['shippingAddress']?.toString(),
+          notes: json['notes']?.toString(),
+          createdAt: json['createdAt']?.toString(),
+          updatedAt: json['updatedAt']?.toString(),
         ),
       );
     } catch (e) {

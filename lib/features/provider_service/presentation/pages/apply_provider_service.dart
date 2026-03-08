@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/provider_service/domain/entities/provider_service_entity.dart';
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
@@ -25,35 +23,11 @@ class ApplyProviderServiceScreen extends ConsumerStatefulWidget {
 class _ApplyProviderServiceScreenState
     extends ConsumerState<ApplyProviderServiceScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _registrationController = TextEditingController();
-  final _bioController = TextEditingController();
-  final _experienceController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _durationController = TextEditingController();
   String? _selectedServiceType;
-
-  String? _medicalLicensePath;
-  String? _certificationPath;
-  String? _businessRegPath;
-  List<String> _facilityImages = [];
-
-  final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImageFor(
-    Function(String) setter, {
-    bool multiple = false,
-  }) async {
-    if (multiple) {
-      final List<XFile> files = await _picker.pickMultiImage();
-      if (files.isNotEmpty) {
-        setState(() {
-          _facilityImages = files.map((e) => e.path).toList();
-        });
-      }
-      return;
-    }
-
-    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
-    if (file != null) setter(file.path);
-  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -72,28 +46,29 @@ class _ApplyProviderServiceScreenState
       return;
     }
 
+    final price = double.tryParse(_priceController.text.trim());
+    final duration = int.tryParse(_durationController.text.trim());
+    if (price == null || duration == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter valid price and duration'),
+          backgroundColor: Colors.red.shade400,
+        ),
+      );
+      return;
+    }
+
     final entity = ProviderServiceEntity(
-      serviceType: _selectedServiceType!,
-      registrationNumber: _registrationController.text.trim().isEmpty
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
           ? null
-          : _registrationController.text.trim(),
-      bio: _bioController.text.trim().isEmpty
-          ? null
-          : _bioController.text.trim(),
-      experience: _experienceController.text.trim().isEmpty
-          ? null
-          : _experienceController.text.trim(),
+          : _descriptionController.text.trim(),
+      category: _selectedServiceType!,
+      price: price,
+      durationMinutes: duration,
     );
 
-    await ref
-        .read(providerServiceProvider.notifier)
-        .applyForService(
-          entity,
-          medicalLicensePath: _medicalLicensePath,
-          certificationPath: _certificationPath,
-          facilityImagePaths: _facilityImages,
-          businessRegistrationPath: _businessRegPath,
-        );
+    await ref.read(providerServiceProvider.notifier).applyForService(entity);
 
     final state = ref.read(providerServiceProvider);
     if (state.error == null) {
@@ -119,9 +94,10 @@ class _ApplyProviderServiceScreenState
 
   @override
   void dispose() {
-    _registrationController.dispose();
-    _bioController.dispose();
-    _experienceController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _durationController.dispose();
     super.dispose();
   }
 
@@ -141,6 +117,16 @@ class _ApplyProviderServiceScreenState
           key: _formKey,
           child: Column(
             children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value == null || value.trim().isEmpty ? 'Required' : null,
+              ),
+              SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _selectedServiceType,
                 decoration: InputDecoration(
@@ -168,93 +154,43 @@ class _ApplyProviderServiceScreenState
               ),
               SizedBox(height: 12),
               TextFormField(
-                controller: _registrationController,
+                controller: _priceController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: _selectedServiceType == 'vet'
-                      ? '${l10n.tr('medicalRegistrationNumber')} *'
-                      : l10n.tr('registrationNumber'),
+                  labelText: 'Price',
+                  border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (_selectedServiceType == 'vet') {
-                    if (value == null || value.trim().isEmpty) {
-                      return l10n.tr('registrationNumberRequired');
-                    }
-                  }
+                  final parsed = double.tryParse(value ?? '');
+                  if (parsed == null || parsed < 0) return 'Enter valid price';
                   return null;
                 },
               ),
               SizedBox(height: 12),
               TextFormField(
-                controller: _bioController,
-                decoration: InputDecoration(labelText: l10n.tr('bio')),
-                maxLines: 3,
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Duration (minutes)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  final parsed = int.tryParse(value ?? '');
+                  if (parsed == null || parsed <= 0) return 'Enter duration';
+                  return null;
+                },
               ),
               SizedBox(height: 12),
               TextFormField(
-                controller: _experienceController,
-                decoration: InputDecoration(labelText: l10n.tr('experience')),
-                maxLines: 2,
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
               ),
-              SizedBox(height: 16),
-              if (_selectedServiceType == 'vet') ...[
-                ElevatedButton.icon(
-                  onPressed: () => _pickImageFor(
-                    (p) => setState(() => _medicalLicensePath = p),
-                  ),
-                  icon: Icon(Icons.attach_file),
-                  label: Text(
-                    _medicalLicensePath == null
-                        ? '${l10n.tr('pickMedicalLicense')} *'
-                        : l10n.tr('medicalSelected'),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                  ),
-                ),
-                SizedBox(height: 8),
-              ],
-              if (_selectedServiceType == 'groomer') ...[
-                ElevatedButton.icon(
-                  onPressed: () => _pickImageFor(
-                    (p) => setState(() => _certificationPath = p),
-                  ),
-                  icon: Icon(Icons.attach_file),
-                  label: Text(
-                    _certificationPath == null
-                        ? '${l10n.tr('pickCertification')} *'
-                        : l10n.tr('certSelected'),
-                  ),
-                ),
-                SizedBox(height: 8),
-              ],
-              if (_selectedServiceType == 'shop_owner') ...[
-                ElevatedButton.icon(
-                  onPressed: () => _pickImageFor(
-                    (p) => setState(() => _businessRegPath = p),
-                  ),
-                  icon: Icon(Icons.document_scanner),
-                  label: Text(
-                    _businessRegPath == null
-                        ? '${l10n.tr('pickBusinessRegistration')} *'
-                        : l10n.tr('businessSelected'),
-                  ),
-                ),
-                SizedBox(height: 8),
-              ],
-              if (_selectedServiceType == 'boarding') ...[
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      _pickImageFor((p) => setState(() {}), multiple: true),
-                  icon: Icon(Icons.photo_library),
-                  label: Text(
-                    _facilityImages.isEmpty
-                        ? '${l10n.tr('pickFacilityImages')} *'
-                        : '${_facilityImages.length} ${l10n.tr('imagesCount')}',
-                  ),
-                ),
-                SizedBox(height: 8),
-              ],
-              SizedBox(height: 24),
+              SizedBox(height: 12),
+              SizedBox(height: 12),
               state.isLoading
                   ? CircularProgressIndicator()
                   : ElevatedButton(
@@ -290,23 +226,22 @@ List<_ServiceTypeOption> _serviceOptionsForProvider(
     case 'vet':
       return [
         _ServiceTypeOption(value: 'vet', label: l10n.tr('veterinaryServices')),
-        _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
       ];
     case 'shop':
       return [
-        _ServiceTypeOption(value: 'shop_owner', label: l10n.tr('shopOwner')),
+        _ServiceTypeOption(value: 'grooming', label: l10n.tr('grooming')),
+        _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
       ];
     case 'babysitter':
       return [
-        _ServiceTypeOption(value: 'groomer', label: l10n.tr('grooming')),
+        _ServiceTypeOption(value: 'grooming', label: l10n.tr('grooming')),
         _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
       ];
     default:
       return [
         _ServiceTypeOption(value: 'vet', label: l10n.tr('veterinaryServices')),
-        _ServiceTypeOption(value: 'groomer', label: l10n.tr('grooming')),
+        _ServiceTypeOption(value: 'grooming', label: l10n.tr('grooming')),
         _ServiceTypeOption(value: 'boarding', label: l10n.tr('boarding')),
-        _ServiceTypeOption(value: 'shop_owner', label: l10n.tr('shopOwner')),
       ];
   }
 }

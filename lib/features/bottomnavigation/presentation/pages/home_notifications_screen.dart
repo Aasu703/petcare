@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/core/services/notification/notification_service.dart';
 import 'package:petcare/features/health_records/presentation/state/vaccination_reminder_state.dart';
 import 'package:petcare/features/health_records/presentation/view_model/vaccination_reminder_view_model.dart';

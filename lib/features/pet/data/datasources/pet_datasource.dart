@@ -10,6 +10,9 @@ abstract interface class IPetRemoteDataSource {
     PetApiModel pet, {
     String? imagePath,
   });
+  Future<PetApiModel> assignVet({required String petId, required String vetId});
+  Future<List<PetApiModel>> getProviderAssignedPets();
+  Future<List<Map<String, String>>> getVerifiedVets();
   Future<PetCareApiModel> getPetCare(String petId);
   Future<PetCareApiModel> updatePetCare(String petId, PetCareApiModel care);
   Future<bool> deletePet(String petId);

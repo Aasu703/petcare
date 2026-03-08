@@ -12,10 +12,10 @@ import 'package:petcare/features/provider/domain/utils/provider_access.dart';
 import 'package:petcare/features/provider/presentation/widgets/provider_dashboard_components.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
 import 'package:petcare/features/health_records/presentation/pages/provider_vaccination_prescriptions_page.dart';
-import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
 import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
 import 'package:petcare/features/provider_service/presentation/view_model/provider_service_view_model.dart';
 import 'package:petcare/features/shop/presentation/pages/manage_inventory_page.dart';
+import 'package:petcare/features/shop/presentation/pages/provider_orders_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 
 // Modern color palette for Provider Dashboard
@@ -407,6 +407,21 @@ class _ProviderDashboardScreenState
           },
         ),
       );
+
+      cards.add(
+        ProviderDashboardFeature(
+          title: l10n.tr('orders'),
+          subtitle: l10n.tr('reviewAndUpdateOrders'),
+          icon: Icons.receipt_long_rounded,
+          color: ProviderColors.bookings,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProviderOrdersPage()),
+            );
+          },
+        ),
+      );
     }
 
     if (canServices) {
@@ -421,27 +436,6 @@ class _ProviderDashboardScreenState
               context,
               MaterialPageRoute(
                 builder: (_) => const MyProviderServicesScreen(),
-              ),
-            );
-          },
-        ),
-      );
-
-      cards.add(
-        ProviderDashboardFeature(
-          title: l10n.tr('applyForService'),
-          subtitle: l10n.tr('submitProviderServiceApp'),
-          icon: Icons.assignment_rounded,
-          color: ProviderColors.primary,
-          onTap: () {
-            final initialServiceType = isVet ? 'vet' : 'groomer';
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ApplyProviderServiceScreen(
-                  initialServiceType: initialServiceType,
-                  lockServiceType: true,
-                ),
               ),
             );
           },

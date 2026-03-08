@@ -83,6 +83,77 @@ class _MyPetState extends ConsumerState<MyPet> {
     );
   }
 
+  Future<void> _assignVet(PetEntity pet) async {
+    final notifier = ref.read(petNotifierProvider.notifier);
+    await notifier.loadVerifiedVets();
+    final vets = ref.read(petNotifierProvider).verifiedVets;
+
+    if (!mounted) return;
+
+    final selectedVet = await showModalBottomSheet<Map<String, String>>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        if (vets.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.info_outline, size: 32),
+                SizedBox(height: 12),
+                Text('No verified vets found right now'),
+              ],
+            ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.medical_services_outlined),
+                  SizedBox(width: 8),
+                  Text(
+                    'Assign a vet',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...vets.map(
+                (vet) => ListTile(
+                  leading: const CircleAvatar(child: Icon(Icons.pets)),
+                  title: Text(vet['name'] ?? 'Vet'),
+                  onTap: () => Navigator.pop(context, vet),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selectedVet == null || (pet.petId ?? '').isEmpty) return;
+
+    final ok = await notifier.assignVet(
+      petId: pet.petId!,
+      vetId: selectedVet['id']!,
+    );
+
+    if (!mounted) return;
+    final message = ok ? 'Vet assigned successfully' : 'Could not assign vet';
+    final color = ok ? AppColors.successColor : AppColors.errorColor;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+  }
+
   Future<void> _onPetTap(PetEntity pet) async {
     final updated = await Navigator.push(
       context,
@@ -281,6 +352,7 @@ class _MyPetState extends ConsumerState<MyPet> {
                           pet: pet,
                           onTap: () => _onPetTap(pet),
                           onCare: () => _onCareTap(pet),
+                          onAssignVet: () => _assignVet(pet),
                           onDelete: () => _deletePet(pet.petId ?? ''),
                         );
                       },

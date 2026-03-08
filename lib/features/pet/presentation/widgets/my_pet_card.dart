@@ -8,6 +8,7 @@ class MyPetCard extends StatefulWidget {
   final PetEntity pet;
   final VoidCallback onTap;
   final VoidCallback onCare;
+  final VoidCallback onAssignVet;
   final VoidCallback onDelete;
 
   const MyPetCard({
@@ -15,6 +16,7 @@ class MyPetCard extends StatefulWidget {
     required this.pet,
     required this.onTap,
     required this.onCare,
+    required this.onAssignVet,
     required this.onDelete,
   });
 
@@ -252,6 +254,42 @@ class _MyPetCardState extends State<MyPetCard>
                                     fontWeight: FontWeight.w700,
                                     color: speciesColor,
                                     letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.medical_services_outlined,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.pet.assignedVetName ??
+                                      'No vet assigned',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: widget.pet.assignedVetName != null
+                                        ? AppColors.successColor
+                                        : context.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: widget.onAssignVet,
+                                child: Text(
+                                  widget.pet.assignedVetName == null
+                                      ? 'Assign vet'
+                                      : 'Change',
+                                  style: TextStyle(
+                                    color: AppColors.primaryColor,
                                   ),
                                 ),
                               ),

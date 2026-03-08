@@ -8,6 +8,8 @@ abstract final class RoutePaths {
   static const register = '/register';
   static const providerLogin = '/provider/login';
   static const providerRegister = '/provider/register';
+  static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
 
   static const home = '/home';
   static const explore = '/explore';
@@ -22,6 +24,7 @@ abstract final class RoutePaths {
   static const addPet = '/pets/add';
 
   static const providerDashboard = '/provider/dashboard';
+  static const providerVerificationPending = '/provider/verification-pending';
 
   static const discover = '/discover';
   static const providerDetail = '/discover/provider';

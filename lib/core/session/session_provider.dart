@@ -30,6 +30,7 @@ class SessionNotifier extends Notifier<SessionState> {
       email: _sessionService.getEmail(),
       role: _sessionService.getRole(),
       providerType: _sessionService.getProviderType(),
+      providerStatus: _sessionService.getProviderStatus(),
       profilePic: _sessionService.getUserProfilePic(),
     );
   }
@@ -42,6 +43,7 @@ class SessionNotifier extends Notifier<SessionState> {
     String? lastName,
     String? role,
     String? providerType,
+    String? providerStatus,
     String? profilePic,
   }) async {
     await _sessionService.saveSession(
@@ -51,6 +53,7 @@ class SessionNotifier extends Notifier<SessionState> {
       lastName: lastName ?? '',
       role: role,
       providerType: providerType,
+      providerStatus: providerStatus,
       userProfilePic: profilePic,
     );
     state = _hydrateFromDisk();

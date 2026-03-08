@@ -15,8 +15,8 @@ import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
-import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
-import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
+import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
+import 'package:petcare/core/services/notification/notification_service.dart';
 
 // Modern color palette - Theme Aware
 class ProfileColors {
@@ -86,10 +86,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   late Animation<double> _avatarScale;
 
   bool isInTest = false;
+  bool _notificationsEnabled = true;
 
   @override
   void initState() {
     super.initState();
+
+    _loadNotificationStatus();
 
     assert(() {
       isInTest = true;
@@ -130,6 +133,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     Future.delayed(
       const Duration(milliseconds: 300),
       () => _contentController.forward(),
+    );
+  }
+
+  Future<void> _loadNotificationStatus() async {
+    final service = ref.read(notificationServiceProvider);
+    final enabled = await service.areNotificationsEnabled();
+    if (mounted) {
+      setState(() {
+        _notificationsEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _toggleNotifications() async {
+    final service = ref.read(notificationServiceProvider);
+    if (_notificationsEnabled) {
+      // Can't disable system notifications from app, just show message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Go to device settings to disable notifications'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      // Request permissions
+      final granted = await service.requestPermissions();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = granted;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              granted
+                  ? 'Notifications enabled'
+                  : 'Permission denied. Enable in settings.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendTestNotification() async {
+    final service = ref.read(notificationServiceProvider);
+    final sent = await service.showInstantNotification(
+      id: NotificationService.createEphemeralId(),
+      title: AppLocalizations.of(context).tr('testNotification'),
+      body: AppLocalizations.of(context).tr('alertsRemindersUpdates'),
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? AppLocalizations.of(context).tr('testNotificationSent')
+              : 'Enable notifications first.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -359,11 +427,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     const SizedBox(height: 28),
 
-                    // Modern Stats Section
-                    _buildModernStatsSection(),
-
-                    const SizedBox(height: 36),
-
                     // Account Section
                     _buildModernMenuSection(
                       l10n.tr('account'),
@@ -404,17 +467,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           },
                         ),
                         _MenuItem(
-                          icon: Icons.storefront_rounded,
-                          title: l10n.tr('myServices'),
-                          subtitle: l10n.tr('viewProviderServices'),
-                          color: ProfileColors.myPets,
+                          icon: Icons.receipt_long_rounded,
+                          title: 'My Orders',
+                          subtitle: 'Track your purchases',
+                          color: ProfileColors.notifications,
                           onTap: () {
                             HapticFeedback.lightImpact();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const MyProviderServicesScreen(),
+                                builder: (_) => const MyOrdersPage(),
                               ),
                             );
                           },
@@ -430,22 +492,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const PostsScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _MenuItem(
-                          icon: Icons.work_outline_rounded,
-                          title: l10n.tr('applyAsProvider'),
-                          subtitle: l10n.tr('submitDocuments'),
-                          color: ProfileColors.editProfile,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ApplyProviderServiceScreen(),
                               ),
                             );
                           },
@@ -466,8 +512,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           title: l10n.tr('notifications'),
                           subtitle: l10n.tr('alertsRemindersUpdates'),
                           color: ProfileColors.notifications,
-                          trailing: _buildToggleSwitch(true),
-                          onTap: () {},
+                          trailing: _buildToggleSwitch(_notificationsEnabled),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _toggleNotifications();
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.notifications_active_rounded,
+                          title: l10n.tr('testNotification'),
+                          subtitle: l10n.tr('manageNotificationPrefs'),
+                          color: ProfileColors.notifications,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _sendTestNotification();
+                          },
                         ),
                         _MenuItem(
                           icon: Icons.language_rounded,
@@ -580,128 +639,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ],
         ),
       ),
-    );
-  }
-
-  // Modern Stats Section
-  Widget _buildModernStatsSection() {
-    final l10n = AppLocalizations.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.pets_rounded,
-            value: '3',
-            label: l10n.tr('myPets'),
-            gradientColors: const [Color(0xFFFF6B9D), Color(0xFFFF8FB0)],
-            delay: 0,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.calendar_month_rounded,
-            value: '5',
-            label: l10n.tr('visits'),
-            gradientColors: const [Color(0xFF4ECFFF), Color(0xFF7DDBFF)],
-            delay: 100,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.favorite_rounded,
-            value: '12',
-            label: l10n.tr('likes'),
-            gradientColors: const [Color(0xFFFF6584), Color(0xFFFF8AA3)],
-            delay: 200,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModernStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required List<Color> gradientColors,
-    required int delay,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: isInTest ? Duration.zero : Duration(milliseconds: 600 + delay),
-      curve: Curves.easeOutBack,
-      builder: (context, animationValue, child) {
-        return Transform.scale(
-          scale: animationValue,
-          child: Opacity(
-            opacity: animationValue,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: gradientColors[0].withOpacity(0.2),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradientColors[0].withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                    spreadRadius: -5,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: gradientColors,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradientColors[0].withOpacity(0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                          spreadRadius: -3,
-                        ),
-                      ],
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: ProfileColors.textPrimary(context),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: ProfileColors.textSecondary(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 

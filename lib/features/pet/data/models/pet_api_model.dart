@@ -35,6 +35,14 @@ class PetApiModel {
   @JsonKey(name: 'updatedAt')
   final String? updatedAt;
 
+  @JsonKey(name: 'assignedVet')
+  final String? assignedVetId;
+
+  @JsonKey(name: 'assignedAt')
+  final String? assignedAt;
+
+  final String? assignedVetName;
+
   PetApiModel({
     this.id,
     required this.name,
@@ -46,11 +54,49 @@ class PetApiModel {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
+    this.assignedVetId,
+    this.assignedAt,
+    this.assignedVetName,
   });
 
   // JSON serialization
-  factory PetApiModel.fromJson(Map<String, dynamic> json) =>
-      _$PetApiModelFromJson(json);
+  factory PetApiModel.fromJson(Map<String, dynamic> json) {
+    String? resolveAssignedId(dynamic value) {
+      if (value is String) return value;
+      if (value is Map<String, dynamic>) {
+        return (value['_id'] ?? value['id'])?.toString();
+      }
+      return null;
+    }
+
+    String? resolveAssignedName(dynamic value) {
+      if (value is Map<String, dynamic>) {
+        return value['businessName']?.toString() ??
+            value['clinicOrShopName']?.toString() ??
+            value['name']?.toString() ??
+            value['email']?.toString();
+      }
+      return null;
+    }
+
+    final assignedRaw = json['assignedVet'] ?? json['assignedVetId'];
+
+    return PetApiModel(
+      id: json['_id']?.toString(),
+      name: json['name']?.toString() ?? '',
+      species: json['species']?.toString() ?? '',
+      breed: json['breed']?.toString(),
+      age: (json['age'] as num?)?.toInt(),
+      weight: (json['weight'] as num?)?.toDouble(),
+      ownerId: json['ownerId']?.toString(),
+      imageUrl: json['imageUrl']?.toString(),
+      createdAt: json['createdAt']?.toString(),
+      updatedAt: json['updatedAt']?.toString(),
+      assignedVetId: resolveAssignedId(assignedRaw),
+      assignedAt: json['assignedAt']?.toString(),
+      assignedVetName: resolveAssignedName(assignedRaw),
+    );
+  }
 
   // For CREATE request - exclude fields backend generates
   Map<String, dynamic> toJsonForCreate() {
@@ -67,7 +113,20 @@ class PetApiModel {
   }
 
   // For general serialization (includes all fields)
-  Map<String, dynamic> toJson() => _$PetApiModelToJson(this);
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'name': name,
+    'species': species,
+    'breed': breed,
+    'age': age,
+    'weight': weight,
+    'ownerId': ownerId,
+    'imageUrl': imageUrl,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+    if (assignedVetId != null) 'assignedVetId': assignedVetId,
+    if (assignedAt != null) 'assignedAt': assignedAt,
+  };
 
   // Convert to domain entity
   PetEntity toEntity() {
@@ -82,6 +141,9 @@ class PetApiModel {
       imageUrl: imageUrl,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      assignedVetId: assignedVetId,
+      assignedVetName: assignedVetName,
+      assignedAt: assignedAt,
     );
   }
 
@@ -98,6 +160,9 @@ class PetApiModel {
       imageUrl: entity.imageUrl,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      assignedVetId: entity.assignedVetId,
+      assignedVetName: entity.assignedVetName,
+      assignedAt: entity.assignedAt,
     );
   }
 

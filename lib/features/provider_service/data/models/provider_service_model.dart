@@ -3,7 +3,11 @@ import 'package:petcare/features/provider_service/domain/entities/provider_servi
 class ProviderServiceModel {
   final String? id;
   final String? userId;
-  final String serviceType;
+  final String title;
+  final String? description;
+  final String category;
+  final double price;
+  final int durationMinutes;
   final String verificationStatus;
   final List<String> documents;
   final String? registrationNumber;
@@ -19,7 +23,11 @@ class ProviderServiceModel {
   ProviderServiceModel({
     this.id,
     this.userId,
-    required this.serviceType,
+    required this.title,
+    this.description,
+    required this.category,
+    required this.price,
+    required this.durationMinutes,
     this.verificationStatus = 'pending',
     this.documents = const [],
     this.registrationNumber,
@@ -37,7 +45,15 @@ class ProviderServiceModel {
     return ProviderServiceModel(
       id: (json['_id'] ?? json['id'])?.toString(),
       userId: json['userId']?.toString(),
-      serviceType: json['serviceType']?.toString() ?? '',
+      title: (json['title'] ?? json['serviceType'] ?? '').toString(),
+      description: json['description']?.toString(),
+      category: (json['category'] ?? json['serviceType'] ?? '').toString(),
+      price: (json['price'] is num)
+          ? (json['price'] as num).toDouble()
+          : double.tryParse(json['price']?.toString() ?? '0') ?? 0,
+      durationMinutes: (json['duration_minutes'] is num)
+          ? (json['duration_minutes'] as num).toInt()
+          : int.tryParse(json['durationMinutes']?.toString() ?? '0') ?? 0,
       verificationStatus: json['verificationStatus']?.toString() ?? 'pending',
       documents:
           (json['documents'] as List?)?.map((e) => e.toString()).toList() ??
@@ -61,7 +77,13 @@ class ProviderServiceModel {
   }
 
   Map<String, dynamic> toJsonForApply() {
-    final json = <String, dynamic>{'serviceType': serviceType};
+    final json = <String, dynamic>{
+      'title': title,
+      'description': description,
+      'category': category,
+      'price': price,
+      'duration_minutes': durationMinutes,
+    };
     if (registrationNumber != null) {
       json['registrationNumber'] = registrationNumber;
     }
@@ -75,7 +97,11 @@ class ProviderServiceModel {
     return ProviderServiceEntity(
       providerServiceId: id,
       userId: userId,
-      serviceType: serviceType,
+      title: title,
+      description: description,
+      category: category,
+      price: price,
+      durationMinutes: durationMinutes,
       verificationStatus: verificationStatus,
       documents: documents,
       registrationNumber: registrationNumber,
@@ -94,7 +120,11 @@ class ProviderServiceModel {
     return ProviderServiceModel(
       id: entity.providerServiceId,
       userId: entity.userId,
-      serviceType: entity.serviceType,
+      title: entity.title,
+      description: entity.description,
+      category: entity.category,
+      price: entity.price,
+      durationMinutes: entity.durationMinutes,
       verificationStatus: entity.verificationStatus,
       documents: entity.documents,
       registrationNumber: entity.registrationNumber,

@@ -20,6 +20,15 @@ abstract interface class IPetRepository {
   /// Update care plan for a pet
   Future<PetCareEntity> updatePetCare(String petId, PetCareEntity care);
 
+  /// Assign a vet to a pet
+  Future<PetEntity> assignVet({required String petId, required String vetId});
+
+  /// Providers: list pets assigned to them
+  Future<List<PetEntity>> getProviderAssignedPets();
+
+  /// Fetch verified vets for assignment
+  Future<List<Map<String, String>>> getVerifiedVets();
+
   /// Delete a pet
   Future<bool> deletePet(String petId);
 }

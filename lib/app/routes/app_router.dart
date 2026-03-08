@@ -7,6 +7,8 @@ import 'package:petcare/core/session/router_notifier.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/pages/provider_signup.dart';
 import 'package:petcare/features/auth/presentation/pages/signup.dart';
+import 'package:petcare/features/forgotpassword/presentation/pages/forgotpassword.dart';
+import 'package:petcare/features/forgotpassword/presentation/pages/reset_password_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_calendar_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
@@ -125,6 +127,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.providerRegister,
         builder: (context, state) => const ProviderSignupScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.forgotPassword,
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.resetPassword,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          final email = state.uri.queryParameters['email'];
+          return ResetPasswordPage(token: token, email: email);
+        },
       ),
       GoRoute(
         path: RoutePaths.providerDashboard,

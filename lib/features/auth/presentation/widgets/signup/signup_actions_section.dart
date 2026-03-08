@@ -3,7 +3,7 @@ import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 /// Signup action button with loading state
-/// Displays "Continue to Provider Signup" for providers, "Create Account" for pet owners
+/// Displays "Provider Sign Up" for providers, "Create Account" for pet owners
 class SignupActionsSection extends StatelessWidget {
   final bool isSubmitting;
   final bool isProvider;
@@ -54,9 +54,7 @@ class SignupActionsSection extends StatelessWidget {
                 children: [
                   Text(
                     isProvider
-                        ? AppLocalizations.of(
-                            context,
-                          ).tr('continueToProviderSignup')
+                        ? AppLocalizations.of(context).tr('providerSignUp')
                         : AppLocalizations.of(context).tr('createAccount'),
                     style: const TextStyle(
                       fontSize: 17,

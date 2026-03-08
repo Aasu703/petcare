@@ -19,5 +19,10 @@ abstract interface class IAuthRepository {
     String? phoneNumber,
     File? imageFile,
   });
+  Future<Either<Failure, bool>> requestPasswordReset(String email);
+  Future<Either<Failure, bool>> resetPassword({
+    required String token,
+    required String newPassword,
+  });
   Future<Either<Failure, bool>> logout();
 }

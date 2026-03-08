@@ -12,7 +12,6 @@ import 'package:petcare/features/health_records/presentation/view_model/vaccinat
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
 import 'package:petcare/core/services/storage/recent_activity_service.dart';
 import 'package:petcare/core/session/session_provider.dart';
-import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/home_notifications_screen.dart';

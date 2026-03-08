@@ -41,6 +41,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   bool _isSubmitting = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  bool _showProviderTypeStep = false;
   String? _selectedProviderType;
   bool _showProviderTypeError = false;
   double? _locationLatitude;
@@ -100,6 +101,15 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   }
 
   Future<void> _tryRegister() async {
+    if (!_showProviderTypeStep) {
+      final isValid = _formKey.currentState?.validate() ?? false;
+      if (!isValid) return;
+      setState(() {
+        _showProviderTypeStep = true;
+      });
+      return;
+    }
+
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
     if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
@@ -295,7 +305,16 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () => Navigator.of(context).pop(),
+                                  onPressed: () {
+                                    if (_showProviderTypeStep) {
+                                      setState(() {
+                                        _showProviderTypeStep = false;
+                                        _showProviderTypeError = false;
+                                      });
+                                      return;
+                                    }
+                                    Navigator.of(context).pop();
+                                  },
                                   icon: const Icon(Icons.arrow_back),
                                   color: AppColors.iconPrimaryColor,
                                 ),
@@ -325,17 +344,21 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                               key: _formKey,
                               child: Column(
                                 children: [
-                                  ProviderTypeSelector(
-                                    selectedProviderType: _selectedProviderType,
-                                    showError: _showProviderTypeError,
-                                    onSelected: (value) {
-                                      setState(() {
-                                        _selectedProviderType = value;
-                                        _showProviderTypeError = false;
-                                      });
-                                    },
-                                  ),
-                                  if (requiresPinnedLocation) ...[
+                                  if (_showProviderTypeStep) ...[
+                                    ProviderTypeSelector(
+                                      selectedProviderType:
+                                          _selectedProviderType,
+                                      showError: _showProviderTypeError,
+                                      onSelected: (value) {
+                                        setState(() {
+                                          _selectedProviderType = value;
+                                          _showProviderTypeError = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                  if (_showProviderTypeStep &&
+                                      requiresPinnedLocation) ...[
                                     const SizedBox(height: 14),
                                     Container(
                                       width: double.infinity,
@@ -644,9 +667,13 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                               ),
                                             )
                                           : Text(
-                                              AppLocalizations.of(
-                                                context,
-                                              ).tr('createProviderAccount'),
+                                              _showProviderTypeStep
+                                                  ? AppLocalizations.of(
+                                                      context,
+                                                    ).tr(
+                                                      'createProviderAccount',
+                                                    )
+                                                  : 'Continue',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,

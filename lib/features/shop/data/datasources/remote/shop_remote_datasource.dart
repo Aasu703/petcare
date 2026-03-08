@@ -253,4 +253,34 @@ class ShopRemoteDataSource implements IShopRemoteDataSource {
     }
     return null;
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProviderOrders() async {
+    final response = await _apiClient.get(ApiEndpoints.providerOrders);
+    final data = response.data;
+    List<dynamic> list = [];
+    if (data is List) list = data;
+    if (data is Map<String, dynamic>) {
+      final inner = data['data'] ?? data['orders'] ?? data['items'];
+      if (inner is List) list = inner;
+    }
+    return list.whereType<Map<String, dynamic>>().toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>?> updateProviderOrderStatus(
+    String orderId,
+    String status,
+  ) async {
+    final response = await _apiClient.put(
+      '${ApiEndpoints.providerOrderStatus}/$orderId/status',
+      data: {'status': status},
+    );
+
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      return data['data'] ?? data;
+    }
+    return null;
+  }
 }

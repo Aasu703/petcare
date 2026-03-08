@@ -1,44 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/forgotpassword/presentation/view_model/forgot_password_view_model.dart';
 
-class ForgotPasswordPage extends ConsumerStatefulWidget {
-  const ForgotPasswordPage({super.key});
+class ResetPasswordPage extends ConsumerStatefulWidget {
+  final String token;
+  final String? email;
+
+  const ResetPasswordPage({super.key, required this.token, this.email});
 
   @override
-  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
-  final _emailController = TextEditingController();
+class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
+  final _tokenController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.token.isNotEmpty) {
+      _tokenController.text = widget.token;
+    }
+  }
+
+  @override
   void dispose() {
-    _emailController.dispose();
+    _tokenController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final notifier = ref.read(forgotPasswordNotifierProvider.notifier);
-    final success = await notifier.sendResetLink(_emailController.text);
+    final token = _tokenController.text.trim();
+    final pwd = _passwordController.text.trim();
+    final ok = await notifier.resetPassword(token: token, password: pwd);
     if (!mounted) return;
-
     final state = ref.read(forgotPasswordNotifierProvider);
-    if (success) {
+    if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Password reset link sent. Check your email.'),
+          content: const Text('Password updated. You can now login.'),
           backgroundColor: AppColors.successColor,
         ),
       );
-      context.push(RoutePaths.resetPassword, extra: _emailController.text);
+      context.go(RoutePaths.login);
     } else if (state.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -51,13 +66,11 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final state = ref.watch(forgotPasswordNotifierProvider);
-
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: Text(l10n.tr('forgotPasswordTitle')),
+        title: const Text('Reset password'),
         backgroundColor: context.surfaceColor,
       ),
       body: Center(
@@ -66,7 +79,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Card(
-              elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -78,28 +90,60 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Forgot your password?',
-                        style: Theme.of(context).textTheme.titleLarge,
+                      const Text(
+                        'Choose a new password',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Enter the email associated with your account and we\'ll email you a reset link.',
+                        'Paste the reset token from your email and enter your new password.',
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
+                        controller: _tokenController,
                         decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
+                          labelText: 'Reset token',
+                          prefixIcon: Icon(Icons.vpn_key_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Email is required';
+                            return 'Token is required';
                           }
-                          if (!value.contains('@')) {
-                            return 'Enter a valid email';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'New password',
+                          prefixIcon: Icon(Icons.lock_outline),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Password is required';
+                          }
+                          if (value.length < 8) {
+                            return 'Use at least 8 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirm password',
+                          prefixIcon: Icon(Icons.lock_reset_outlined),
+                        ),
+                        validator: (value) {
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
                           }
                           return null;
                         },
@@ -127,10 +171,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                                     ),
                                   ),
                                 )
-                              : const Text(
-                                  'Send reset link',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
-                                ),
+                              : const Text('Reset password'),
                         ),
                       ),
                       const SizedBox(height: 12),

@@ -9,6 +9,8 @@ import 'package:petcare/features/auth/domain/usecases/login_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/register_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/update_profile_usecase.dart';
+import 'package:petcare/features/auth/domain/usecases/request_password_reset_usecase.dart';
+import 'package:petcare/features/auth/domain/usecases/reset_password_usecase.dart';
 
 // Data source
 final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
@@ -51,4 +53,15 @@ final getCurrentUserUsecaseProvider = Provider<GetCurrentUserUsecase>((ref) {
 final updateProfileUsecaseProvider = Provider<UpdateProfileUsecase>((ref) {
   final repo = ref.read(authRepositoryProvider);
   return UpdateProfileUsecase(repository: repo);
+});
+
+final requestPasswordResetUsecaseProvider =
+    Provider<RequestPasswordResetUsecase>((ref) {
+      final repo = ref.read(authRepositoryProvider);
+      return RequestPasswordResetUsecase(repository: repo);
+    });
+
+final resetPasswordUsecaseProvider = Provider<ResetPasswordUsecase>((ref) {
+  final repo = ref.read(authRepositoryProvider);
+  return ResetPasswordUsecase(repository: repo);
 });

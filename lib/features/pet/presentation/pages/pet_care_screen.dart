@@ -82,6 +82,7 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
   final List<String> _feedingTimes = [];
   final Map<String, bool> _feedingChecklist = {};
   final Set<String> _overdueNotifiedKeys = {};
+  final Set<String> _pendingVaccinationNotifiedKeys = {};
   final List<_VaccinationRow> _vaccinationRows = [];
   static const Duration _pendingReminderInterval = Duration(minutes: 3);
   static const Duration _feedingReminderWindow = Duration(minutes: 30);
@@ -197,12 +198,58 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
     _pendingReminderTimer?.cancel();
     if (_isLoading) return;
 
+    final now = DateTime.now();
+    _showPendingReminderIfNeeded(now);
+    _triggerVaccinationPendingNotifications();
+    _triggerFeedingOverdueNotifications(now);
+
     _pendingReminderTimer = Timer.periodic(_pendingReminderInterval, (_) async {
       if (!mounted) return;
       final now = DateTime.now();
       _showPendingReminderIfNeeded(now);
+      await _triggerVaccinationPendingNotifications();
       await _triggerFeedingOverdueNotifications(now);
     });
+  }
+
+  Future<void> _triggerVaccinationPendingNotifications() async {
+    final petId = widget.pet.petId;
+    if (petId == null || petId.isEmpty) return;
+
+    final notificationService = ref.read(notificationServiceProvider);
+
+    for (final row in _vaccinationRows) {
+      final vaccineName = row.vaccineController.text.trim();
+      if (vaccineName.isEmpty) continue;
+
+      final recommendedByMonths = int.tryParse(
+        row.recommendedByMonthsController.text.trim(),
+      );
+      final isDue = _ageMonths == null ||
+          recommendedByMonths == null ||
+          _ageMonths! >= recommendedByMonths;
+      final isPending = row.status == 'pending';
+
+      final key = '$petId:$_todayKey:$vaccineName';
+
+      // Reset notification lock when vaccine is no longer pending or not due.
+      if (!isPending || !isDue) {
+        _pendingVaccinationNotifiedKeys.remove(key);
+        continue;
+      }
+
+      if (_pendingVaccinationNotifiedKeys.contains(key)) continue;
+
+      final success = await notificationService.showInstantNotification(
+        id: NotificationService.createEphemeralId(),
+        title: 'Vaccination pending',
+        body: '${widget.pet.name} has uncleared vaccine: $vaccineName.',
+      );
+
+      if (success) {
+        _pendingVaccinationNotifiedKeys.add(key);
+      }
+    }
   }
 
   void _showPendingReminderIfNeeded(DateTime now) {

@@ -153,6 +153,82 @@ class PetRemoteDatabase implements IPetRemoteDataSource {
   }
 
   @override
+  Future<PetApiModel> assignVet({
+    required String petId,
+    required String vetId,
+  }) async {
+    final response = await _apiClient.put(
+      ApiEndpoints.petAssignVet(petId),
+      data: {'vetId': vetId},
+    );
+
+    if (response.data is Map<String, dynamic>) {
+      final data = response.data['data'] ?? response.data;
+      if (data is Map<String, dynamic>) {
+        return PetApiModel.fromJson(data);
+      }
+    }
+    throw Exception('Failed to assign vet');
+  }
+
+  @override
+  Future<List<PetApiModel>> getProviderAssignedPets() async {
+    final response = await _apiClient.get(ApiEndpoints.providerAssignedPets);
+    final payload = response.data;
+    List<dynamic> list = [];
+    if (payload is List) list = payload;
+    if (payload is Map<String, dynamic>) {
+      final inner = payload['data'] ?? payload['pets'] ?? payload['items'];
+      if (inner is List) list = inner;
+    }
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(PetApiModel.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<List<Map<String, String>>> getVerifiedVets() async {
+    final response = await _apiClient.get(
+      ApiEndpoints.providerGetAll,
+      queryParameters: {
+        'providerType': 'vet',
+        'pawcareVerified': true,
+        'status': 'approved',
+      },
+    );
+
+    final payload = response.data;
+    List<dynamic> list = [];
+    if (payload is List) list = payload;
+    if (payload is Map<String, dynamic>) {
+      final inner = payload['data'] ?? payload['providers'] ?? payload['items'];
+      if (inner is List) list = inner;
+    }
+
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map((item) => item['_doc'] as Map<String, dynamic>? ?? item)
+        .where(
+          (item) =>
+              (item['providerType']?.toString().toLowerCase() ?? '') == 'vet',
+        )
+        .map(
+          (item) => <String, String>{
+            'id': (item['_id'] ?? item['id']).toString(),
+            'name':
+                (item['businessName'] ??
+                        item['clinicOrShopName'] ??
+                        item['name'] ??
+                        item['email'] ??
+                        'Verified Vet')
+                    .toString(),
+          },
+        )
+        .toList();
+  }
+
+  @override
   Future<PetCareApiModel> updatePetCare(
     String petId,
     PetCareApiModel care,

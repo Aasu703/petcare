@@ -225,7 +225,8 @@ class _PetCareScreenState extends ConsumerState<PetCareScreen> {
       final recommendedByMonths = int.tryParse(
         row.recommendedByMonthsController.text.trim(),
       );
-      final isDue = _ageMonths == null ||
+      final isDue =
+          _ageMonths == null ||
           recommendedByMonths == null ||
           _ageMonths! >= recommendedByMonths;
       final isPending = row.status == 'pending';

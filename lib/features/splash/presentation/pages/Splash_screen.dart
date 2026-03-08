@@ -68,7 +68,13 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
     if (loggedIn) {
       if (session.isProvider) {
-        context.go(RoutePaths.providerDashboard);
+        if (!session.hasProviderType) {
+          context.go(RoutePaths.providerVerificationPending);
+        } else if (!session.isProviderApproved) {
+          context.go(RoutePaths.providerVerificationPending);
+        } else {
+          context.go(RoutePaths.providerDashboard);
+        }
       } else {
         context.go(RoutePaths.home);
       }

@@ -72,6 +72,19 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
         ref.read(sessionProvider.notifier).refresh();
 
         if (!mounted) return;
+        final hasProviderType = (provider.providerType ?? '').trim().isNotEmpty;
+        final isApproved =
+            (provider.status ?? '').trim().toLowerCase() == 'approved';
+
+        if (!hasProviderType) {
+          context.go(RoutePaths.providerVerificationPending);
+          return;
+        }
+
+        if (!isApproved) {
+          context.go(RoutePaths.providerVerificationPending);
+          return;
+        }
 
         context.go(RoutePaths.providerDashboard);
       },

@@ -145,8 +145,7 @@ class _SignupState extends ConsumerState<Signup>
                           onTogglePassword: () =>
                               setState(() => _showPassword = !_showPassword),
                           onToggleConfirmPassword: () => setState(
-                            () =>
-                                _showConfirmPassword = !_showConfirmPassword,
+                            () => _showConfirmPassword = !_showConfirmPassword,
                           ),
                         ),
                       const SizedBox(height: 28),

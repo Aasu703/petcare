@@ -25,8 +25,7 @@ class SessionState extends Equatable {
 
   bool get isProvider => (role ?? '').toLowerCase() == 'provider';
   bool get isUser => !isProvider;
-  bool get hasProviderType =>
-      (providerType ?? '').trim().isNotEmpty;
+  bool get hasProviderType => (providerType ?? '').trim().isNotEmpty;
   bool get isProviderApproved =>
       (providerStatus ?? '').trim().toLowerCase() == 'approved';
 

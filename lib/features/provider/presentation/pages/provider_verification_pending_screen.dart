@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,14 +19,32 @@ class ProviderVerificationPendingScreen extends ConsumerStatefulWidget {
 class _ProviderVerificationPendingScreenState
     extends ConsumerState<ProviderVerificationPendingScreen> {
   bool _checking = false;
+  Timer? _pollTimer;
 
-  Future<void> _checkStatus() async {
+  @override
+  void initState() {
+    super.initState();
+    _pollTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (!mounted || _checking) return;
+      _checkStatus(showFeedbackIfPending: false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkStatus({bool showFeedbackIfPending = true}) async {
     final session = ref.read(sessionProvider);
     final providerId = session.userId;
     if (providerId == null || providerId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Missing provider session. Please login again.')),
+        const SnackBar(
+          content: Text('Missing provider session. Please login again.'),
+        ),
       );
       return;
     }
@@ -32,15 +52,17 @@ class _ProviderVerificationPendingScreenState
     setState(() => _checking = true);
 
     final usecase = ref.read(getProviderUsecaseProvider);
-    final result = await usecase(GetProviderUsecaseParams(providerId: providerId));
+    final result = await usecase(
+      GetProviderUsecaseParams(providerId: providerId),
+    );
 
     if (!mounted) return;
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.message)));
       },
       (provider) async {
         await ref
@@ -64,11 +86,15 @@ class _ProviderVerificationPendingScreenState
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Still pending admin approval. Please check again later.'),
-          ),
-        );
+        if (showFeedbackIfPending) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Still pending admin approval. Please check again later.',
+              ),
+            ),
+          );
+        }
       },
     );
 
@@ -101,7 +127,7 @@ class _ProviderVerificationPendingScreenState
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _checking ? null : _checkStatus,
+                  onPressed: _checking ? null : () => _checkStatus(),
                   child: _checking
                       ? const SizedBox(
                           height: 18,

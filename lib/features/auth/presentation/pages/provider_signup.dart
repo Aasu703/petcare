@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/provider/presentation/provider/provider_providers.dart';
-import 'package:petcare/features/provider/domain/usecases/provider_register_usecase.dart';
-import 'package:petcare/features/provider/presentation/pages/provider_login_screen.dart';
+import 'package:petcare/features/auth/presentation/pages/provider_signup_type_page.dart';
 import 'package:petcare/features/auth/presentation/widgets/auth_form_field.dart';
-import 'package:petcare/features/auth/presentation/widgets/provider_type_selector.dart';
-import 'package:petcare/features/provider/presentation/pages/provider_location_picker_screen.dart';
 
 class ProviderSignupScreen extends ConsumerStatefulWidget {
   const ProviderSignupScreen({super.key});
@@ -19,7 +15,6 @@ class ProviderSignupScreen extends ConsumerStatefulWidget {
 
 class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
     with SingleTickerProviderStateMixin {
-  // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -27,7 +22,6 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  // Focus nodes
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
@@ -35,18 +29,11 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
   final FocusNode _addressFocusNode = FocusNode();
   final FocusNode _phoneFocusNode = FocusNode();
 
-  // Form key
   final _formKey = GlobalKey<FormState>();
 
   bool _isSubmitting = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
-  bool _showProviderTypeStep = false;
-  String? _selectedProviderType;
-  bool _showProviderTypeError = false;
-  double? _locationLatitude;
-  double? _locationLongitude;
-  String _locationNote = '';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -100,166 +87,35 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
     super.dispose();
   }
 
-  Future<void> _tryRegister() async {
-    if (!_showProviderTypeStep) {
-      final isValid = _formKey.currentState?.validate() ?? false;
-      if (!isValid) return;
-      setState(() {
-        _showProviderTypeStep = true;
-      });
-      return;
-    }
-
+  Future<void> _continueToProviderType() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
-    if (_selectedProviderType == null || _selectedProviderType!.isEmpty) {
-      setState(() {
-        _showProviderTypeError = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context).tr('pleaseChooseProviderType'),
-          ),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-      return;
-    }
-
-    final requiresPinnedLocation =
-        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
-    if (requiresPinnedLocation &&
-        (_locationLatitude == null || _locationLongitude == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please pin your clinic/shop location on map to continue',
-          ),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-      return;
-    }
 
     setState(() {
       _isSubmitting = true;
     });
 
-    try {
-      final usecase = ref.read(providerRegisterUsecaseProvider);
-      final params = ProviderRegisterUsecaseParams(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
-        businessName: _businessNameController.text.trim(),
-        address: _addressController.text.trim(),
-        phone: _phoneController.text.trim(),
-        providerType: _selectedProviderType!,
-        locationLatitude: _locationLatitude,
-        locationLongitude: _locationLongitude,
-        locationAddress: _locationNote.trim().isEmpty
-            ? null
-            : _locationNote.trim(),
-      );
-
-      final result = await usecase(params);
-
-      if (!mounted) return;
-
-      result.fold(
-        (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(failure.message),
-              backgroundColor: Colors.red.shade400,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-        },
-        (_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                AppLocalizations.of(context).tr('providerAccountCreated'),
-              ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => ProviderLoginScreen()),
-            (route) => false,
-          );
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occurred: ${e.toString()}'),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _pickLocationOnMap() async {
-    final title = _selectedProviderType == 'vet'
-        ? AppLocalizations.of(context).tr('pinClinicLocation')
-        : AppLocalizations.of(context).tr('pinShopLocation');
-    final result = await Navigator.of(context).push<ProviderLocationPickResult>(
+    await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ProviderLocationPickerScreen(
-          title: title,
-          initialLatitude: _locationLatitude,
-          initialLongitude: _locationLongitude,
-          initialNote: _locationNote,
+        builder: (_) => ProviderSignupTypePage(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          confirmPassword: _confirmPasswordController.text,
+          businessName: _businessNameController.text.trim(),
+          address: _addressController.text.trim(),
+          phone: _phoneController.text.trim(),
         ),
       ),
     );
 
-    if (!mounted || result == null) return;
+    if (!mounted) return;
     setState(() {
-      _locationLatitude = result.latitude;
-      _locationLongitude = result.longitude;
-      _locationNote = result.locationNote;
+      _isSubmitting = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final requiresPinnedLocation =
-        _selectedProviderType == 'shop' || _selectedProviderType == 'vet';
-    final hasPinnedLocation =
-        _locationLatitude != null && _locationLongitude != null;
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -305,16 +161,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () {
-                                    if (_showProviderTypeStep) {
-                                      setState(() {
-                                        _showProviderTypeStep = false;
-                                        _showProviderTypeError = false;
-                                      });
-                                      return;
-                                    }
-                                    Navigator.of(context).pop();
-                                  },
+                                  onPressed: () => Navigator.of(context).pop(),
                                   icon: const Icon(Icons.arrow_back),
                                   color: AppColors.iconPrimaryColor,
                                 ),
@@ -344,122 +191,6 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                               key: _formKey,
                               child: Column(
                                 children: [
-                                  if (_showProviderTypeStep) ...[
-                                    ProviderTypeSelector(
-                                      selectedProviderType:
-                                          _selectedProviderType,
-                                      showError: _showProviderTypeError,
-                                      onSelected: (value) {
-                                        setState(() {
-                                          _selectedProviderType = value;
-                                          _showProviderTypeError = false;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                  if (_showProviderTypeStep &&
-                                      requiresPinnedLocation) ...[
-                                    const SizedBox(height: 14),
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(14),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: hasPinnedLocation
-                                              ? const Color(0xFFB7E4C7)
-                                              : const Color(0xFFFFE0B2),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.location_pin,
-                                                color: hasPinnedLocation
-                                                    ? const Color(0xFF2E7D32)
-                                                    : const Color(0xFFEF6C00),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  _selectedProviderType == 'vet'
-                                                      ? AppLocalizations.of(
-                                                          context,
-                                                        ).tr(
-                                                          'clinicMapLocation',
-                                                        )
-                                                      : AppLocalizations.of(
-                                                          context,
-                                                        ).tr('shopMapLocation'),
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            hasPinnedLocation
-                                                ? 'Pinned at ${_locationLatitude!.toStringAsFixed(6)}, ${_locationLongitude!.toStringAsFixed(6)}'
-                                                : AppLocalizations.of(
-                                                    context,
-                                                  ).tr(
-                                                    'pinExactBusinessLocation',
-                                                  ),
-                                            style: TextStyle(
-                                              color: hasPinnedLocation
-                                                  ? const Color(0xFF2E7D32)
-                                                  : const Color(0xFF6D4C41),
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          if (_locationNote.trim().isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 4,
-                                              ),
-                                              child: Text(
-                                                _locationNote.trim(),
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF6B7280),
-                                                ),
-                                              ),
-                                            ),
-                                          const SizedBox(height: 10),
-                                          SizedBox(
-                                            width: double.infinity,
-                                            child: OutlinedButton.icon(
-                                              onPressed: _pickLocationOnMap,
-                                              icon: Icon(
-                                                hasPinnedLocation
-                                                    ? Icons.edit_location_alt
-                                                    : Icons.map_outlined,
-                                              ),
-                                              label: Text(
-                                                hasPinnedLocation
-                                                    ? AppLocalizations.of(
-                                                        context,
-                                                      ).tr('updatePinOnMap')
-                                                    : AppLocalizations.of(
-                                                        context,
-                                                      ).tr('pinOnMap'),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 18),
                                   AuthFormField(
                                     controller: _emailController,
                                     focusNode: _emailFocusNode,
@@ -642,7 +373,7 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                     child: ElevatedButton(
                                       onPressed: _isSubmitting
                                           ? null
-                                          : _tryRegister,
+                                          : _continueToProviderType,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             AppColors.iconPrimaryColor,
@@ -666,14 +397,8 @@ class _ProviderSignupScreenState extends ConsumerState<ProviderSignupScreen>
                                                     >(Colors.white),
                                               ),
                                             )
-                                          : Text(
-                                              _showProviderTypeStep
-                                                  ? AppLocalizations.of(
-                                                      context,
-                                                    ).tr(
-                                                      'createProviderAccount',
-                                                    )
-                                                  : 'Continue',
+                                          : const Text(
+                                              'Continue',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,

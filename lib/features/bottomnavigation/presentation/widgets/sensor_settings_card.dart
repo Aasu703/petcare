@@ -7,6 +7,37 @@ import 'package:petcare/core/sensors/device_sensors_provider.dart';
 class SensorSettingsCard extends ConsumerWidget {
   const SensorSettingsCard({super.key});
 
+  String _getProximitySensorReading(AsyncValue<bool?> status) {
+    if (status.isLoading) return 'Checking...';
+    if (status.hasError) return 'Error';
+
+    if (status.asData != null) {
+      final data = status.asData!.value;
+      return data == true ? '🔴 TOO CLOSE!' : '✅ Safe distance';
+    }
+    return 'Checking...';
+  }
+
+  String _getAmbientLightReading(AsyncValue<int?> light) {
+    if (light.isLoading) return 'Reading...';
+    if (light.hasError) return 'Unavailable';
+
+    if (light.asData != null) {
+      final data = light.asData!.value;
+      if (data == null) return 'Reading...';
+      return '${data} lux - ${_getLuxDescription(data)}';
+    }
+    return 'Reading...';
+  }
+
+  bool _hasLightData(AsyncValue<int?> light) {
+    if (light.hasError || light.isLoading) return false;
+    if (light.asData != null) {
+      return light.asData!.value != null;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sensorSettings = ref.watch(sensorSettingsProvider);
@@ -68,10 +99,7 @@ class SensorSettingsCard extends ConsumerWidget {
           title: '👤 Proximity Alert',
           subtitle: 'Warns when phone is too close to your face',
           isEnabled: sensorSettings.proximityAlertEnabled,
-          sensorReading: proximityStatus.maybeWhen(
-            data: (data) => data == true ? '🔴 TOO CLOSE!' : '✅ Safe distance',
-            orElse: () => 'Checking...',
-          ),
+          sensorReading: _getProximitySensorReading(proximityStatus),
           onToggle: (enabled) async {
             HapticFeedback.mediumImpact();
             await ref
@@ -89,12 +117,7 @@ class SensorSettingsCard extends ConsumerWidget {
           title: '💡 Auto Brightness',
           subtitle: 'Adjusts screen brightness based on light',
           isEnabled: sensorSettings.autoBrightnessEnabled,
-          sensorReading: ambientLight.maybeWhen(
-            data: (data) => data != null
-                ? '${data} lux - ${_getLuxDescription(data)}'
-                : 'Reading...',
-            orElse: () => 'Unavailable',
-          ),
+          sensorReading: _getAmbientLightReading(ambientLight),
           onToggle: (enabled) async {
             HapticFeedback.mediumImpact();
             await ref
@@ -106,10 +129,7 @@ class SensorSettingsCard extends ConsumerWidget {
         const SizedBox(height: 12),
 
         // Light Meter Visualization
-        if (ambientLight.maybeWhen(
-          data: (data) => data != null,
-          orElse: () => false,
-        ))
+        if (_hasLightData(ambientLight))
           _buildLightMeterVisualization(context, ambientLight),
       ],
     );
@@ -283,8 +303,16 @@ class SensorSettingsCard extends ConsumerWidget {
 
   Widget _buildLightMeterVisualization(
     BuildContext context,
-    dynamic ambientLight,
+    AsyncValue<int?> ambientLight,
   ) {
+    if (ambientLight.asData == null) {
+      return const SizedBox();
+    }
+
+    final value = ambientLight.asData!.value;
+    if (value == null) return const SizedBox();
+
+    final percentage = _luxToPercentage(value);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -310,55 +338,45 @@ class SensorSettingsCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ambientLight.maybeWhen(
-              data: (value) {
-                if (value == null) return const SizedBox();
-                final percentage = _luxToPercentage(value);
-                return Column(
+            Column(
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: LinearProgressIndicator(
-                              value: percentage / 100,
-                              minHeight: 8,
-                              backgroundColor: Colors.grey.shade300,
-                              valueColor: AlwaysStoppedAnimation(
-                                Color.lerp(
-                                      Colors.blue.shade600,
-                                      Colors.red.shade600,
-                                      percentage / 100,
-                                    ) ??
-                                    Colors.amber,
-                              ),
-                            ),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: percentage / 100,
+                          minHeight: 8,
+                          backgroundColor: Colors.grey.shade300,
+                          valueColor: AlwaysStoppedAnimation(
+                            Color.lerp(
+                                  Colors.blue.shade600,
+                                  Colors.red.shade600,
+                                  percentage / 100,
+                                ) ??
+                                Colors.amber,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${percentage.toInt()}%',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber.shade700,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 12),
                     Text(
-                      _getLuxDescription(value),
+                      '${percentage.toInt()}%',
                       style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber.shade700,
                       ),
                     ),
                   ],
-                );
-              },
-              orElse: () => const SizedBox(),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _getLuxDescription(value),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                ),
+              ],
             ),
           ],
         ),

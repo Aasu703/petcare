@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:petcare/features/auth/auth_providers.dart';
+import 'package:petcare/features/auth/presentation/providers/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/request_password_reset_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:petcare/features/forgotpassword/presentation/state/forgot_password_state.dart';

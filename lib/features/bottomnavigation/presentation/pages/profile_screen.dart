@@ -150,12 +150,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Future<void> _loadNotificationStatus() async {
-    final service = ref.read(notificationServiceProvider);
-    final enabled = await service.areNotificationsEnabled();
-    if (mounted) {
-      setState(() {
-        _notificationsEnabled = enabled;
-      });
+    try {
+      final service = ref.read(notificationServiceProvider);
+      final enabled = await service.areNotificationsEnabled();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = enabled;
+        });
+      }
+    } catch (e) {
+      // Handle test environment or platform not initialized
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = false;
+        });
+      }
     }
   }
 

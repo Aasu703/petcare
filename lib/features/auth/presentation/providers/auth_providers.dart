@@ -57,9 +57,9 @@ final updateProfileUsecaseProvider = Provider<UpdateProfileUsecase>((ref) {
 
 final requestPasswordResetUsecaseProvider =
     Provider<RequestPasswordResetUsecase>((ref) {
-  final repo = ref.read(authRepositoryProvider);
-  return RequestPasswordResetUsecase(repository: repo);
-});
+      final repo = ref.read(authRepositoryProvider);
+      return RequestPasswordResetUsecase(repository: repo);
+    });
 
 final resetPasswordUsecaseProvider = Provider<ResetPasswordUsecase>((ref) {
   final repo = ref.read(authRepositoryProvider);

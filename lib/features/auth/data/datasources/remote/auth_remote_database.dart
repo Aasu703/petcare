@@ -302,4 +302,42 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
       throw Exception('Profile update failed: ${e.toString()}');
     }
   }
+
+  @override
+  Future<bool> requestPasswordReset(String email) async {
+    final payload = {'email': email.trim()};
+    final response = await _apiClient.post(
+      ApiEndpoints.requestPasswordReset,
+      data: payload,
+    );
+
+    if (response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+      final success = data['success'] == true;
+      if (success) return true;
+      throw Exception(data['message'] ?? 'Failed to request password reset');
+    }
+
+    throw Exception('Unexpected response from password reset request');
+  }
+
+  @override
+  Future<bool> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      '${ApiEndpoints.resetPassword}/$token',
+      data: {'password': newPassword, 'confirmPassword': newPassword},
+    );
+
+    if (response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+      final success = data['success'] == true;
+      if (success) return true;
+      throw Exception(data['message'] ?? 'Failed to reset password');
+    }
+
+    throw Exception('Unexpected response from reset password');
+  }
 }

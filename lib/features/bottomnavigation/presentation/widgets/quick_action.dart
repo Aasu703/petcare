@@ -1,6 +1,6 @@
-// lib/features/home/presentation/widgets/quick_actions.dart
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class QuickActionsSection extends StatelessWidget {
   final bool isRequestingLocation;
@@ -20,6 +20,7 @@ class QuickActionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final hasMap = mapPreviewCenter != null;
 
     return Padding(
@@ -31,8 +32,8 @@ class QuickActionsSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _QuickCard(
-                  title: 'Messages',
-                  subtitle: 'Open chats',
+                  title: l10n.tr('messages'),
+                  subtitle: l10n.tr('openChats'),
                   icon: Icons.chat_rounded,
                   onTap: onOpenMessages,
                 ),
@@ -41,11 +42,13 @@ class QuickActionsSection extends StatelessWidget {
               Expanded(
                 child: _QuickCard(
                   title: isRequestingLocation
-                      ? 'Requesting...'
-                      : (hasMap ? 'Nearby Map Ready' : 'Enable Map'),
+                      ? l10n.tr('requesting')
+                      : (hasMap
+                            ? l10n.tr('nearbyMapReady')
+                            : l10n.tr('enableMap')),
                   subtitle: hasMap
-                      ? 'Find vets & pet spots nearby'
-                      : 'Allow location to show map here',
+                      ? l10n.tr('findVetsPetSpots')
+                      : l10n.tr('allowLocationMap'),
                   icon: Icons.map_rounded,
                   onTap: isRequestingLocation
                       ? null

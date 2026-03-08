@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class ProviderCalendarWidget extends StatelessWidget {
@@ -10,8 +11,7 @@ class ProviderCalendarWidget extends StatelessWidget {
   final DateTime? selectedDay;
   final List<BookingEntity> selectedEvents;
   final List<BookingEntity> Function(DateTime day) eventLoader;
-  final void Function(DateTime selectedDay, DateTime focusedDay)
-  onDaySelected;
+  final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
   final ValueChanged<CalendarFormat> onFormatChanged;
   final ValueChanged<DateTime> onPageChanged;
 
@@ -44,9 +44,10 @@ class ProviderCalendarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointments Calendar'),
+        title: Text(l10n.tr('appointmentsCalendar')),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -105,9 +106,12 @@ class ProviderCalendarWidget extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _LegendDot(label: 'Pending', color: Colors.orange),
-                _LegendDot(label: 'Confirmed', color: Colors.blue),
-                _LegendDot(label: 'Completed', color: AppColors.successColor),
+                _LegendDot(label: l10n.tr('pending'), color: Colors.orange),
+                _LegendDot(label: l10n.tr('confirmed'), color: Colors.blue),
+                _LegendDot(
+                  label: l10n.tr('completed'),
+                  color: AppColors.successColor,
+                ),
               ],
             ),
           ),
@@ -117,8 +121,8 @@ class ProviderCalendarWidget extends StatelessWidget {
                 ? Center(
                     child: Text(
                       selectedDay != null
-                          ? 'No appointments on this day'
-                          : 'Select a date to view appointments',
+                          ? l10n.tr('noAppointmentsOnDay')
+                          : l10n.tr('selectDateToView'),
                       style: const TextStyle(color: Colors.grey, fontSize: 15),
                     ),
                   )
@@ -183,7 +187,9 @@ class _ProviderCalendarTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final startDT = DateTime.tryParse(booking.startTime);
-    final timeStr = startDT != null ? DateFormat('hh:mm a').format(startDT) : '';
+    final timeStr = startDT != null
+        ? DateFormat('hh:mm a').format(startDT)
+        : '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -191,7 +197,11 @@ class _ProviderCalendarTile extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: _statusColor(booking.status).withOpacity(0.15),
-          child: Icon(Icons.event, color: _statusColor(booking.status), size: 20),
+          child: Icon(
+            Icons.event,
+            color: _statusColor(booking.status),
+            size: 20,
+          ),
         ),
         title: Text(
           timeStr.isNotEmpty ? timeStr : 'Appointment',

@@ -39,4 +39,9 @@ abstract interface class IShopRepository {
   Future<Either<Failure, OrderEntity>> createOrder(OrderEntity order);
   Future<Either<Failure, List<OrderEntity>>> getUserOrders();
   Future<Either<Failure, OrderEntity>> getOrderById(String orderId);
+  Future<Either<Failure, List<OrderEntity>>> getProviderOrders();
+  Future<Either<Failure, OrderEntity>> updateProviderOrderStatus({
+    required String orderId,
+    required String status,
+  });
 }

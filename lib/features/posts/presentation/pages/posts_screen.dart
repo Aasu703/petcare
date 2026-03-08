@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/posts/presentation/provider/post_providers.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class PostsScreen extends ConsumerStatefulWidget {
   const PostsScreen({super.key});
@@ -31,13 +32,14 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final sessionService = ref.watch(userSessionServiceProvider);
     final state = ref.watch(postNotifierProvider);
     final isLoggedIn = sessionService.isLoggedIn();
     final isProvider = sessionService.getRole() == 'provider';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Community Posts')),
+      appBar: AppBar(title: Text(l10n.tr('communityPosts'))),
       body: Column(
         children: [
           if (!isLoggedIn)
@@ -50,9 +52,7 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.orange.withOpacity(0.4)),
               ),
-              child: const Text(
-                'Log in to publish your own posts. You can still browse the public feed below.',
-              ),
+              child: Text(l10n.tr('loginToPublish')),
             ),
           Expanded(
             child: state.isLoading
@@ -60,9 +60,8 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                 : state.error != null
                 ? Center(child: Text('Error: ${state.error}'))
                 : RefreshIndicator(
-                    onRefresh: () async => ref
-                        .read(postNotifierProvider.notifier)
-                        .getAllPosts(),
+                    onRefresh: () async =>
+                        ref.read(postNotifierProvider.notifier).getAllPosts(),
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -91,9 +90,7 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   post.content,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                  ),
+                                  style: TextStyle(color: Colors.grey.shade700),
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
@@ -131,16 +128,16 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                 children: [
                   TextField(
                     controller: _titleController,
-                    decoration: const InputDecoration(
-                      hintText: 'Post title',
+                    decoration: InputDecoration(
+                      hintText: l10n.tr('postTitle'),
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _contentController,
-                    decoration: const InputDecoration(
-                      hintText: 'Write your update or blog...',
+                    decoration: InputDecoration(
+                      hintText: l10n.tr('writeUpdateOrBlog'),
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 3,
@@ -162,7 +159,7 @@ class _PostsScreenState extends ConsumerState<PostsScreen> {
                           _contentController.clear();
                         }
                       },
-                      child: const Text('Publish Post'),
+                      child: Text(l10n.tr('publishPost')),
                     ),
                   ),
                 ],

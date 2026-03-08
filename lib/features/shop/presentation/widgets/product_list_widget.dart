@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProductListWidget extends StatelessWidget {
   final List<Map<String, dynamic>> products;
@@ -6,8 +7,9 @@ class ProductListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (products.isEmpty) {
-      return const Center(child: Text('No products yet'));
+      return Center(child: Text(l10n.tr('noProductsAvailable')));
     }
 
     return GridView.builder(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
 /// Submit button for booking confirmation
@@ -14,6 +15,7 @@ class BookingSubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -35,8 +37,8 @@ class BookingSubmitButton extends StatelessWidget {
                   color: Colors.white,
                 ),
               )
-            : const Text(
-                'Confirm Booking',
+            : Text(
+                l10n.tr('confirmBooking'),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
       ),

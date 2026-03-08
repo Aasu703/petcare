@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/session/session_provider.dart';
-import 'package:petcare/features/auth/auth_providers.dart';
+import 'package:petcare/features/auth/presentation/providers/auth_providers.dart';
 import 'package:petcare/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:petcare/features/auth/domain/usecases/update_profile_usecase.dart';
 import 'package:petcare/features/auth/presentation/state/profile_state.dart';

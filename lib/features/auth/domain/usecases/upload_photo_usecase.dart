@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/error/failures.dart';
 import 'package:petcare/core/usecases/app_usecase.dart';
-import 'package:petcare/features/auth/auth_providers.dart';
+import 'package:petcare/features/auth/presentation/providers/auth_providers.dart';
 import 'package:petcare/features/auth/domain/repositories/auth_repository.dart';
 
 final uploadPhotoUsecaseProvider = Provider<UploadPhotoUsecase>((ref) {

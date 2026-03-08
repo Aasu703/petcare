@@ -4,6 +4,7 @@ import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 /// Product card used in the shop grid
 class ProductCard extends ConsumerWidget {
@@ -13,6 +14,7 @@ class ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
@@ -64,7 +66,7 @@ class ProductCard extends ConsumerWidget {
                   onPressed: () {
                     ref.read(shopProvider.notifier).addToCart(product);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Added to cart')),
+                      SnackBar(content: Text(l10n.tr('addedToCart'))),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -75,9 +77,9 @@ class ProductCard extends ConsumerWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
-                  child: const Text(
-                    'Add to Cart',
-                    style: TextStyle(fontSize: 12),
+                  child: Text(
+                    l10n.tr('addToCart'),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),

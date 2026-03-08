@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/view_model/shop_view_model.dart';
 import 'package:petcare/features/shop/presentation/pages/product_detail_page.dart';
+import 'package:petcare/features/shop/cart/presentation/pages/cart_page.dart';
+import 'package:petcare/features/shop/cart/presentation/view_model/cart_view_model.dart';
+import 'package:petcare/features/map/presentation/pages/nearby_map_screen.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProductListPage extends ConsumerStatefulWidget {
   const ProductListPage({super.key});
@@ -23,24 +28,104 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(shopProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop'), elevation: 0),
+      appBar: AppBar(
+        title: Text(l10n.tr('shop')),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_rounded),
+            tooltip: l10n.tr('nearbyPetShops'),
+            onPressed: () async {
+              try {
+                final serviceEnabled =
+                    await Geolocator.isLocationServiceEnabled();
+                if (!serviceEnabled) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.tr('locationServicesOffShop'))),
+                  );
+                  return;
+                }
+
+                var permission = await Geolocator.checkPermission();
+                if (permission == LocationPermission.denied) {
+                  permission = await Geolocator.requestPermission();
+                }
+
+                if (permission == LocationPermission.denied ||
+                    permission == LocationPermission.deniedForever) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.tr('locationPermissionShops'))),
+                  );
+                  return;
+                }
+
+                final position = await Geolocator.getCurrentPosition(
+                  locationSettings: const LocationSettings(
+                    accuracy: LocationAccuracy.medium,
+                  ),
+                );
+                if (!context.mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NearbyMapScreen(
+                      latitude: position.latitude,
+                      longitude: position.longitude,
+                      initialMode: NearbyMapMode.petShop,
+                    ),
+                  ),
+                );
+              } catch (_) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.tr('unableGetLocation'))),
+                );
+              }
+            },
+          ),
+          Consumer(
+            builder: (context, ref, child) {
+              final cart = ref.watch(cartEntityProvider);
+              final itemCount = cart.items.length;
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: itemCount > 0,
+                  label: Text('$itemCount'),
+                  child: const Icon(Icons.shopping_cart_rounded),
+                ),
+                tooltip: l10n.tr('cart'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CartPage()),
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
           ? Center(child: Text('Error: ${state.error}'))
           : state.products.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.storefront, size: 64, color: Colors.grey),
-                  SizedBox(height: 12),
+                  const Icon(Icons.storefront, size: 64, color: Colors.grey),
+                  const SizedBox(height: 12),
                   Text(
-                    'No products available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    l10n.tr('noProductsAvailable'),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),
@@ -68,6 +153,7 @@ class _ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 2,
@@ -120,7 +206,9 @@ class _ProductCard extends ConsumerWidget {
                     ref.read(shopProvider.notifier).addToCart(product);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${product.productName} added to cart'),
+                        content: Text(
+                          '${product.productName} ${l10n.tr('addedToCart')}',
+                        ),
                         duration: const Duration(seconds: 1),
                       ),
                     );
@@ -133,9 +221,9 @@ class _ProductCard extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Add to Cart',
-                    style: TextStyle(fontSize: 12),
+                  child: Text(
+                    l10n.tr('addToCart'),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ),
               ),

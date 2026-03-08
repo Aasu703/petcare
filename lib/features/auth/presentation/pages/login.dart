@@ -120,7 +120,7 @@ class _LoginState extends ConsumerState<Login>
           _obscurePassword = !_obscurePassword;
         });
       },
-      onForgotPasswordTap: () {},
+      onForgotPasswordTap: () => context.push(RoutePaths.forgotPassword),
       onLoginTap: _tryLogin,
       onSignupTap: () => context.push(RoutePaths.register),
       onProviderLoginTap: () => context.push(RoutePaths.providerLogin),

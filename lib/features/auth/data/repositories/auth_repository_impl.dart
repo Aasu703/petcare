@@ -296,4 +296,30 @@ class AuthRepositoryImpl implements IAuthRepository {
       return const Left(NetworkFailure(message: 'No internet connection'));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> requestPasswordReset(String email) async {
+    try {
+      final result = await _remoteDataSource.requestPasswordReset(email);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final result = await _remoteDataSource.resetPassword(
+        token: token,
+        newPassword: newPassword,
+      );
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
 }

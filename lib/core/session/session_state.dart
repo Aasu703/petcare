@@ -8,6 +8,7 @@ class SessionState extends Equatable {
   final String? email;
   final String? role;
   final String? providerType;
+  final String? providerStatus;
   final String? profilePic;
 
   const SessionState({
@@ -18,11 +19,15 @@ class SessionState extends Equatable {
     this.email,
     this.role,
     this.providerType,
+    this.providerStatus,
     this.profilePic,
   });
 
   bool get isProvider => (role ?? '').toLowerCase() == 'provider';
   bool get isUser => !isProvider;
+  bool get hasProviderType => (providerType ?? '').trim().isNotEmpty;
+  bool get isProviderApproved =>
+      (providerStatus ?? '').trim().toLowerCase() == 'approved';
 
   SessionState copyWith({
     bool? isLoggedIn,
@@ -32,6 +37,7 @@ class SessionState extends Equatable {
     String? email,
     String? role,
     String? providerType,
+    String? providerStatus,
     String? profilePic,
   }) {
     return SessionState(
@@ -42,6 +48,7 @@ class SessionState extends Equatable {
       email: email ?? this.email,
       role: role ?? this.role,
       providerType: providerType ?? this.providerType,
+      providerStatus: providerStatus ?? this.providerStatus,
       profilePic: profilePic ?? this.profilePic,
     );
   }
@@ -55,6 +62,7 @@ class SessionState extends Equatable {
     email,
     role,
     providerType,
+    providerStatus,
     profilePic,
   ];
 }

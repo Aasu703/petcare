@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/auth/presentation/widgets/account_type_chip.dart';
 
@@ -53,7 +54,7 @@ class SignupAccountTypeSection extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Account Type',
+                AppLocalizations.of(context).tr('accountType'),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -68,7 +69,7 @@ class SignupAccountTypeSection extends StatelessWidget {
             children: [
               Expanded(
                 child: AccountTypeChip(
-                  label: 'Pet Owner',
+                  label: AppLocalizations.of(context).tr('petOwner'),
                   icon: Icons.pets,
                   selected: !isProvider,
                   onTap: () => onAccountTypeChanged(false),
@@ -77,7 +78,7 @@ class SignupAccountTypeSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: AccountTypeChip(
-                  label: 'Provider',
+                  label: AppLocalizations.of(context).tr('provider'),
                   icon: Icons.store_rounded,
                   selected: isProvider,
                   onTap: () => onAccountTypeChanged(true),

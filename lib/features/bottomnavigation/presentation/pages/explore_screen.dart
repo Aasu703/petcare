@@ -6,6 +6,7 @@ import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/services/domain/entities/service_entity.dart';
 import 'package:petcare/features/services/presentation/view_model/service_view_model.dart';
 import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -82,6 +83,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(serviceProvider);
     final categories = _categories(state.services);
     final filtered = _applyFilters(state.services);
@@ -104,7 +106,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           },
         ),
         title: Text(
-          'Explore Services',
+          l10n.tr('exploreServices'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
             letterSpacing: -0.4,
@@ -113,7 +115,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         actions: [
           if (_selectedCategory != 'All' || _query.isNotEmpty)
             IconButton(
-              tooltip: 'Clear filters',
+              tooltip: l10n.tr('clearFilters'),
               onPressed: () {
                 setState(() {
                   _selectedCategory = 'All';
@@ -124,7 +126,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               icon: const Icon(Icons.filter_alt_off_rounded),
             ),
           IconButton(
-            tooltip: 'Book Appointment',
+            tooltip: l10n.tr('bookAppointment'),
             onPressed: () => context.push(RoutePaths.bookingNew),
             icon: const Icon(Icons.calendar_month_rounded),
           ),
@@ -153,7 +155,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     controller: _searchController,
                     onChanged: (value) => setState(() => _query = value.trim()),
                     decoration: InputDecoration(
-                      hintText: 'Search by service name or description',
+                      hintText: l10n.tr('searchServiceHint'),
                       prefixIcon: const Icon(Icons.search_rounded),
                       suffixIcon: _query.isEmpty
                           ? null
@@ -208,17 +210,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               ),
               if (state.isLoading && state.services.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: LoadingIndicator(message: 'Loading services...'),
+                  child: LoadingIndicator(message: l10n.tr('loadingServices')),
                 )
               else if (state.error != null && state.services.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: ErrorState(
-                    title: 'Error loading services',
+                    title: l10n.tr('errorLoadingServices'),
                     message: state.error,
-                    actionLabel: 'Retry',
+                    actionLabel: l10n.tr('retry'),
                     onAction: () =>
                         ref.read(serviceProvider.notifier).loadServices(),
                   ),
@@ -227,8 +229,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: EmptyState(
-                    title: 'No services found',
-                    subtitle: 'Try a different search or category.',
+                    title: l10n.tr('noServicesFound'),
+                    subtitle: l10n.tr('tryDifferentSearch'),
                     icon: Icons.search_off_rounded,
                     onAction: () {
                       _searchController.clear();
@@ -237,7 +239,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         _selectedCategory = 'All';
                       });
                     },
-                    actionLabel: 'Clear filters',
+                    actionLabel: l10n.tr('clearFilters'),
                   ),
                 )
               else
@@ -279,6 +281,7 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -371,7 +374,7 @@ class _ServiceCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  'per session',
+                  l10n.tr('perSession'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: context.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -385,7 +388,7 @@ class _ServiceCard extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onBook,
                 icon: const Icon(Icons.calendar_today_rounded),
-                label: const Text('Book'),
+                label: Text(l10n.tr('book')),
               ),
             ),
           ],

@@ -8,12 +8,14 @@ import 'package:petcare/features/shop/cart/presentation/widgets/cart_checkout_bo
 import 'package:petcare/features/shop/cart/presentation/widgets/cart_empty_state.dart';
 import 'package:petcare/features/shop/cart/presentation/widgets/cart_item_list_section.dart';
 import 'package:petcare/features/shop/cart/presentation/widgets/cart_summary_card.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final appBarForeground = isDark ? Colors.white : Colors.black87;
     final cart = ref.watch(cartEntityProvider);
@@ -45,7 +47,7 @@ class CartPage extends ConsumerWidget {
             }
           },
         ),
-        title: const Text('My Cart'),
+        title: Text(l10n.tr('myCart')),
         backgroundColor: context.surfaceColor,
         foregroundColor: appBarForeground,
         titleTextStyle: TextStyle(
@@ -62,7 +64,7 @@ class CartPage extends ConsumerWidget {
               onPressed: cartState.isCheckingOut
                   ? null
                   : () => _showClearDialog(context, viewModel),
-              tooltip: 'Clear cart',
+              tooltip: l10n.tr('clearCart'),
             ),
         ],
       ),
@@ -145,28 +147,33 @@ class CartPage extends ConsumerWidget {
   }) async {
     final success = await ref.read(cartViewModelProvider.notifier).checkout();
     if (!context.mounted || !success) return;
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Order placed successfully!')));
+    ).showSnackBar(SnackBar(content: Text(l10n.tr('orderPlacedSuccess'))));
   }
 
   void _showClearDialog(BuildContext context, CartViewModel viewModel) {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Clear Cart'),
-        content: const Text('Remove all items from your cart?'),
+        title: Text(l10n.tr('clearCartTitle')),
+        content: Text(l10n.tr('removeAllItems')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.tr('cancel')),
           ),
           TextButton(
             onPressed: () {
               viewModel.clearCart();
               Navigator.pop(context);
             },
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text(
+              l10n.tr('clear'),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

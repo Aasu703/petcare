@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ChatMessageInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -14,6 +15,7 @@ class ChatMessageInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Padding(
@@ -25,9 +27,9 @@ class ChatMessageInputBar extends StatelessWidget {
                 controller: controller,
                 minLines: 1,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Type a message',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.tr('typeMessage'),
+                  border: const OutlineInputBorder(),
                 ),
                 onSubmitted: (_) => onSend(),
               ),

@@ -21,4 +21,9 @@ abstract interface class IShopRemoteDataSource {
   Future<Map<String, dynamic>> createOrder(Map<String, dynamic> orderData);
   Future<List<Map<String, dynamic>>> getUserOrders();
   Future<Map<String, dynamic>?> getOrderById(String orderId);
+  Future<List<Map<String, dynamic>>> getProviderOrders();
+  Future<Map<String, dynamic>?> updateProviderOrderStatus(
+    String orderId,
+    String status,
+  );
 }

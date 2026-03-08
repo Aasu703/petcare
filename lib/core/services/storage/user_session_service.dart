@@ -21,6 +21,13 @@ class UserSessionService {
   static const String _userProfilePicKey = 'profile_pic';
   static const String _roleKey = 'role';
   static const String _providerTypeKey = 'provider_type';
+  static const String _providerStatusKey = 'provider_status';
+
+  // Sensor settings keys
+  static const String _proximityAlertEnabledKey = 'proximity_alert_enabled';
+  static const String _autoBrightnessEnabledKey = 'auto_brightness_enabled';
+  static const String _proximityThresholdKey = 'proximity_threshold';
+
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
 
   // Save user session data
@@ -33,6 +40,7 @@ class UserSessionService {
     String? userProfilePic,
     String? role,
     String? providerType,
+    String? providerStatus,
   }) async {
     await _prefs.setBool(_isLoggedInKey, true);
     await _prefs.setString(_userIdKey, userId);
@@ -50,6 +58,9 @@ class UserSessionService {
     }
     if (providerType != null) {
       await _prefs.setString(_providerTypeKey, providerType);
+    }
+    if (providerStatus != null) {
+      await _prefs.setString(_providerStatusKey, providerStatus);
     }
   }
 
@@ -98,6 +109,35 @@ class UserSessionService {
     return _prefs.getString(_providerTypeKey);
   }
 
+  String? getProviderStatus() {
+    return _prefs.getString(_providerStatusKey);
+  }
+
+  // Sensor settings methods
+  bool isProximitySensorEnabled() {
+    return _prefs.getBool(_proximityAlertEnabledKey) ?? true;
+  }
+
+  Future<void> setProximitySensorEnabled(bool enabled) async {
+    await _prefs.setBool(_proximityAlertEnabledKey, enabled);
+  }
+
+  bool isAutoBrightnessEnabled() {
+    return _prefs.getBool(_autoBrightnessEnabledKey) ?? true;
+  }
+
+  Future<void> setAutoBrightnessEnabled(bool enabled) async {
+    await _prefs.setBool(_autoBrightnessEnabledKey, enabled);
+  }
+
+  int getProximityThreshold() {
+    return _prefs.getInt(_proximityThresholdKey) ?? 5;
+  }
+
+  Future<void> setProximityThreshold(int threshold) async {
+    await _prefs.setInt(_proximityThresholdKey, threshold);
+  }
+
   // Clear user session data
   Future<void> clearSession() async {
     await _prefs.remove(_isLoggedInKey);
@@ -109,5 +149,6 @@ class UserSessionService {
     await _prefs.remove(_userProfilePicKey);
     await _prefs.remove(_roleKey);
     await _prefs.remove(_providerTypeKey);
+    await _prefs.remove(_providerStatusKey);
   }
 }

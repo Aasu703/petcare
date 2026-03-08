@@ -7,6 +7,7 @@ class ProviderApiModel {
   final String address;
   final String phone;
   final int rating;
+  final int ratingCount;
   final String? providerType;
   final String? email;
   final String? password;
@@ -17,6 +18,14 @@ class ProviderApiModel {
   final bool locationVerified;
   final bool pawcareVerified;
   final String? status;
+  final String? bio;
+  final String? degree;
+  final String? profileImageUrl;
+  final double? appointmentFee;
+  final String? workingHours;
+  final String? experience;
+  final String? certification;
+  final String? clinicOrShopName;
 
   ProviderApiModel({
     this.providerId,
@@ -25,6 +34,7 @@ class ProviderApiModel {
     required this.address,
     required this.phone,
     required this.rating,
+    this.ratingCount = 0,
     this.providerType,
     this.email,
     this.password,
@@ -35,6 +45,14 @@ class ProviderApiModel {
     this.locationVerified = false,
     this.pawcareVerified = false,
     this.status,
+    this.bio,
+    this.degree,
+    this.profileImageUrl,
+    this.appointmentFee,
+    this.workingHours,
+    this.experience,
+    this.certification,
+    this.clinicOrShopName,
   });
 
   // TO JSON (Send to API)
@@ -89,9 +107,21 @@ class ProviderApiModel {
       address: json["address"]?.toString() ?? '',
       phone: json["phone"]?.toString() ?? '',
       rating: parseRating(json["rating"]),
+      ratingCount: parseRating(json["ratingCount"]),
       providerType: json["providerType"]?.toString(),
       email: json["email"]?.toString(),
       password: json["password"]?.toString(),
+      bio: json["bio"]?.toString(),
+      degree: json["degree"]?.toString(),
+      profileImageUrl: json["profileImageUrl"]?.toString(),
+      appointmentFee: (json["appointmentFee"] is num)
+          ? (json["appointmentFee"] as num).toDouble()
+          : double.tryParse(json["appointmentFee"]?.toString() ?? ''),
+      workingHours: json["workingHours"]?.toString(),
+      experience: json["experience"]?.toString(),
+      certification: json["certification"]?.toString(),
+      clinicOrShopName:
+          (json["clinicOrShopName"] ?? json["clinic_or_shop_name"])?.toString(),
       locationLatitude: parseCoordinate(
         (json["location"] as Map?)?["latitude"] ?? json["latitude"],
       ),
@@ -116,6 +146,7 @@ class ProviderApiModel {
       address: address,
       phone: phone,
       rating: rating,
+      ratingCount: ratingCount,
       providerType: providerType,
       email: email,
       password: password,
@@ -125,6 +156,14 @@ class ProviderApiModel {
       locationVerified: locationVerified,
       pawcareVerified: pawcareVerified,
       status: status,
+      bio: bio,
+      degree: degree,
+      profileImageUrl: profileImageUrl,
+      appointmentFee: appointmentFee,
+      workingHours: workingHours,
+      experience: experience,
+      certification: certification,
+      clinicOrShopName: clinicOrShopName,
     );
   }
 
@@ -137,6 +176,7 @@ class ProviderApiModel {
       address: entity.address,
       phone: entity.phone,
       rating: entity.rating,
+      ratingCount: entity.ratingCount,
       providerType: entity.providerType,
       email: entity.email,
       password: entity.password,
@@ -146,6 +186,14 @@ class ProviderApiModel {
       locationVerified: entity.locationVerified,
       pawcareVerified: entity.pawcareVerified,
       status: entity.status,
+      bio: entity.bio,
+      degree: entity.degree,
+      profileImageUrl: entity.profileImageUrl,
+      appointmentFee: entity.appointmentFee,
+      workingHours: entity.workingHours,
+      experience: entity.experience,
+      certification: entity.certification,
+      clinicOrShopName: entity.clinicOrShopName,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/features/messages/presentation/view_model/chat_view_model.dart';
@@ -28,6 +29,7 @@ class _ChatConversationScreenState
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   int _lastMessageCount = 0;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
@@ -41,12 +43,26 @@ class _ChatConversationScreenState
           );
       _scrollToBottom();
     });
+
+    // Poll for new messages every 3 seconds as a fallback
+    // in case WebSocket is not connected
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) {
+        ref
+            .read(chatViewModelProvider.notifier)
+            .loadConversationMessages(
+              participantId: widget.participantId,
+              participantRole: widget.participantRole,
+            );
+      }
+    });
   }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 

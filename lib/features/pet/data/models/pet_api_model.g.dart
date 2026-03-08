@@ -17,6 +17,9 @@ PetApiModel _$PetApiModelFromJson(Map<String, dynamic> json) => PetApiModel(
       imageUrl: json['imageUrl'] as String?,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
+      assignedVetId: json['assignedVet'] as String?,
+      assignedAt: json['assignedAt'] as String?,
+      assignedVetName: json['assignedVetName'] as String?,
     );
 
 Map<String, dynamic> _$PetApiModelToJson(PetApiModel instance) =>
@@ -31,4 +34,7 @@ Map<String, dynamic> _$PetApiModelToJson(PetApiModel instance) =>
       'imageUrl': instance.imageUrl,
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
+      'assignedVet': instance.assignedVetId,
+      'assignedAt': instance.assignedAt,
+      'assignedVetName': instance.assignedVetName,
     };

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
@@ -143,7 +144,7 @@ class LoginContent extends StatelessWidget {
                         child: Column(
                           children: [
                             Text(
-                              'Welcome Back',
+                              AppLocalizations.of(context).tr('welcomeBack'),
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w900,
@@ -153,7 +154,9 @@ class LoginContent extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Sign in to continue to PawCare',
+                              AppLocalizations.of(
+                                context,
+                              ).tr('signInToContinue'),
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
                                     color: context.textPrimary.withValues(
@@ -193,16 +196,24 @@ class LoginContent extends StatelessWidget {
                             children: [
                               _LoginField(
                                 controller: emailController,
-                                label: 'Email Address',
-                                hint: 'example@email.com',
+                                label: AppLocalizations.of(
+                                  context,
+                                ).tr('emailAddress'),
+                                hint: AppLocalizations.of(
+                                  context,
+                                ).tr('emailHint'),
                                 icon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Email is required';
+                                    return AppLocalizations.of(
+                                      context,
+                                    ).tr('emailRequired');
                                   }
                                   if (!value.contains('@')) {
-                                    return 'Enter a valid email';
+                                    return AppLocalizations.of(
+                                      context,
+                                    ).tr('enterValidEmail');
                                   }
                                   return null;
                                 },
@@ -210,7 +221,9 @@ class LoginContent extends StatelessWidget {
                               const SizedBox(height: 20),
                               _LoginField(
                                 controller: passwordController,
-                                label: 'Password',
+                                label: AppLocalizations.of(
+                                  context,
+                                ).tr('password'),
                                 hint: '********',
                                 icon: Icons.lock_outline_rounded,
                                 obscureText: obscurePassword,
@@ -225,7 +238,9 @@ class LoginContent extends StatelessWidget {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Password is required';
+                                    return AppLocalizations.of(
+                                      context,
+                                    ).tr('passwordRequired');
                                   }
                                   return null;
                                 },
@@ -241,8 +256,10 @@ class LoginContent extends StatelessWidget {
                                       vertical: 4,
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Forgot Password?',
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).tr('forgotPassword'),
                                     style: TextStyle(
                                       color: AppColors.iconPrimaryColor,
                                       fontWeight: FontWeight.w700,
@@ -297,8 +314,10 @@ class LoginContent extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            const Text(
-                                              'Sign In',
+                                            Text(
+                                              AppLocalizations.of(
+                                                context,
+                                              ).tr('signIn'),
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w700,
                                                 fontSize: 17,
@@ -327,7 +346,9 @@ class LoginContent extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              "Don't have an account? ",
+                              AppLocalizations.of(
+                                context,
+                              ).tr('dontHaveAccount'),
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     color: context.textPrimary.withValues(
@@ -352,7 +373,7 @@ class LoginContent extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Sign Up',
+                                  AppLocalizations.of(context).tr('signUp'),
                                   style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         fontWeight: FontWeight.w800,
@@ -413,8 +434,8 @@ class LoginContent extends StatelessWidget {
                             child: InkWell(
                               onTap: onProviderLoginTap,
                               borderRadius: BorderRadius.circular(16),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 24,
                                   vertical: 14,
                                 ),
@@ -428,7 +449,9 @@ class LoginContent extends StatelessWidget {
                                     ),
                                     SizedBox(width: 10),
                                     Text(
-                                      'Login as Provider',
+                                      AppLocalizations.of(
+                                        context,
+                                      ).tr('loginAsProvider'),
                                       style: TextStyle(
                                         color: AppColors.iconPrimaryColor,
                                         fontWeight: FontWeight.w700,

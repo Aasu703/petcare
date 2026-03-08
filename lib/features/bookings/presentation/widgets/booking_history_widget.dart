@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
+import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
+import 'package:petcare/features/reviews/data/datasources/review_remote_datasource.dart';
 
-class BookingHistoryWidget extends StatelessWidget {
+class BookingHistoryWidget extends ConsumerWidget {
   final bool isLoading;
   final String? error;
   final List<BookingEntity> upcomingBookings;
@@ -20,19 +24,20 @@ class BookingHistoryWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Appointments'),
+          title: Text(l10n.tr('myAppointments')),
           backgroundColor: AppColors.iconPrimaryColor,
           foregroundColor: Colors.white,
           centerTitle: true,
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'History'),
+              Tab(text: l10n.tr('upcoming')),
+              Tab(text: l10n.tr('history')),
             ],
           ),
         ),
@@ -53,7 +58,7 @@ class BookingHistoryWidget extends StatelessWidget {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: onReload,
-                      child: const Text('Retry'),
+                      child: Text(l10n.tr('retry')),
                     ),
                   ],
                 ),
@@ -62,12 +67,12 @@ class BookingHistoryWidget extends StatelessWidget {
                 children: [
                   _BookingList(
                     bookings: upcomingBookings,
-                    emptyMessage: 'No upcoming appointments',
+                    emptyMessage: l10n.tr('noUpcomingAppointments'),
                     onRefresh: onReload,
                   ),
                   _BookingList(
                     bookings: historyBookings,
-                    emptyMessage: 'No booking history yet',
+                    emptyMessage: l10n.tr('noBookingHistory'),
                     onRefresh: onReload,
                   ),
                 ],
@@ -145,7 +150,9 @@ class _BookingCard extends StatelessWidget {
     final dateStr = startDT != null
         ? DateFormat('EEE, MMM d, yyyy').format(startDT)
         : booking.startTime;
-    final timeStr = startDT != null ? DateFormat('hh:mm a').format(startDT) : '';
+    final timeStr = startDT != null
+        ? DateFormat('hh:mm a').format(startDT)
+        : '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -182,7 +189,8 @@ class _BookingCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    booking.status[0].toUpperCase() + booking.status.substring(1),
+                    booking.status[0].toUpperCase() +
+                        booking.status.substring(1),
                     style: TextStyle(
                       color: _statusColor(booking.status),
                       fontWeight: FontWeight.w600,
@@ -225,9 +233,289 @@ class _BookingCard extends StatelessWidget {
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
               ),
             ],
+            // Rate Service button for completed bookings
+            if (booking.status.toLowerCase() == 'completed' &&
+                booking.providerId != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _showRateServiceSheet(context, booking),
+                  icon: const Icon(Icons.star_rounded, size: 18),
+                  label: Text(AppLocalizations.of(context).tr('rateService')),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFFFA000),
+                    side: const BorderSide(color: Color(0xFFFFA000)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  void _showRateServiceSheet(BuildContext context, BookingEntity booking) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _RateServiceSheet(booking: booking),
+    );
+  }
+}
+
+// ── Rate Service Bottom Sheet ────────────────────────────────────────
+class _RateServiceSheet extends ConsumerStatefulWidget {
+  final BookingEntity booking;
+
+  const _RateServiceSheet({required this.booking});
+
+  @override
+  ConsumerState<_RateServiceSheet> createState() => _RateServiceSheetState();
+}
+
+class _RateServiceSheetState extends ConsumerState<_RateServiceSheet> {
+  double _rating = 0;
+  final _commentController = TextEditingController();
+  bool _isSubmitting = false;
+
+  static const _ratingLabels = [
+    '',
+    'Poor',
+    'Below Average',
+    'Average',
+    'Good',
+    'Excellent',
+  ];
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        12,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.borderColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'Rate Your Experience',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.3,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            if (widget.booking.serviceTitle != null)
+              Text(
+                widget.booking.serviceTitle!,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: context.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+            const SizedBox(height: 24),
+
+            // Star rating
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (i) {
+                return GestureDetector(
+                  onTap: () => setState(() => _rating = (i + 1).toDouble()),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: AnimatedScale(
+                      scale: i < _rating ? 1.15 : 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        i < _rating
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
+                        size: 44,
+                        color: i < _rating
+                            ? const Color(0xFFFFA000)
+                            : context.borderColor,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+
+            if (_rating > 0) ...[
+              const SizedBox(height: 6),
+              Text(
+                _ratingLabels[_rating.toInt()],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: context.primaryColor,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 24),
+
+            TextField(
+              controller: _commentController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Tell us about your experience with this service...',
+                hintStyle: TextStyle(color: context.hintColor, fontSize: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: context.borderColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: context.borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                    color: context.primaryColor,
+                    width: 1.5,
+                  ),
+                ),
+                filled: true,
+                fillColor: context.backgroundColor,
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: _rating > 0
+                    ? [
+                        BoxShadow(
+                          color: context.primaryColor.withOpacity(0.25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _rating > 0 && !_isSubmitting
+                      ? _submitReview
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    disabledBackgroundColor: context.primaryColor.withOpacity(
+                      0.3,
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Submit Review',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitReview() async {
+    setState(() => _isSubmitting = true);
+    try {
+      final dataSource = ref.read(reviewRemoteDataSourceProvider);
+      await dataSource.createReview(
+        rating: _rating,
+        comment: _commentController.text.trim(),
+        providerId: widget.booking.providerId,
+        bookingId: widget.booking.bookingId,
+        reviewType: 'provider',
+      );
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).tr('reviewSubmittedSuccess'),
+            ),
+            backgroundColor: context.primaryColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to submit review: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: AppColors.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
   }
 }

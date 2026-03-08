@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
-import 'package:petcare/features/pet/domain/usecase/add_pet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/presentation/pages/pet_care_screen.dart';
 import 'package:petcare/features/pet/presentation/provider/pet_providers.dart';
 import 'package:petcare/features/pet/presentation/widgets/common/pet_image_picker.dart';
 import 'package:petcare/features/pet/presentation/widgets/common/pet_form_section.dart';
 import 'package:petcare/shared/widgets/index.dart';
 import 'package:petcare/shared/utils/snackbar_service.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 /// Add new pet screen
 /// Allows users to create a new pet profile with image, name, species, and details
@@ -84,7 +85,7 @@ class _AddPetState extends ConsumerState<AddPet> {
     if (success) {
       SnackbarService.success(
         context: context,
-        message: 'Pet added successfully',
+        message: AppLocalizations.of(context).tr('petAddedSuccess'),
       );
       final createdPet = ref.read(petNotifierProvider).recentlyAddedPet;
       if (createdPet != null) {
@@ -101,13 +102,14 @@ class _AddPetState extends ConsumerState<AddPet> {
       final error = ref.read(petNotifierProvider).error;
       SnackbarService.error(
         context: context,
-        message: error ?? 'Failed to add pet',
+        message: error ?? AppLocalizations.of(context).tr('failedAddPet'),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final petState = ref.watch(petNotifierProvider);
 
     return Scaffold(
@@ -117,7 +119,7 @@ class _AddPetState extends ConsumerState<AddPet> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Add New Pet',
+          l10n.tr('addNewPet'),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         elevation: 0,
@@ -162,7 +164,7 @@ class _AddPetState extends ConsumerState<AddPet> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: PrimaryButton(
-                text: 'Add Pet',
+                text: l10n.tr('addPet'),
                 onPressed: _submit,
                 isLoading: petState.isLoading,
                 height: 56,

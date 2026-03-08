@@ -4,10 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
-import 'package:petcare/features/health_records/health_record_providers.dart';
+import 'package:petcare/features/health_records/presentation/provider/health_record_providers.dart';
 import 'package:petcare/features/health_records/domain/entities/health_record_entity.dart';
 import 'package:petcare/features/health_records/domain/usecases/get_health_records_by_pet_usecase.dart';
 import 'package:petcare/features/health_records/presentation/pages/vaccination_record_detail_page.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProviderVaccinationPrescriptionsPage extends ConsumerStatefulWidget {
   const ProviderVaccinationPrescriptionsPage({super.key});
@@ -42,7 +43,7 @@ class _ProviderVaccinationPrescriptionsPageState
     if (providerId == null || providerId.isEmpty) {
       setState(() {
         _isLoading = false;
-        _error = 'Provider session not found.';
+        _error = AppLocalizations.of(context).tr('providerSessionNotFound');
       });
       return;
     }
@@ -215,8 +216,9 @@ class _ProviderVaccinationPrescriptionsPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Vaccination Prescriptions')),
+      appBar: AppBar(title: Text(l10n.tr('vaccinationPrescriptions'))),
       body: RefreshIndicator(
         onRefresh: _loadPrescriptions,
         child: _isLoading
@@ -240,7 +242,7 @@ class _ProviderVaccinationPrescriptionsPageState
                           const SizedBox(height: 12),
                           FilledButton(
                             onPressed: _loadPrescriptions,
-                            child: const Text('Retry'),
+                            child: Text(l10n.tr('retry')),
                           ),
                         ],
                       ),
@@ -250,11 +252,11 @@ class _ProviderVaccinationPrescriptionsPageState
               )
             : _items.isEmpty
             ? ListView(
-                children: const [
-                  SizedBox(height: 120),
+                children: [
+                  const SizedBox(height: 120),
                   Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         children: [
                           Icon(
@@ -264,7 +266,7 @@ class _ProviderVaccinationPrescriptionsPageState
                           ),
                           SizedBox(height: 12),
                           Text(
-                            'No vaccination prescriptions found yet.',
+                            l10n.tr('noVaccinationPrescriptions'),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -282,16 +284,16 @@ class _ProviderVaccinationPrescriptionsPageState
                   final due = DateTime.tryParse(item.record.nextDueDate ?? '');
                   final dueText = due != null
                       ? DateFormat('MMM d, yyyy').format(due)
-                      : 'Due soon';
+                      : l10n.tr('dueSoon');
 
                   return Card(
                     child: ListTile(
                       leading: const CircleAvatar(
                         child: Icon(Icons.vaccines_rounded),
                       ),
-                      title: Text(item.record.title ?? 'Vaccination'),
+                      title: Text(item.record.title ?? l10n.tr('vaccination')),
                       subtitle: Text(
-                        '${item.petName} | Owner: ${item.ownerName}\nNext due: $dueText',
+                        '${item.petName} | ${l10n.tr('owner')}: ${item.ownerName}\n${l10n.tr('nextDueColon')}: $dueText',
                       ),
                       isThreeLine: true,
                       trailing: const Icon(Icons.chevron_right_rounded),

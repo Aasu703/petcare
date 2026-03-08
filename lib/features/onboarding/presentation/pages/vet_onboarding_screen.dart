@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class VetOnboardingScreen extends StatelessWidget {
   const VetOnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -83,7 +85,7 @@ class VetOnboardingScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Care',
+                              l10n.tr('care'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -92,7 +94,7 @@ class VetOnboardingScreen extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'with',
+                              l10n.tr('with'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -101,7 +103,7 @@ class VetOnboardingScreen extends StatelessWidget {
                                   ),
                             ),
                             Text(
-                              'Passion',
+                              l10n.tr('passion'),
                               style: Theme.of(context).textTheme.displayLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
@@ -138,7 +140,7 @@ class VetOnboardingScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'Find your perfect pet companion',
+                    l10n.tr('findPerfectCompanion'),
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium?.copyWith(fontSize: 18),
@@ -180,7 +182,7 @@ class VetOnboardingScreen extends StatelessWidget {
                           child: Column(
                             children: [
                               Text(
-                                'Find your perfect pet companion',
+                                l10n.tr('findPerfectCompanion'),
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               Row(
@@ -203,7 +205,7 @@ class VetOnboardingScreen extends StatelessWidget {
                                           size: 18,
                                         ),
                                       ),
-                                      label: const Text('Get Started'),
+                                      label: Text(l10n.tr('getStarted')),
                                     ),
                                   ),
                                 ],

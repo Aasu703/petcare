@@ -108,6 +108,41 @@ class PetRepositoryImpl implements IPetRepository {
   }
 
   @override
+  Future<PetEntity> assignVet({
+    required String petId,
+    required String vetId,
+  }) async {
+    if (await _networkInfo.isConnected) {
+      final updated = await _remoteDataSource.assignVet(
+        petId: petId,
+        vetId: vetId,
+      );
+      return updated.toEntity();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<List<PetEntity>> getProviderAssignedPets() async {
+    if (await _networkInfo.isConnected) {
+      final pets = await _remoteDataSource.getProviderAssignedPets();
+      return pets.map((e) => e.toEntity()).toList();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
+  Future<List<Map<String, String>>> getVerifiedVets() async {
+    if (await _networkInfo.isConnected) {
+      return await _remoteDataSource.getVerifiedVets();
+    } else {
+      throw Exception('No internet connection');
+    }
+  }
+
+  @override
   Future<bool> deletePet(String petId) async {
     if (await _networkInfo.isConnected) {
       return await _remoteDataSource.deletePet(petId);

@@ -9,6 +9,7 @@ class ServiceModel {
   final String? category;
   final List<String> availability;
   final String? providerId;
+  final String approvalStatus;
 
   ServiceModel({
     this.id,
@@ -19,6 +20,7 @@ class ServiceModel {
     this.category,
     this.availability = const [],
     this.providerId,
+    this.approvalStatus = 'pending',
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class ServiceModel {
           (json['availability'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
       providerId: json['providerId']?.toString(),
+      approvalStatus: json['approvalStatus']?.toString() ?? 'pending',
     );
   }
 
@@ -45,6 +48,7 @@ class ServiceModel {
       'catergory': category,
       'availability': availability,
       'providerId': providerId,
+      'approvalStatus': approvalStatus,
     };
   }
 
@@ -58,6 +62,7 @@ class ServiceModel {
       category: category,
       availability: availability,
       providerId: providerId,
+      approvalStatus: approvalStatus,
     );
   }
 
@@ -71,6 +76,7 @@ class ServiceModel {
       category: entity.category,
       availability: entity.availability,
       providerId: entity.providerId,
+      approvalStatus: entity.approvalStatus,
     );
   }
 

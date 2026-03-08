@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/shop/shop_providers.dart';
+import 'package:petcare/features/shop/presentation/provider/shop_providers.dart';
 import 'package:petcare/features/shop/domain/entities/order_entity.dart';
 
 class MyOrdersPage extends ConsumerStatefulWidget {

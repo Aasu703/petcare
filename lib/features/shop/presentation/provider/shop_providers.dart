@@ -5,6 +5,8 @@ import 'package:petcare/features/shop/domain/repositories/shop_repository.dart';
 import 'package:petcare/features/shop/domain/usecases/get_products_usecase.dart';
 import 'package:petcare/features/shop/domain/usecases/create_order_usecase.dart';
 import 'package:petcare/features/shop/domain/usecases/get_user_orders_usecase.dart';
+import 'package:petcare/features/shop/domain/usecases/get_provider_orders_usecase.dart';
+import 'package:petcare/features/shop/domain/usecases/update_provider_order_status_usecase.dart';
 
 // Repository
 final shopRepositoryProvider = Provider<IShopRepository>((ref) {
@@ -27,3 +29,16 @@ final getUserOrdersUsecaseProvider = Provider<GetUserOrdersUsecase>((ref) {
   final repo = ref.read(shopRepositoryProvider);
   return GetUserOrdersUsecase(repository: repo);
 });
+
+final getProviderOrdersUsecaseProvider = Provider<GetProviderOrdersUsecase>((
+  ref,
+) {
+  final repo = ref.read(shopRepositoryProvider);
+  return GetProviderOrdersUsecase(repository: repo);
+});
+
+final updateProviderOrderStatusUsecaseProvider =
+    Provider<UpdateProviderOrderStatusUsecase>((ref) {
+      final repo = ref.read(shopRepositoryProvider);
+      return UpdateProviderOrderStatusUsecase(repository: repo);
+    });

@@ -9,6 +9,7 @@ import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/features/auth/presentation/view_model/profile_view_model.dart';
 import 'package:petcare/shared/widgets/index.dart';
 import 'package:petcare/shared/utils/snackbar_service.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -59,6 +60,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _showImagePicker() {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -70,7 +72,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
+              title: Text(l10n.tr('chooseFromGallery')),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -78,7 +80,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a photo'),
+              title: Text(l10n.tr('takePhoto')),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -105,23 +107,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     if (!mounted) return;
 
+    final l10nSubmit = AppLocalizations.of(context);
     if (success) {
       SnackbarService.success(
         context: context,
-        message: 'Profile updated successfully',
+        message: l10nSubmit.tr('profileUpdated'),
       );
       Navigator.pop(context, true);
     } else {
       final error = ref.read(profileViewModelProvider).errorMessage;
       SnackbarService.error(
         context: context,
-        message: error ?? 'Failed to update profile',
+        message: error ?? l10nSubmit.tr('failedUpdateProfile'),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10nCtx = AppLocalizations.of(context);
     final profileState = ref.watch(profileViewModelProvider);
     if (!_didPrefill && profileState.user != null) {
       final user = profileState.user!;
@@ -151,7 +155,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Edit Profile',
+          l10nCtx.tr('editProfile'),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         elevation: 0,
@@ -268,35 +272,35 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           FormLabel(
-                            text: 'First Name',
+                            text: l10nCtx.tr('firstName'),
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
                           FormTextField(
                             controller: _firstNameController,
-                            hintText: 'Enter your first name',
+                            hintText: l10nCtx.tr('enterFirstName'),
                             borderRadius: 5,
                             fillColor: context.surfaceColor,
                             hintColor: context.hintColor,
                             borderColor: context.borderColor,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'First name is required';
+                                return l10nCtx.tr('firstNameRequired');
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 20),
                           FormLabel(
-                            text: 'Last Name',
+                            text: l10nCtx.tr('lastName'),
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
                           FormTextField(
                             controller: _lastNameController,
-                            hintText: 'Enter your last name',
+                            hintText: l10nCtx.tr('enterLastName'),
                             borderRadius: 5,
                             fillColor: context.surfaceColor,
                             hintColor: context.hintColor,
@@ -304,14 +308,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ),
                           const SizedBox(height: 20),
                           FormLabel(
-                            text: 'Email',
+                            text: l10nCtx.tr('email'),
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
                           FormTextField(
                             controller: _emailController,
-                            hintText: 'Enter your email',
+                            hintText: l10nCtx.tr('enterEmail'),
                             keyboardType: TextInputType.emailAddress,
                             borderRadius: 5,
                             fillColor: context.surfaceColor,
@@ -319,21 +323,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             borderColor: context.borderColor,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Email is required';
+                                return l10nCtx.tr('emailRequired');
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 20),
                           FormLabel(
-                            text: 'Phone',
+                            text: l10nCtx.tr('phone'),
                             fontWeight: FontWeight.w500,
                             color: context.textSecondary,
                           ),
                           const SizedBox(height: 8),
                           FormTextField(
                             controller: _phoneController,
-                            hintText: 'Enter your phone number',
+                            hintText: l10nCtx.tr('enterPhoneNumber'),
                             keyboardType: TextInputType.phone,
                             borderRadius: 5,
                             fillColor: context.surfaceColor,
@@ -351,7 +355,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: PrimaryButton(
-                text: 'SAVE CHANGES',
+                text: l10nCtx.tr('saveChanges'),
                 onPressed: _submit,
                 isLoading: profileState.isLoading,
                 height: 56,

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
-import 'package:petcare/features/provider/provider_providers.dart';
+import 'package:petcare/core/session/session_provider.dart';
+import 'package:petcare/features/provider/presentation/provider/provider_providers.dart';
 import 'package:petcare/features/provider/domain/usecases/provider_login_usecase.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/shared/widgets/index.dart';
@@ -66,7 +68,23 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
       },
       (provider) async {
         // Session is already saved in the datasource
+        // Refresh the session provider so the router can redirect properly
+        ref.read(sessionProvider.notifier).refresh();
+
         if (!mounted) return;
+        final hasProviderType = (provider.providerType ?? '').trim().isNotEmpty;
+        final isApproved =
+            (provider.status ?? '').trim().toLowerCase() == 'approved';
+
+        if (!hasProviderType) {
+          context.go(RoutePaths.providerVerificationPending);
+          return;
+        }
+
+        if (!isApproved) {
+          context.go(RoutePaths.providerVerificationPending);
+          return;
+        }
 
         context.go(RoutePaths.providerDashboard);
       },
@@ -111,14 +129,14 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Provider login',
+                    AppLocalizations.of(context).tr('providerLogin'),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   SizedBox(height: 6),
                   Text(
-                    'Access your provider dashboard',
+                    AppLocalizations.of(context).tr('accessProviderDashboard'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: context.textPrimary,
                     ),
@@ -146,7 +164,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                             controller: _emailController,
                             focusNode: _emailFocusNode,
                             hint: 'provider@email.com',
-                            label: 'Email',
+                            label: AppLocalizations.of(context).tr('email'),
                             icon: Icons.email_rounded,
                             keyboardType: TextInputType.emailAddress,
                           ),
@@ -155,7 +173,7 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
                             hint: '********',
-                            label: 'Password',
+                            label: AppLocalizations.of(context).tr('password'),
                             icon: Icons.lock_rounded,
                             obscure: true,
                           ),
@@ -177,7 +195,11 @@ class _ProviderLoginScreenState extends ConsumerState<ProviderLoginScreen> {
                                             ),
                                       ),
                                     )
-                                  : Text('Login as provider'),
+                                  : Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).tr('loginAsProviderBtn'),
+                                    ),
                             ),
                           ),
                         ],

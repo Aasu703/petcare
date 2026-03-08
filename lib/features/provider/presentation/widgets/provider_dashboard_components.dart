@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_notifications_screen.dart';
 
@@ -66,6 +67,7 @@ class ProviderDashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Container(
@@ -104,7 +106,7 @@ class ProviderDashboardHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '$providerLabel Dashboard',
+                          '$providerLabel ${l10n.tr('dashboard')}',
                           style: TextStyle(
                             color: uiKit.accentColor,
                             fontSize: 12,
@@ -116,7 +118,7 @@ class ProviderDashboardHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Welcome back!',
+                    l10n.tr('welcomeBackProvider'),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: context.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -127,10 +129,10 @@ class ProviderDashboardHeader extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isShop
-                        ? 'Manage products and stock visibility'
+                        ? l10n.tr('manageProductsStockVisibility')
                         : isVet
-                        ? 'Manage vet services and appointments'
-                        : 'Manage grooming and care bookings',
+                        ? l10n.tr('manageVetServicesAppointments')
+                        : l10n.tr('manageGroomingBookings'),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: context.textSecondary,
                       fontWeight: FontWeight.w500,

@@ -4,6 +4,7 @@ import 'package:petcare/features/bottomnavigation/presentation/pages/home_screen
 import 'package:petcare/features/bottomnavigation/presentation/pages/profile_screen.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class Dashboard extends StatefulWidget {
   final String firstName;
@@ -25,22 +26,22 @@ class _DashboardState extends State<Dashboard> {
     _NavItem(
       icon: Icons.home_rounded,
       activeIcon: Icons.home_rounded,
-      label: 'Home',
+      labelKey: 'home',
     ),
     _NavItem(
       icon: Icons.explore_outlined,
       activeIcon: Icons.explore_rounded,
-      label: 'Explore',
+      labelKey: 'explore',
     ),
     _NavItem(
       icon: Icons.store_outlined,
       activeIcon: Icons.store_rounded,
-      label: 'Shop',
+      labelKey: 'shop',
     ),
     _NavItem(
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
-      label: 'Profile',
+      labelKey: 'profile',
     ),
   ];
   @override
@@ -78,6 +79,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildNavItem(int index) {
+    final l10n = AppLocalizations.of(context);
     final isSelected = _selectedIndex == index;
     final item = _navItems[index];
     return GestureDetector(
@@ -112,7 +114,7 @@ class _DashboardState extends State<Dashboard> {
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
-                item.label,
+                l10n.tr(item.labelKey),
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -130,10 +132,10 @@ class _DashboardState extends State<Dashboard> {
 class _NavItem {
   final IconData icon;
   final IconData activeIcon;
-  final String label;
+  final String labelKey;
   const _NavItem({
     required this.icon,
     required this.activeIcon,
-    required this.label,
+    required this.labelKey,
   });
 }

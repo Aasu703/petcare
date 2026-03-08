@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 
 enum NearbyMapMode {
@@ -103,15 +104,15 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
     String? pawcareError;
     String? osmError;
 
+    final l10n = AppLocalizations.of(context);
+
     final results = await Future.wait<List<_NearbyPlace>>([
       _fetchPawcarePlaces().catchError((_) {
-        pawcareError =
-            'Could not load PawCare verified ${_mode == NearbyMapMode.petShop ? 'shops' : 'vets'}.';
+        pawcareError = l10n.tr('couldNotLoadVerified');
         return <_NearbyPlace>[];
       }),
       _fetchOsmPlaces().catchError((_) {
-        osmError =
-            'Could not load nearby ${_mode == NearbyMapMode.petShop ? 'pet shops' : 'vet hospitals'} from OSM.';
+        osmError = l10n.tr('couldNotLoadNearby');
         return <_NearbyPlace>[];
       }),
     ]);
@@ -126,7 +127,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
       _pawcareError = pawcareError;
       _osmError = osmError;
       if (merged.isEmpty && (pawcareError != null || osmError != null)) {
-        _error = 'Could not load nearby locations. Please try again.';
+        _error = l10n.tr('couldNotLoadNearby');
       }
     });
   }
@@ -359,6 +360,7 @@ out center tags;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final center = LatLng(widget.latitude, widget.longitude);
     final visiblePlaces = _visiblePlaces;
     final visibleCount = visiblePlaces.length > 10 ? 10 : visiblePlaces.length;
@@ -366,7 +368,11 @@ out center tags;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_mode.title),
+        title: Text(
+          _mode == NearbyMapMode.petShop
+              ? l10n.tr('nearbyPetShops')
+              : l10n.tr('nearbyVetHospitals'),
+        ),
         actions: [
           IconButton(
             onPressed: _isLoading ? null : _loadNearbyPlaces,
@@ -412,16 +418,16 @@ out center tags;
               children: [
                 Expanded(
                   child: SegmentedButton<NearbyMapMode>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: NearbyMapMode.petShop,
-                        icon: Icon(Icons.pets_rounded),
-                        label: Text('Pet Shops'),
+                        icon: const Icon(Icons.pets_rounded),
+                        label: Text(l10n.tr('petShops')),
                       ),
                       ButtonSegment(
                         value: NearbyMapMode.vetHospital,
-                        icon: Icon(Icons.local_hospital_rounded),
-                        label: Text('Vets'),
+                        icon: const Icon(Icons.local_hospital_rounded),
+                        label: Text(l10n.tr('vets')),
                       ),
                     ],
                     selected: <NearbyMapMode>{_mode},
@@ -451,7 +457,11 @@ out center tags;
                     size: 16,
                     color: Color(0xFF2B8A3E),
                   ),
-                  label: Text('PawCare verified (${_pawcarePlaces.length})'),
+                  label: Text(
+                    _mode == NearbyMapMode.petShop
+                        ? '${l10n.tr('pawCareVerifiedShop')} (${_pawcarePlaces.length})'
+                        : '${l10n.tr('pawCareVerifiedVet')} (${_pawcarePlaces.length})',
+                  ),
                 ),
                 FilterChip(
                   selected: _showOsm,
@@ -461,7 +471,9 @@ out center tags;
                     size: 16,
                     color: Color(0xFFE67700),
                   ),
-                  label: Text('Near you OSM (${_osmPlaces.length})'),
+                  label: Text(
+                    '${l10n.tr('nearYouOsm')} (${_osmPlaces.length})',
+                  ),
                 ),
               ],
             ),
@@ -521,7 +533,7 @@ out center tags;
                             FilledButton.icon(
                               onPressed: _loadNearbyPlaces,
                               icon: const Icon(Icons.refresh_rounded),
-                              label: const Text('Retry'),
+                              label: Text(l10n.tr('retry')),
                             ),
                           ],
                         ),
@@ -571,7 +583,7 @@ out center tags;
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    place.source.label,
+                                    _localizedSourceLabel(place.source, l10n),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -616,6 +628,7 @@ out center tags;
   }
 
   void _showPlaceDetails(_NearbyPlace place) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -647,7 +660,7 @@ out center tags;
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${place.source.label} | ${place.category.label}',
+                          '${_localizedSourceLabel(place.source, l10n)} | ${_localizedCategoryLabel(place.category, l10n)}',
                           style: TextStyle(
                             color: Theme.of(
                               context,
@@ -687,6 +700,29 @@ out center tags;
       return _PlaceCategory.vet;
     }
     return _PlaceCategory.petShop;
+  }
+
+  String _localizedSourceLabel(_PlaceSource source, AppLocalizations l10n) {
+    switch (source) {
+      case _PlaceSource.pawcare:
+        return _mode == NearbyMapMode.petShop
+            ? l10n.tr('pawCareVerifiedShop')
+            : l10n.tr('pawCareVerifiedVet');
+      case _PlaceSource.osm:
+        return l10n.tr('nearYouOsm');
+    }
+  }
+
+  String _localizedCategoryLabel(
+    _PlaceCategory category,
+    AppLocalizations l10n,
+  ) {
+    switch (category) {
+      case _PlaceCategory.vet:
+        return l10n.tr('veterinary');
+      case _PlaceCategory.petShop:
+        return l10n.tr('petShop');
+    }
   }
 
   String _buildOsmSubtitle(Map<String, dynamic> tags, _PlaceCategory category) {

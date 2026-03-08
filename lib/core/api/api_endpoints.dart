@@ -8,7 +8,7 @@ class ApiEndpoints {
   // configure base URL based on platform
   static const bool isPhysicalDevice =
       true; // Set to true for physical device testing, false for emulator/simulator
-  static const String _ipAddress = '192.168.1.6';
+  static const String _ipAddress = '192.168.1.7';
   static const int _port = 5050;
 
   // Base URL configuration
@@ -60,6 +60,8 @@ class ApiEndpoints {
   static const String userRegister = 'auth/register';
   static const String userWhoAmI = 'auth/whoami';
   static const String userUploadPhoto = 'auth/update-profile';
+  static const String requestPasswordReset = 'auth/request-password-reset';
+  static const String resetPassword = 'auth/reset-password';
   static String userPicture(String filename) =>
       resolveMediaUrl('user_photos/$filename');
   // ------------------------ PROVIDER -----------------------
@@ -70,6 +72,7 @@ class ApiEndpoints {
   static const String providerProfile = 'provider/profile';
   static const String providerSetType = 'provider/set-type';
   static const String providerCertificateUpload = 'upload/provider-certificate';
+  static const String uploadProfileImage = 'upload/profile-image';
   static const String providerVerifiedLocations = 'provider/verified-locations';
 
   static const String providerGetAll = 'provider';
@@ -79,9 +82,9 @@ class ApiEndpoints {
   static const String providerDelete = 'provider';
 
   // ------------------ PROVIDER SERVICE --------------------
-  static const String providerServiceApply = 'provider/provider-service/apply';
-  static const String providerServiceMy = 'provider/provider-service/my';
-  static const String providerServiceById = 'provider/provider-service';
+  static const String providerServiceApply = 'provider/service';
+  static const String providerServiceMy = 'provider/service';
+  static const String providerServiceById = 'provider/service';
 
   // ------------------------ PET ----------------------------
   static const String petGetAll = 'user/pet';
@@ -89,7 +92,11 @@ class ApiEndpoints {
   static const String petCreate = 'user/pet';
   static const String petUpdate = 'user/pet';
   static const String petDelete = 'user/pet';
+  static String petAssignVet(String petId) => 'user/pet/$petId/assign-vet';
   static String petCareById(String petId) => 'user/pet/$petId/care';
+
+  // ------------------ PROVIDER PETS ------------------------
+  static const String providerAssignedPets = 'provider/pet/assigned';
 
   // ----------------------- BOOKING -------------------------
   static const String bookingCreate = 'booking';
@@ -106,6 +113,14 @@ class ApiEndpoints {
   static const String serviceById = 'service';
   static const String serviceByProvider = 'service/provider';
 
+  // ----------------------- REVIEW --------------------------
+  static const String reviewCreate = 'review';
+  static const String reviewMy = 'review/my';
+  static const String reviewByProvider = 'review/provider';
+  static String reviewProviderRatingBreakdown(String providerId) =>
+      'review/provider/$providerId/rating-breakdown';
+  static const String reviewByProduct = 'review/product';
+
   // ---------------------- INVENTORY ------------------------
   static const String products = 'product';
   static const String inventoryByProvider = 'product/provider';
@@ -120,6 +135,8 @@ class ApiEndpoints {
   static const String orderById = 'order';
   static const String orderUpdate = 'order';
   static const String orderDelete = 'order';
+  static const String providerOrders = 'provider/order/my';
+  static const String providerOrderStatus = 'provider/order';
 
   // -------------------- HEALTH RECORD ----------------------
   static const String healthRecord = 'health-record';

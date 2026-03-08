@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:petcare/features/shop/shop_providers.dart';
+import 'package:petcare/features/shop/presentation/provider/shop_providers.dart';
 import 'package:petcare/features/shop/domain/entities/cart_entity.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/state/shop_state.dart';

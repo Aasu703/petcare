@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:petcare/core/services/connectivity/network_info.dart';
 import 'package:petcare/core/services/session/pet_session.dart';
 import 'package:petcare/features/pet/data/datasources/remote/pet_remote_database.dart';
-import 'package:petcare/features/pet/data/repository/pet_repository_impl.dart';
+import 'package:petcare/features/pet/data/repository/pet_rempository_impl.dart';
 import 'package:petcare/features/pet/domain/repository/pet_repository.dart';
-import 'package:petcare/features/pet/domain/usecase/add_pet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/addpet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/delete_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_all_pets_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/get_pet_care_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_usecase.dart';
 import 'package:petcare/features/pet/domain/usecase/update_pet_care_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/assign_vet_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_verified_vets_usecase.dart';
+import 'package:petcare/features/pet/domain/usecase/get_provider_assigned_pets_usecase.dart';
 
 final petRepositoryProvider = Provider<IPetRepository>((ref) {
   return PetRepositoryImpl(
@@ -43,6 +46,21 @@ final updatePetCareUsecaseProvider = Provider<UpdatePetCareUsecase>((ref) {
   return UpdatePetCareUsecase(repository: ref.read(petRepositoryProvider));
 });
 
+final assignVetUsecaseProvider = Provider<AssignVetUsecase>((ref) {
+  return AssignVetUsecase(repository: ref.read(petRepositoryProvider));
+});
+
+final getVerifiedVetsUsecaseProvider = Provider<GetVerifiedVetsUsecase>((ref) {
+  return GetVerifiedVetsUsecase(repository: ref.read(petRepositoryProvider));
+});
+
+final getProviderAssignedPetsUsecaseProvider =
+    Provider<GetProviderAssignedPetsUsecase>((ref) {
+      return GetProviderAssignedPetsUsecase(
+        repository: ref.read(petRepositoryProvider),
+      );
+    });
+
 final petViewModelProvider = StateNotifierProvider<PetNotifier, PetState>((
   ref,
 ) {
@@ -53,6 +71,11 @@ final petViewModelProvider = StateNotifierProvider<PetNotifier, PetState>((
     deletePetUsecase: ref.read(deletePetUsecaseProvider),
     getPetCareUsecase: ref.read(getPetCareUsecaseProvider),
     updatePetCareUsecase: ref.read(updatePetCareUsecaseProvider),
+    assignVetUsecase: ref.read(assignVetUsecaseProvider),
+    getVerifiedVetsUsecase: ref.read(getVerifiedVetsUsecaseProvider),
+    getProviderAssignedPetsUsecase: ref.read(
+      getProviderAssignedPetsUsecaseProvider,
+    ),
   );
 });
 

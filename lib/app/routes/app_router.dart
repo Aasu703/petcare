@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/session/session_provider.dart';
 import 'package:petcare/core/session/router_notifier.dart';
+import 'package:petcare/core/session/session_state.dart';
 import 'package:petcare/features/auth/presentation/pages/login.dart';
 import 'package:petcare/features/auth/presentation/pages/provider_signup.dart';
 import 'package:petcare/features/auth/presentation/pages/signup.dart';
+import 'package:petcare/features/forgotpassword/presentation/pages/forgotpassword.dart';
+import 'package:petcare/features/forgotpassword/presentation/pages/reset_password_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/book_appointment_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_calendar_page.dart';
 import 'package:petcare/features/bookings/presentation/pages/booking_history_page.dart';
@@ -20,8 +23,12 @@ import 'package:petcare/features/pet/presentation/pages/add_pet.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_login_screen.dart';
 import 'package:petcare/features/provider/presentation/pages/provider_main_dashboard.dart';
+import 'package:petcare/features/provider/presentation/pages/provider_verification_pending_screen.dart';
 import 'package:petcare/features/shop/presentation/pages/product_list_page.dart';
 import 'package:petcare/features/splash/presentation/pages/splash_screen.dart';
+import 'package:petcare/features/discover/presentation/pages/discover_screen.dart';
+import 'package:petcare/features/discover/presentation/pages/provider_detail_page.dart';
+import 'package:petcare/features/reviews/presentation/pages/provider_reviews_page.dart';
 import 'package:petcare/shared/navigation/user_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -46,7 +53,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         location.startsWith(RoutePaths.profile) ||
         location.startsWith(RoutePaths.bookings) ||
         location.startsWith(RoutePaths.pets) ||
-        location.startsWith(RoutePaths.providerDashboard);
+        location.startsWith(RoutePaths.discover) ||
+        location.startsWith(RoutePaths.providerDashboard) ||
+        location.startsWith(RoutePaths.providerVerificationPending);
+  }
+
+  String _providerRedirect(SessionState session) {
+    if (!session.hasProviderType) {
+      return RoutePaths.providerVerificationPending;
+    }
+    if (!session.isProviderApproved) {
+      return RoutePaths.providerVerificationPending;
+    }
+    return RoutePaths.providerDashboard;
   }
 
   return GoRouter(
@@ -66,25 +85,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Authenticated users on auth routes → redirect to appropriate home
       if (isAuthenticated && isAuthRoute(location)) {
         return role == 'provider'
-            ? RoutePaths.providerDashboard
+            ? _providerRedirect(session)
             : RoutePaths.home;
       }
 
       // Non-provider users trying to access provider routes → user home
       if (isAuthenticated &&
           role != 'provider' &&
-          location.startsWith(RoutePaths.providerDashboard)) {
+          (location.startsWith(RoutePaths.providerDashboard) ||
+              location.startsWith(RoutePaths.providerVerificationPending))) {
         return RoutePaths.home;
       }
 
-      // Provider users trying to access user-only routes → provider dashboard
+      // Provider onboarding + approval gate
+      if (isAuthenticated && role == 'provider') {
+        final inProviderArea = location.startsWith('/provider/');
+        final redirectTarget = _providerRedirect(session);
+
+        if (inProviderArea &&
+            location != RoutePaths.providerLogin &&
+            location != RoutePaths.providerRegister &&
+            location != redirectTarget) {
+          return redirectTarget;
+        }
+      }
+
+      // Provider users trying to access user-only routes → provider flow
       if (isAuthenticated &&
           role == 'provider' &&
           (location.startsWith(RoutePaths.home) ||
               location.startsWith(RoutePaths.explore) ||
               location.startsWith(RoutePaths.shop) ||
               location.startsWith(RoutePaths.profile))) {
-        return RoutePaths.providerDashboard;
+        return _providerRedirect(session);
       }
 
       return null;
@@ -123,8 +156,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProviderSignupScreen(),
       ),
       GoRoute(
+        path: RoutePaths.forgotPassword,
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.resetPassword,
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          final email = state.uri.queryParameters['email'];
+          return ResetPasswordPage(token: token, email: email);
+        },
+      ),
+      GoRoute(
         path: RoutePaths.providerDashboard,
         builder: (context, state) => const ProviderDashboard(),
+      ),
+      GoRoute(
+        path: RoutePaths.providerVerificationPending,
+        builder: (context, state) => const ProviderVerificationPendingScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -191,6 +240,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.addPet,
         builder: (context, state) => const AddPet(),
+      ),
+      GoRoute(
+        path: RoutePaths.discover,
+        builder: (context, state) => const DiscoverScreen(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.providerDetail}/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ProviderDetailPage(providerId: id);
+        },
+      ),
+      GoRoute(
+        path: '${RoutePaths.providerReviews}/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ProviderReviewsPage(providerId: id);
+        },
       ),
     ],
     errorBuilder: (context, state) {

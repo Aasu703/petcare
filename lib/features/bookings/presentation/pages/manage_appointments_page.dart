@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/features/bookings/domain/entities/booking_entity.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/features/bookings/presentation/view_model/booking_view_model.dart';
 
 class ManageAppointmentsPage extends ConsumerStatefulWidget {
@@ -25,12 +26,13 @@ class _ManageAppointmentsPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(providerBookingProvider);
     final filters = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Appointments'),
+        title: Text(l10n.tr('manageAppointments')),
         backgroundColor: AppColors.iconPrimaryColor,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -82,7 +84,7 @@ class _ManageAppointmentsPageState
                           onPressed: () => ref
                               .read(providerBookingProvider.notifier)
                               .loadBookings(),
-                          child: const Text('Retry'),
+                          child: Text(l10n.tr('retry')),
                         ),
                       ],
                     ),
@@ -168,6 +170,7 @@ class _ProviderBookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final startDT = DateTime.tryParse(booking.startTime);
     final dateStr = startDT != null
         ? DateFormat('EEE, MMM d, yyyy').format(startDT)
@@ -268,7 +271,7 @@ class _ProviderBookingCard extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onReject,
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Reject'),
+                      label: Text(l10n.tr('reject')),
                       style: TextButton.styleFrom(foregroundColor: Colors.red),
                     ),
                   if (onApprove != null) ...[
@@ -276,7 +279,7 @@ class _ProviderBookingCard extends StatelessWidget {
                     ElevatedButton.icon(
                       onPressed: onApprove,
                       icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Approve'),
+                      label: Text(l10n.tr('approve')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.successColor,
                         foregroundColor: Colors.white,
@@ -287,7 +290,7 @@ class _ProviderBookingCard extends StatelessWidget {
                     ElevatedButton.icon(
                       onPressed: onComplete,
                       icon: const Icon(Icons.done_all, size: 18),
-                      label: const Text('Complete'),
+                      label: Text(l10n.tr('complete')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,

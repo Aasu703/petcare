@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 class ProviderLocationPickResult {
   final double latitude;
@@ -63,7 +64,7 @@ class _ProviderLocationPickerScreenState
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         _showMessage(
-          'Location service is off. Please enable GPS/location and try again.',
+          AppLocalizations.of(context).tr('locationServiceOffEnableGps'),
         );
         return;
       }
@@ -75,7 +76,9 @@ class _ProviderLocationPickerScreenState
 
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        _showMessage('Location permission denied.');
+        _showMessage(
+          AppLocalizations.of(context).tr('locationPermissionDenied'),
+        );
         return;
       }
 
@@ -85,7 +88,9 @@ class _ProviderLocationPickerScreenState
       setState(() => _selectedPin = latLng);
       _mapController.move(latLng, 16);
     } catch (_) {
-      _showMessage('Unable to fetch current location right now.');
+      _showMessage(
+        AppLocalizations.of(context).tr('unableFetchCurrentLocation'),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLocating = false);
@@ -103,7 +108,9 @@ class _ProviderLocationPickerScreenState
   void _savePin() {
     final selectedPin = _selectedPin;
     if (selectedPin == null) {
-      _showMessage('Please tap on map to pin your location.');
+      _showMessage(
+        AppLocalizations.of(context).tr('pleaseTapMapToPinLocation'),
+      );
       return;
     }
 
@@ -118,6 +125,7 @@ class _ProviderLocationPickerScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final mapCenter = _selectedPin ?? _defaultCenter;
     final pin = _selectedPin;
 
@@ -125,7 +133,7 @@ class _ProviderLocationPickerScreenState
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          TextButton(onPressed: _savePin, child: const Text('Save Pin')),
+          TextButton(onPressed: _savePin, child: Text(l10n.tr('savePin'))),
         ],
       ),
       body: Column(
@@ -137,13 +145,13 @@ class _ProviderLocationPickerScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tap on map to place your business pin.',
+                  l10n.tr('tapOnMapPlaceBusinessPin'),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
                 if (pin == null)
-                  const Text(
-                    'No pin selected yet.',
+                  Text(
+                    l10n.tr('noPinSelectedYet'),
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   )
                 else
@@ -198,9 +206,9 @@ class _ProviderLocationPickerScreenState
               children: [
                 TextField(
                   controller: _noteController,
-                  decoration: const InputDecoration(
-                    labelText: 'Location Note (Optional)',
-                    hintText: 'Landmark, floor, nearby reference',
+                  decoration: InputDecoration(
+                    labelText: l10n.tr('locationNoteOptional'),
+                    hintText: l10n.tr('landmarkFloorNearbyRef'),
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -218,7 +226,9 @@ class _ProviderLocationPickerScreenState
                               : Theme.of(context).colorScheme.primary,
                         ),
                         label: Text(
-                          _isLocating ? 'Locating...' : 'Use Current',
+                          _isLocating
+                              ? l10n.tr('locating')
+                              : l10n.tr('useCurrent'),
                         ),
                       ),
                     ),
@@ -227,7 +237,7 @@ class _ProviderLocationPickerScreenState
                       child: FilledButton.icon(
                         onPressed: _savePin,
                         icon: const Icon(Icons.check_circle_outline_rounded),
-                        label: const Text('Save Pin'),
+                        label: Text(l10n.tr('savePin')),
                       ),
                     ),
                   ],

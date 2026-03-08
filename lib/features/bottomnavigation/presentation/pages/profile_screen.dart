@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
+import 'package:petcare/app/l10n/locale_provider.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
 import 'package:petcare/core/services/storage/user_session_service.dart';
@@ -12,8 +14,11 @@ import 'package:petcare/app/theme/theme_provider.dart';
 import 'package:petcare/features/bottomnavigation/presentation/pages/edit_profile_screen.dart';
 import 'package:petcare/features/pet/presentation/pages/my_pet.dart';
 import 'package:petcare/features/posts/presentation/pages/posts_screen.dart';
-import 'package:petcare/features/provider_service/presentation/pages/apply_provider_service.dart';
-import 'package:petcare/features/provider_service/presentation/pages/my_provider_services.dart';
+import 'package:petcare/features/shop/presentation/pages/my_orders_page.dart';
+import 'package:petcare/core/services/notification/notification_service.dart';
+import 'package:petcare/features/bottomnavigation/presentation/widgets/sensor_settings_card.dart';
+import 'package:petcare/core/providers/sensor_settings_provider.dart';
+import 'package:petcare/core/services/sensor_interaction_service.dart';
 
 // Modern color palette - Theme Aware
 class ProfileColors {
@@ -83,10 +88,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   late Animation<double> _avatarScale;
 
   bool isInTest = false;
+  bool _notificationsEnabled = true;
 
   @override
   void initState() {
     super.initState();
+
+    _loadNotificationStatus();
 
     assert(() {
       isInTest = true;
@@ -123,10 +131,95 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       () => ref.read(profileViewModelProvider.notifier).loadProfile(),
     );
 
+    Future.microtask(() {
+      // Initialize sensor monitoring when profile screen loads
+      final sensorSettings = ref.read(sensorSettingsProvider);
+      final sensorService = ref.read(sensorInteractionServiceProvider);
+      sensorService.initializeSensorMonitoring(
+        proximityAlertEnabled: sensorSettings.proximityAlertEnabled,
+        autoBrightnessEnabled: sensorSettings.autoBrightnessEnabled,
+        context: context,
+      );
+    });
+
     _headerController.forward();
     Future.delayed(
       const Duration(milliseconds: 300),
       () => _contentController.forward(),
+    );
+  }
+
+  Future<void> _loadNotificationStatus() async {
+    try {
+      final service = ref.read(notificationServiceProvider);
+      final enabled = await service.areNotificationsEnabled();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = enabled;
+        });
+      }
+    } catch (e) {
+      // Handle test environment or platform not initialized
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleNotifications() async {
+    final service = ref.read(notificationServiceProvider);
+    if (_notificationsEnabled) {
+      // Can't disable system notifications from app, just show message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Go to device settings to disable notifications'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      // Request permissions
+      final granted = await service.requestPermissions();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = granted;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              granted
+                  ? 'Notifications enabled'
+                  : 'Permission denied. Enable in settings.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendTestNotification() async {
+    final service = ref.read(notificationServiceProvider);
+    final sent = await service.showInstantNotification(
+      id: NotificationService.createEphemeralId(),
+      title: AppLocalizations.of(context).tr('testNotification'),
+      body: AppLocalizations.of(context).tr('alertsRemindersUpdates'),
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? AppLocalizations.of(context).tr('testNotificationSent')
+              : 'Enable notifications first.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -142,13 +235,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final session = ref.watch(userSessionServiceProvider);
     final profileState = ref.watch(profileViewModelProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(appLocaleProvider);
+    final l10n = AppLocalizations.of(context);
 
     final avatar = profileState.user?.avatar;
     final resolvedAvatarUrl = (avatar != null && avatar.isNotEmpty)
         ? ApiEndpoints.resolveMediaUrl(avatar)
         : null;
     final hasAvatarImage = resolvedAvatarUrl != null;
-    final displayName = session.getFirstName() ?? 'User';
+    final displayName = session.getFirstName() ?? l10n.tr('user');
     final displayEmail = session.getEmail() ?? '';
 
     return Scaffold(
@@ -352,20 +447,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     const SizedBox(height: 28),
 
-                    // Modern Stats Section
-                    _buildModernStatsSection(),
-
-                    const SizedBox(height: 36),
-
                     // Account Section
                     _buildModernMenuSection(
-                      'Account',
+                      l10n.tr('account'),
                       Icons.person_outline_rounded,
                       [
                         _MenuItem(
                           icon: Icons.edit_rounded,
-                          title: 'Edit Profile',
-                          subtitle: 'Update your personal information',
+                          title: l10n.tr('editProfile'),
+                          subtitle: l10n.tr('updatePersonalInfo'),
                           color: ProfileColors.editProfile,
                           onTap: () async {
                             HapticFeedback.lightImpact();
@@ -385,8 +475,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                         _MenuItem(
                           icon: Icons.pets_rounded,
-                          title: 'My Pets',
-                          subtitle: 'Manage your pets & their health',
+                          title: l10n.tr('myPets'),
+                          subtitle: l10n.tr('managePetsHealth'),
                           color: ProfileColors.myPets,
                           onTap: () {
                             HapticFeedback.lightImpact();
@@ -397,25 +487,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           },
                         ),
                         _MenuItem(
-                          icon: Icons.storefront_rounded,
-                          title: 'My Services',
-                          subtitle: 'View your provider service applications',
-                          color: ProfileColors.myPets,
+                          icon: Icons.receipt_long_rounded,
+                          title: 'My Orders',
+                          subtitle: 'Track your purchases',
+                          color: ProfileColors.notifications,
                           onTap: () {
                             HapticFeedback.lightImpact();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const MyProviderServicesScreen(),
+                                builder: (_) => const MyOrdersPage(),
                               ),
                             );
                           },
                         ),
                         _MenuItem(
                           icon: Icons.post_add_rounded,
-                          title: 'Posts',
-                          subtitle: 'View and create posts',
+                          title: l10n.tr('posts'),
+                          subtitle: l10n.tr('viewCreatePosts'),
                           color: ProfileColors.myPets,
                           onTap: () {
                             HapticFeedback.lightImpact();
@@ -427,22 +516,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             );
                           },
                         ),
-                        _MenuItem(
-                          icon: Icons.work_outline_rounded,
-                          title: 'Apply as Provider',
-                          subtitle: 'Submit documents to offer services',
-                          color: ProfileColors.editProfile,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ApplyProviderServiceScreen(),
-                              ),
-                            );
-                          },
-                        ),
                       ],
                       delay: 0,
                     ),
@@ -450,45 +523,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     const SizedBox(height: 28),
 
                     // Preferences Section
-                    _buildModernMenuSection('Preferences', Icons.tune_rounded, [
-                      _MenuItem(
-                        icon: Icons.notifications_rounded,
-                        title: 'Notifications',
-                        subtitle: 'Alerts, reminders & updates',
-                        color: ProfileColors.notifications,
-                        trailing: _buildToggleSwitch(true),
-                        onTap: () {},
-                      ),
-                      _MenuItem(
-                        icon: Icons.dark_mode_rounded,
-                        title: 'Dark Mode',
-                        subtitle: 'Switch app appearance',
-                        color: ProfileColors.theme,
-                        trailing: _buildToggleSwitch(
-                          themeMode == ThemeMode.dark,
+                    _buildModernMenuSection(
+                      l10n.tr('preferences'),
+                      Icons.tune_rounded,
+                      [
+                        _MenuItem(
+                          icon: Icons.notifications_rounded,
+                          title: l10n.tr('notifications'),
+                          subtitle: l10n.tr('alertsRemindersUpdates'),
+                          color: ProfileColors.notifications,
+                          trailing: _buildToggleSwitch(_notificationsEnabled),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _toggleNotifications();
+                          },
                         ),
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          if (themeMode == ThemeMode.dark) {
-                            ref.read(themeModeProvider.notifier).setLight();
-                          } else {
-                            ref.read(themeModeProvider.notifier).setDark();
-                          }
-                        },
-                      ),
-                    ], delay: 100),
+                        _MenuItem(
+                          icon: Icons.notifications_active_rounded,
+                          title: l10n.tr('testNotification'),
+                          subtitle: l10n.tr('manageNotificationPrefs'),
+                          color: ProfileColors.notifications,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _sendTestNotification();
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.language_rounded,
+                          title: l10n.tr('language'),
+                          subtitle: l10n.tr('languageSubtitle'),
+                          color: AppColors.primaryColor,
+                          trailing: _buildStatusBadge(
+                            _languageLabel(locale),
+                            AppColors.primaryColor,
+                          ),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            ref
+                                .read(appLocaleProvider.notifier)
+                                .toggleEnglishNepali();
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.dark_mode_rounded,
+                          title: l10n.tr('darkMode'),
+                          subtitle: l10n.tr('switchAppearance'),
+                          color: ProfileColors.theme,
+                          trailing: _buildToggleSwitch(
+                            themeMode == ThemeMode.dark,
+                          ),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            if (themeMode == ThemeMode.dark) {
+                              ref.read(themeModeProvider.notifier).setLight();
+                            } else {
+                              ref.read(themeModeProvider.notifier).setDark();
+                            }
+                          },
+                        ),
+                      ],
+                      delay: 100,
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Smart Sensors Settings Card
+                    const SensorSettingsCard(),
 
                     const SizedBox(height: 28),
 
                     // Support Section
                     _buildModernMenuSection(
-                      'Support',
+                      l10n.tr('support'),
                       Icons.help_outline_rounded,
                       [
                         _MenuItem(
                           icon: Icons.help_center_rounded,
-                          title: 'Help Center',
-                          subtitle: 'FAQs and support articles',
+                          title: l10n.tr('helpCenter'),
+                          subtitle: l10n.tr('faqsSupport'),
                           color: ProfileColors.help,
                           onTap: () {
                             HapticFeedback.lightImpact();
@@ -496,8 +608,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                         _MenuItem(
                           icon: Icons.chat_bubble_rounded,
-                          title: 'Contact Us',
-                          subtitle: 'Get in touch with our team',
+                          title: l10n.tr('contactUs'),
+                          subtitle: l10n.tr('getInTouch'),
                           color: AppColors.primaryColor,
                           onTap: () {
                             HapticFeedback.lightImpact();
@@ -520,127 +632,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ],
         ),
       ),
-    );
-  }
-
-  // Modern Stats Section
-  Widget _buildModernStatsSection() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.pets_rounded,
-            value: '3',
-            label: 'My Pets',
-            gradientColors: const [Color(0xFFFF6B9D), Color(0xFFFF8FB0)],
-            delay: 0,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.calendar_month_rounded,
-            value: '5',
-            label: 'Visits',
-            gradientColors: const [Color(0xFF4ECFFF), Color(0xFF7DDBFF)],
-            delay: 100,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildModernStatCard(
-            icon: Icons.favorite_rounded,
-            value: '12',
-            label: 'Likes',
-            gradientColors: const [Color(0xFFFF6584), Color(0xFFFF8AA3)],
-            delay: 200,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModernStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required List<Color> gradientColors,
-    required int delay,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: isInTest ? Duration.zero : Duration(milliseconds: 600 + delay),
-      curve: Curves.easeOutBack,
-      builder: (context, animationValue, child) {
-        return Transform.scale(
-          scale: animationValue,
-          child: Opacity(
-            opacity: animationValue,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: gradientColors[0].withOpacity(0.2),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradientColors[0].withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                    spreadRadius: -5,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: gradientColors,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradientColors[0].withOpacity(0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                          spreadRadius: -3,
-                        ),
-                      ],
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: ProfileColors.textPrimary(context),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: ProfileColors.textSecondary(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -842,6 +833,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  Widget _buildStatusBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  String _languageLabel(Locale locale) {
+    if (locale.languageCode == 'ne') {
+      return 'NE';
+    }
+    return 'EN';
+  }
+
   // Modern Logout Button
   Widget _buildModernLogoutButton() {
     return TweenAnimationBuilder<double>(
@@ -896,8 +913,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           ),
                         ),
                         const SizedBox(width: 14),
-                        const Text(
-                          'Log Out',
+                        Text(
+                          AppLocalizations.of(context).tr('logOut'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -941,7 +958,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
               const SizedBox(height: 20),
               Text(
-                'Log Out?',
+                AppLocalizations.of(context).tr('logOutQuestion'),
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -950,7 +967,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                'Are you sure you want to log out of your account?',
+                AppLocalizations.of(context).tr('logOutConfirm'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -971,7 +988,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                       ),
                       child: Text(
-                        'Cancel',
+                        AppLocalizations.of(context).tr('cancel'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -998,8 +1015,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Log Out',
+                      child: Text(
+                        AppLocalizations.of(context).tr('logOut'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,

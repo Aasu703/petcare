@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 import 'package:petcare/features/pet/domain/entities/pet_entity.dart';
 import 'package:petcare/features/provider/domain/entities/provider_entity.dart';
@@ -62,6 +63,7 @@ class BookAppointmentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -69,7 +71,7 @@ class BookAppointmentWidget extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Book Appointment'),
+        title: Text(l10n.tr('bookAppointment')),
         backgroundColor: context.surfaceColor,
         foregroundColor: context.textPrimary,
         centerTitle: true,
@@ -112,10 +114,7 @@ class BookAppointmentWidget extends StatelessWidget {
               BookingPriceSummary(displayPrice: displayPrice!),
             ],
             const SizedBox(height: 32),
-            BookingSubmitButton(
-              isSubmitting: isSubmitting,
-              onSubmit: onSubmit,
-            ),
+            BookingSubmitButton(isSubmitting: isSubmitting, onSubmit: onSubmit),
           ],
         ),
       ),

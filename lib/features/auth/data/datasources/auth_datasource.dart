@@ -23,4 +23,9 @@ abstract interface class IAuthRemoteDataSource {
     String? phoneNumber,
     File? imageFile,
   });
+  Future<bool> requestPasswordReset(String email);
+  Future<bool> resetPassword({
+    required String token,
+    required String newPassword,
+  });
 }

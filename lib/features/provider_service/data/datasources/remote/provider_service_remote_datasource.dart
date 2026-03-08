@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petcare/core/api/api_client.dart';
 import 'package:petcare/core/api/api_endpoints.dart';
@@ -27,42 +26,9 @@ class ProviderServiceRemoteDataSource
     List<String> facilityImagePaths = const [],
     String? businessRegistrationPath,
   }) async {
-    final formMap = <String, dynamic>{...model.toJsonForApply()};
-
-    if (medicalLicensePath != null) {
-      formMap['medicalLicenseDocument'] = await MultipartFile.fromFile(
-        medicalLicensePath,
-        filename: medicalLicensePath.split('/').last,
-      );
-    }
-
-    if (certificationPath != null) {
-      formMap['certificationDocument'] = await MultipartFile.fromFile(
-        certificationPath,
-        filename: certificationPath.split('/').last,
-      );
-    }
-
-    if (facilityImagePaths.isNotEmpty) {
-      formMap['facilityImages'] = await Future.wait(
-        facilityImagePaths.map(
-          (path) async =>
-              MultipartFile.fromFile(path, filename: path.split('/').last),
-        ),
-      );
-    }
-
-    if (businessRegistrationPath != null) {
-      formMap['businessRegistrationDocument'] = await MultipartFile.fromFile(
-        businessRegistrationPath,
-        filename: businessRegistrationPath.split('/').last,
-      );
-    }
-
     final response = await _apiClient.post(
       ApiEndpoints.providerServiceApply,
-      data: FormData.fromMap(formMap),
-      options: Options(contentType: 'multipart/form-data'),
+      data: model.toJsonForApply(),
     );
 
     final data = response.data;

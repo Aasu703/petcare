@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/shared/widgets/index.dart';
 
 /// Signup form section containing all input fields
@@ -65,7 +66,7 @@ class SignupFormSection extends StatelessWidget {
                       keyboardType: TextInputType.name,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Required';
+                          return AppLocalizations.of(context).tr('required');
                         }
                         return null;
                       },
@@ -75,12 +76,12 @@ class SignupFormSection extends StatelessWidget {
                   Expanded(
                     child: FormTextField(
                       controller: lastNameController,
-                      hintText: 'Last',
-                      labelText: 'Last Name',
+                      hintText: AppLocalizations.of(context).tr('lastNameHint'),
+                      labelText: AppLocalizations.of(context).tr('lastName'),
                       keyboardType: TextInputType.name,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Required';
+                          return AppLocalizations.of(context).tr('required');
                         }
                         return null;
                       },
@@ -93,15 +94,15 @@ class SignupFormSection extends StatelessWidget {
             // Email field
             FormTextField(
               controller: emailController,
-              hintText: 'example@email.com',
-              labelText: 'Email Address',
+              hintText: AppLocalizations.of(context).tr('emailHint'),
+              labelText: AppLocalizations.of(context).tr('emailAddress'),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Email is required';
+                  return AppLocalizations.of(context).tr('emailRequired');
                 }
                 if (!value.contains('@')) {
-                  return 'Enter a valid email';
+                  return AppLocalizations.of(context).tr('enterValidEmail');
                 }
                 return null;
               },
@@ -111,15 +112,15 @@ class SignupFormSection extends StatelessWidget {
             // Phone field
             FormTextField(
               controller: phoneController,
-              hintText: '+1234567890',
-              labelText: 'Phone Number',
+              hintText: AppLocalizations.of(context).tr('phoneHint'),
+              labelText: AppLocalizations.of(context).tr('phoneNumber'),
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Phone number is required';
+                  return AppLocalizations.of(context).tr('phoneRequired');
                 }
                 if (value.length < 10) {
-                  return 'Enter a valid phone number';
+                  return AppLocalizations.of(context).tr('enterValidPhone');
                 }
                 return null;
               },
@@ -130,7 +131,7 @@ class SignupFormSection extends StatelessWidget {
             FormTextField(
               controller: passwordController,
               hintText: '••••••••',
-              labelText: 'Password',
+              labelText: AppLocalizations.of(context).tr('password'),
               obscureText: !showPassword,
               keyboardType: TextInputType.text,
               suffixIcon: showPassword
@@ -139,7 +140,7 @@ class SignupFormSection extends StatelessWidget {
               onSuffixIconPressed: onTogglePassword,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Password is required';
+                  return AppLocalizations.of(context).tr('passwordRequired');
                 }
                 if (value.length < 6) {
                   return 'Password must be at least 6 characters';
@@ -153,7 +154,7 @@ class SignupFormSection extends StatelessWidget {
             FormTextField(
               controller: confirmPasswordController,
               hintText: '••••••••',
-              labelText: 'Confirm Password',
+              labelText: AppLocalizations.of(context).tr('confirmPassword'),
               obscureText: !showConfirmPassword,
               keyboardType: TextInputType.text,
               suffixIcon: showConfirmPassword
@@ -162,10 +163,12 @@ class SignupFormSection extends StatelessWidget {
               onSuffixIconPressed: onToggleConfirmPassword,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please confirm your password';
+                  return AppLocalizations.of(
+                    context,
+                  ).tr('pleaseConfirmPassword');
                 }
                 if (value != passwordController.text) {
-                  return 'Passwords do not match';
+                  return AppLocalizations.of(context).tr('passwordsDoNotMatch');
                 }
                 return null;
               },

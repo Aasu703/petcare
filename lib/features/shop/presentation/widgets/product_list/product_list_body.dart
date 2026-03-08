@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:petcare/features/shop/domain/entities/product_entity.dart';
 import 'package:petcare/features/shop/presentation/widgets/product_list/product_card.dart';
 import 'package:petcare/shared/widgets/index.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 
 /// Shop product list body with loading, empty, error, and grid states
 class ProductListBody extends StatelessWidget {
@@ -18,21 +19,22 @@ class ProductListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (isLoading) {
       return const LoadingIndicator();
     }
 
     if (error != null) {
       return ErrorState(
-        title: 'Unable to load products',
+        title: l10n.tr('loading'),
         message: error,
         icon: Icons.storefront,
       );
     }
 
     if (products.isEmpty) {
-      return const EmptyState(
-        title: 'No products available',
+      return EmptyState(
+        title: l10n.tr('noProductsAvailable'),
         icon: Icons.storefront,
       );
     }

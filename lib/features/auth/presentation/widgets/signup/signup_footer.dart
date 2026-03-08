@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/routes/route_paths.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 
@@ -14,7 +15,7 @@ class SignupFooter extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Already have an account? ',
+            AppLocalizations.of(context).tr('alreadyHaveAccount'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.black.withValues(alpha: 0.6),
               fontSize: 15,
@@ -30,7 +31,7 @@ class SignupFooter extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Sign In',
+                AppLocalizations.of(context).tr('signIn'),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AppColors.accentColor,

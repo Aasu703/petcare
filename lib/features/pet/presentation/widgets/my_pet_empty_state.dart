@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petcare/app/l10n/app_localizations.dart';
 import 'package:petcare/app/theme/app_colors.dart';
 import 'package:petcare/app/theme/theme_extensions.dart';
 
@@ -43,6 +44,7 @@ class _MyPetEmptyStateState extends State<MyPetEmptyState>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       children: [
@@ -83,7 +85,7 @@ class _MyPetEmptyStateState extends State<MyPetEmptyState>
                 const SizedBox(height: 40),
                 // Title
                 Text(
-                  'No Pets Yet',
+                  l10n.tr('noPetsYet'),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -94,7 +96,7 @@ class _MyPetEmptyStateState extends State<MyPetEmptyState>
                 const SizedBox(height: 16),
                 // Subtitle
                 Text(
-                  'Start adding your beloved pets to keep track of their information, health records, and care schedules.',
+                  l10n.tr('startAddingPets'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
@@ -124,24 +126,22 @@ class _MyPetEmptyStateState extends State<MyPetEmptyState>
                     children: [
                       _FeatureItem(
                         icon: Icons.favorite_outline,
-                        title: 'Health Tracking',
-                        description: 'Monitor your pet\'s health and wellness',
+                        title: l10n.tr('healthTracking'),
+                        description: l10n.tr('monitorPetHealth'),
                         color: AppColors.errorColor,
                       ),
                       const SizedBox(height: 16),
                       _FeatureItem(
                         icon: Icons.medical_information_outlined,
-                        title: 'Medical Records',
-                        description:
-                            'Keep all checkups and vaccinations organized',
+                        title: l10n.tr('medicalRecords'),
+                        description: l10n.tr('keepCheckupsOrganized'),
                         color: AppColors.primaryColor,
                       ),
                       const SizedBox(height: 16),
                       _FeatureItem(
                         icon: Icons.calendar_today,
-                        title: 'Care Schedules',
-                        description:
-                            'Never miss important pet care appointments',
+                        title: l10n.tr('careSchedules'),
+                        description: l10n.tr('neverMissAppointments'),
                         color: AppColors.accentColor,
                       ),
                     ],

@@ -25,7 +25,7 @@ class SensorSettingsCard extends ConsumerWidget {
     if (light.asData != null) {
       final data = light.asData!.value;
       if (data == null) return 'Reading...';
-      return '${data} lux - ${_getLuxDescription(data)}';
+      return '$data lux - ${_getLuxDescription(data)}';
     }
     return 'Reading...';
   }

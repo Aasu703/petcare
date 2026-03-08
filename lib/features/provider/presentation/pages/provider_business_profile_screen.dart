@@ -321,15 +321,37 @@ class _ProviderBusinessProfileScreenState
                                         Icons.camera_alt_outlined,
                                         color: Colors.grey,
                                       )
-                                    : Image.network(
-                                        _buildFullImageUrl(_profileImageUrl),
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(
-                                                  Icons.error_outline,
-                                                  color: Colors.red,
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          _buildFullImageUrl(_profileImageUrl),
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder:
+                                              (
+                                                context,
+                                                child,
+                                                loadingProgress,
+                                              ) => loadingProgress == null
+                                              ? child
+                                              : const Center(
+                                                  child: SizedBox(
+                                                    width: 20,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  ),
                                                 ),
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  const Icon(
+                                                    Icons.error_outline,
+                                                    color: Colors.red,
+                                                  ),
+                                        ),
                                       ),
                               ),
                               const SizedBox(width: 12),
@@ -787,9 +809,8 @@ class _ProviderBusinessProfileScreenState
   }
 
   String _buildFullImageUrl(String imagePath) {
-    if (imagePath.startsWith('http')) return imagePath;
-    final baseUrl = ApiEndpoints.baseUrl.replaceAll('api/', '');
-    return '$baseUrl${imagePath.startsWith('/') ? imagePath : '/$imagePath'}';
+    final normalized = imagePath.trim().replaceAll('\\', '/');
+    return ApiEndpoints.resolveMediaUrl(normalized);
   }
 
   Widget _input({
